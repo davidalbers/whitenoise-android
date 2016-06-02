@@ -11,4 +11,4 @@ Additionally most of the existing apps are ugly/outdated, so I'm attempting to u
 This app is still a work in progress. The remaining work is fixing small issues.
 
 ---
-![Alt text](/noiseScreenshot.png "App Screenshot" width="200" height="200")
+<img src="/noiseScreenshot.png" width="300">

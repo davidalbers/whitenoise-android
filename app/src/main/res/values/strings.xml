@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">noise</string>
+    <string name="play_audio">Play</string>
+    <string name="white_label">White</string>
+    <string name="pink_label">Pink</string>
+    <string name="brown_label">Brown</string>
+    <string name="blank" />
+    <string name="volume_label">Volume</string>
+    <string name="timer_label">Timer</string>
+    <string name="hms_initial_value">00h00m00s</string>
+</resources>

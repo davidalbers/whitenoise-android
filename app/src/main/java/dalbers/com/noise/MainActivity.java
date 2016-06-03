@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -15,11 +17,13 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -28,11 +32,7 @@ import java.util.Arrays;
 
 /**
  * TODO:
- * - Plus button starts a timer is music is already playing
- * - Plus button turns into X when timer is created
- * - Pressing play starts timer
- * - Pressing pause pauses timer
- * - Pressing X zeros timer
+ * -Need some way of showing which color noise is being used
  */
 
 public class MainActivity extends AppCompatActivity {
@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private SeekBar volumeBar;
     private Button playButton;
     private EditText countdownTimeTextView;
+    private ImageButton timerButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
                         Drawable playPic = res.getDrawable(R.drawable.ic_action_playback_play_black);
                         playPic.setBounds( 0, 0, 120, 120 );
                         ((Button)v).setCompoundDrawables(playPic, null,null,null);
+                        ((Button)v).setText("Play");
                         pauseTimer();
                     }
                     else {
@@ -71,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
                         playPic.setBounds( 0, 0, 120, 120 );
                         ((Button)v).setCompoundDrawables(playPic, null, null, null);
                         long time = timeStringToMillis(countdownTimeTextView.getText().toString());
+                        ((Button)v).setText("Pause");
                         //timer was set before noise was playing,
                         //start the timer with the music
                         if(time != 0) {
@@ -143,7 +146,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 float percentScrolled = (float) progress / seekBar.getMax();
-                audioPlayerService.setMaxVolume(percentScrolled);
+                if(audioPlayerService != null)
+                    audioPlayerService.setMaxVolume(percentScrolled);
             }
 
             @Override
@@ -156,47 +160,65 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
         Button whiteButton = (Button)findViewById(R.id.whiteToggleButton);
-        whiteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                audioPlayerService.setSoundFile(R.raw.white);
-            }
-        });
+        if(whiteButton != null) {
+            whiteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    audioPlayerService.setSoundFile(R.raw.white);
+                }
+            });
+        }
 
         Button pinkButton = (Button)findViewById(R.id.pinkToggleButton);
-        pinkButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                audioPlayerService.setSoundFile(R.raw.pink);
-            }
-        });
+        if(pinkButton != null) {
+            pinkButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    audioPlayerService.setSoundFile(R.raw.pink);
+                }
+            });
+        }
 
         Button brownButton = (Button)findViewById(R.id.brownToggleButton);
-        brownButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                audioPlayerService.setSoundFile(R.raw.brown);
-            }
-        });
+        if(brownButton != null) {
+            brownButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    audioPlayerService.setSoundFile(R.raw.brown);
+                }
+            });
+        }
 
         ToggleButton oscillateButton = (ToggleButton)findViewById(R.id.waveVolumeToggle);
-        oscillateButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                audioPlayerService.setOscillateVolume(isChecked);
-            }
-        });
+        if(oscillateButton != null) {
+            oscillateButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    audioPlayerService.setOscillateVolume(isChecked);
+                }
+            });
+        }
 
         ToggleButton decreaseButton = (ToggleButton)findViewById(R.id.decreaseVolumeToggle);
-        decreaseButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                audioPlayerService.setDecreaseVolume(isChecked);
-            }
-        });
+        if(decreaseButton != null) {
+            decreaseButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    audioPlayerService.setDecreaseVolume(isChecked);
+                }
+            });
+        }
 
+        timerButton = (ImageButton)findViewById(R.id.timerButton);
+        if(timerButton != null) {
+            timerButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    stopTimer();
+                }
+            });
+        }
     }
 
     private ServiceConnection playerConnection = new ServiceConnection() {
@@ -373,5 +395,6 @@ public class MainActivity extends AppCompatActivity {
         if(editTextCountDownTimer != null)
             editTextCountDownTimer.cancel();
         countdownTimeTextView.setText(stringToFormattedHMS(millisToHMSZeros(0)));
+        Log.d(LOG_TAG,"stopped timer");
     }
 }

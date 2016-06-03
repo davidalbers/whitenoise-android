@@ -127,8 +127,8 @@
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/button"
-            android:src="@drawable/ic_action_add"/>
+            android:id="@+id/timerButton"
+            android:src="@drawable/ic_stop_timer"/>
     </LinearLayout>
 
     <LinearLayout

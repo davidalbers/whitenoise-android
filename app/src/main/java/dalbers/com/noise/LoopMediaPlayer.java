@@ -53,7 +53,8 @@ public class LoopMediaPlayer {
     };
 
     public void stop() {
-        mCurrentPlayer.stop();
+        if(mCurrentPlayer != null)
+            mCurrentPlayer.stop();
     }
 
     public void play() {
@@ -61,6 +62,7 @@ public class LoopMediaPlayer {
         mCurrentPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
+                mCurrentPlayer.setVolume(leftVolume, rightVolume);
                 mCurrentPlayer.start();
             }
         });
@@ -82,6 +84,10 @@ public class LoopMediaPlayer {
         }
     }
 
+    public int getSoundFile() {
+        return mResId;
+    }
+
     public boolean isPlaying() {
         if(mCurrentPlayer == null) return false;
         return mCurrentPlayer.isPlaying();
@@ -90,9 +96,10 @@ public class LoopMediaPlayer {
     public void setVolume(float leftVolume, float rightVolume) {
         if(mCurrentPlayer != null) {
             mCurrentPlayer.setVolume(leftVolume, rightVolume);
-            this.leftVolume = leftVolume;
-            this.rightVolume = rightVolume;
         }
+        this.leftVolume = leftVolume;
+        this.rightVolume = rightVolume;
+
     }
 
     public float[] getVolume() { return new float[]{leftVolume, rightVolume}; }

@@ -1,18 +1,37 @@
 package dalbers.com.noise;
 
+import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.session.MediaSession;
 import android.os.Binder;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class AudioPlayer extends Service {
+/**
+ * A service to play audio on a loop.
+ * Features oscillating and decreasing volume.
+ * Uses LoopMediaPlayer for looping audio.
+ */
+public class AudioPlayerService extends Service {
     private LoopMediaPlayer mp;
     private static String LOG_TAG = "dalbers.noise:audioPlayer";
     private IBinder mBinder = new AudioPlayerBinder();
@@ -33,6 +52,8 @@ public class AudioPlayer extends Service {
     public static long DEFAULT_DECREASE_LENGTH = 6000;
     private float maxVolume = 1.0f;
     private float initialVolume = 1.0f;
+    private Notification notification;
+    private MediaSessionCompat mediaSession;
     @Override
     public IBinder onBind(Intent intent) {
         if(mp == null) {
@@ -45,6 +66,7 @@ public class AudioPlayer extends Service {
     {
         volumeChangerTimer = new Timer();
         volumeChangerTimer.schedule(new VolumeChangerTimerTask(), 0, tickPeriod);
+        mediaSession = new MediaSessionCompat(this,"white noise");
     }
     public void onDestroy()
     {
@@ -52,14 +74,20 @@ public class AudioPlayer extends Service {
     }
 
     public int onStartCommand(Intent intent,int flags, int startId){
-        Log.d(LOG_TAG,"startCommand");
         mp = LoopMediaPlayer.create(this, R.raw.white);
+        if(intent.hasExtra("DO")) {
+            String action = (String) intent.getExtras().get("DO");
+            if (action.equals("pause")) {
+               Log.d(LOG_TAG,"paused");
+            }
+        }
+
         return START_STICKY;
     }
 
     public class AudioPlayerBinder extends Binder {
-        AudioPlayer getService() {
-            return AudioPlayer.this;
+        AudioPlayerService getService() {
+            return AudioPlayerService.this;
         }
     }
 
@@ -68,16 +96,26 @@ public class AudioPlayer extends Service {
     }
 
     public void stop() {
-        mp.stop();
+        if(mp != null)
+            mp.stop();
         //reset volumes to initial values
         leftVolume = initialVolume;
         rightVolume = initialVolume;
     }
 
     public boolean isPlaying() {
-        return mp.isPlaying();
+        if(mp != null)
+            return mp.isPlaying();
+        else return false;
     }
 
+    /**
+     * Set the maximum volume for this service.
+     * If oscillating or decreasing volume are not being used,
+     * this will be the volume. If they are being used, neither
+     * will use a volume higher than this volume
+     * @param maxVolume a value 0.0 to 1.0 where 1.0 is max of the device
+     */
     public void setMaxVolume(float maxVolume) {
         this.maxVolume = maxVolume;
         leftVolume = maxVolume;
@@ -85,9 +123,16 @@ public class AudioPlayer extends Service {
         oscillatingDown = true;
         initialVolume = maxVolume;
         mp.setVolume(maxVolume, maxVolume);
+        Log.d(LOG_TAG,maxVolume+"");
     }
 
-    public void setVolume(float leftVolume, float rightVolume) {
+    /**
+     * Set the volume of the media player. This will not update this service's
+     * volume or associated variables, use setMaxVolume() to do that.
+     * @param leftVolume a value 0.0 to 1.0 where 1.0 is max of the device
+     * @param rightVolume a value 0.0 to 1.0 where 1.0 is max of the device
+     */
+    private void setVolume(float leftVolume, float rightVolume) {
 
         mp.setVolume(leftVolume, rightVolume);
     }
@@ -111,7 +156,10 @@ public class AudioPlayer extends Service {
     }
 
     public void cancelTimer() {
-        countDownTimer.cancel();
+
+        if(countDownTimer != null) {
+            countDownTimer.cancel();
+        }
     }
 
     public long getTimeLeft() {
@@ -120,6 +168,7 @@ public class AudioPlayer extends Service {
 
     public void setSoundFile(int resId) {
         mp.setSoundFile(resId);
+        mp.setVolume(maxVolume,maxVolume);
     }
 
     public void setOscillateVolume(boolean oscillateVolume) {
@@ -239,4 +288,39 @@ public class AudioPlayer extends Service {
         }
     }
 
+    public void showNotificationWidget() {
+        String title;
+        switch (mp.getSoundFile())
+        {
+            case R.raw.white:
+                title = "White Noise";
+                break;
+            case R.raw.brown:
+                title = "Brown Noise";
+                break;
+            case R.raw.pink:
+                title = "Pink Noise";
+                break;
+            default:
+                title = "Noise";
+        }
+        Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
+                R.drawable.ic_action_add);
+        Intent volume = new Intent(this,AudioPlayerService.class);
+        volume.putExtra("DO", "pause");
+        PendingIntent btn1 = PendingIntent.getService(this, 0, volume, 0);
+        notification = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_add)
+                .setContentTitle(title)
+                .setContentText("Playing in Noise App")
+                .setLargeIcon(icon)
+                .setStyle(new NotificationCompat.MediaStyle())
+                .setOngoing(true)
+                .addAction(R.drawable.ic_add,"add",btn1)
+                .build();
+        NotificationManager nManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        nManager.notify(2, notification);
+    }
+
 }
+

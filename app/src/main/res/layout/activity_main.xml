@@ -28,33 +28,28 @@
 
         android:layout_centerHorizontal="true"
         android:id="@+id/linearLayout">
-        <Button
+        <ToggleButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/white_label"
             android:id="@+id/whiteToggleButton"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:singleLine="true" />
+            android:textOff="@string/white_label"
+            android:textOn="@string/white_label"
+            android:singleLine="true"
+            android:checked="true"/>
 
-        <Button
+        <ToggleButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/pink_label"
-            android:id="@+id/pinkToggleButton"
-            android:layout_alignParentTop="true"
-            android:layout_toRightOf="@+id/whiteToggleButton"
-            android:layout_toEndOf="@+id/whiteToggleButton" />
+            android:textOn="@string/pink_label"
+            android:textOff="@string/pink_label"
+            android:id="@+id/pinkToggleButton" />
 
-        <Button
+        <ToggleButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/brown_label"
-            android:id="@+id/brownToggleButton"
-            android:layout_alignParentTop="true"
-            android:layout_toRightOf="@+id/pinkToggleButton"
-            android:layout_toEndOf="@+id/pinkToggleButton" />
+            android:textOn="@string/brown_label"
+            android:textOff="@string/brown_label"
+            android:id="@+id/brownToggleButton" />
     </LinearLayout>
 
     <SeekBar
@@ -128,7 +123,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/timerButton"
-            android:src="@drawable/ic_stop_timer"/>
+            android:src="@drawable/ic_add"/>
     </LinearLayout>
 
     <LinearLayout
@@ -146,7 +141,8 @@
             android:id="@+id/countdownTime"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:gravity="center_horizontal"
-            android:cursorVisible="false"/>
+            android:cursorVisible="false"
+            android:visibility="invisible"/>
     </LinearLayout>
 
 </RelativeLayout>

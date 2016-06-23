@@ -1,27 +1,20 @@
 package dalbers.com.noise;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.session.MediaSession;
 import android.os.Binder;
-import android.os.Build;
-import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
-import android.widget.RemoteViews;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -53,7 +46,13 @@ public class AudioPlayerService extends Service {
     private float maxVolume = 1.0f;
     private float initialVolume = 1.0f;
     private Notification notification;
-    private MediaSessionCompat mediaSession;
+    /**
+     * Used when showing the notification,
+     * unique within the app,
+     * if multiple notify()s are called with the same id,
+     * new one will replace the old ones
+     */
+    private final int NOTIFICATION_ID = 0;
     @Override
     public IBinder onBind(Intent intent) {
         if(mp == null) {
@@ -66,7 +65,6 @@ public class AudioPlayerService extends Service {
     {
         volumeChangerTimer = new Timer();
         volumeChangerTimer.schedule(new VolumeChangerTimerTask(), 0, tickPeriod);
-        mediaSession = new MediaSessionCompat(this,"white noise");
     }
     public void onDestroy()
     {
@@ -74,11 +72,33 @@ public class AudioPlayerService extends Service {
     }
 
     public int onStartCommand(Intent intent,int flags, int startId){
-        mp = LoopMediaPlayer.create(this, R.raw.white);
-        if(intent.hasExtra("DO")) {
-            String action = (String) intent.getExtras().get("DO");
+        if(mp == null)
+            mp = LoopMediaPlayer.create(this, R.raw.white);
+        //if a button is pressed in the notification,
+        //the service will be started with this extra
+        if(intent.hasExtra("do")) {
+            String action = (String) intent.getExtras().get("do");
             if (action.equals("pause")) {
-               Log.d(LOG_TAG,"paused");
+                Log.d(LOG_TAG, "paused");
+                pause();
+                //there's no way to pause the timer
+                //just cancel it and start a new one if play is pressed
+                cancelTimer();
+                showNotification(false);
+            }
+            else if (action.equals("play")) {
+                Log.d(LOG_TAG, "playing");
+                play();
+                //there was a timer before pause was pressed
+                //start it again with the leftover time
+                if(millisLeft > 0)
+                    setTimer(millisLeft);
+                showNotification(true);
+            }
+            else if (action.equals("close")) {
+                stop();
+                stopTimer();
+                ((NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
             }
         }
 
@@ -101,6 +121,14 @@ public class AudioPlayerService extends Service {
         //reset volumes to initial values
         leftVolume = initialVolume;
         rightVolume = initialVolume;
+    }
+
+    public void pause() {
+        if(mp != null)
+            mp.pause();
+        //reset volumes to initial values
+//        leftVolume = initialVolume;
+//        rightVolume = initialVolume;
     }
 
     public boolean isPlaying() {
@@ -141,6 +169,7 @@ public class AudioPlayerService extends Service {
 
     public void setTimer(final long millis) {
         millisLeft = millis;
+        decreaseLength = millis;
         if(countDownTimer != null)
             countDownTimer.cancel();
         countDownTimer = new CountDownTimer(millis, 1000) {
@@ -162,9 +191,16 @@ public class AudioPlayerService extends Service {
         }
     }
 
+    public void stopTimer() {
+        cancelTimer();
+        decreaseLength = -1;
+        millisLeft = 0;
+    }
+
     public long getTimeLeft() {
         return millisLeft;
     }
+
 
     public void setSoundFile(int resId) {
         mp.setSoundFile(resId);
@@ -288,8 +324,13 @@ public class AudioPlayerService extends Service {
         }
     }
 
-    public void showNotificationWidget() {
+    /**
+     * Show a notification with information about the sound being played/paused
+     * and a pause button which will callback to this service
+     */
+    public void showNotification(boolean playing) {
         String title;
+        //which noise is playing?
         switch (mp.getSoundFile())
         {
             case R.raw.white:
@@ -304,22 +345,54 @@ public class AudioPlayerService extends Service {
             default:
                 title = "Noise";
         }
+        //TODO: use actual app icon
         Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
                 R.drawable.ic_action_add);
-        Intent volume = new Intent(this,AudioPlayerService.class);
-        volume.putExtra("DO", "pause");
-        PendingIntent btn1 = PendingIntent.getService(this, 0, volume, 0);
-        notification = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_add)
-                .setContentTitle(title)
-                .setContentText("Playing in Noise App")
-                .setLargeIcon(icon)
-                .setStyle(new NotificationCompat.MediaStyle())
-                .setOngoing(true)
-                .addAction(R.drawable.ic_add,"add",btn1)
-                .build();
+        //make an intent to callback this service when the pause button is pressed
+
+        //create the notification
+        if(playing) {
+            Intent pausePlayIntent = new Intent(this,AudioPlayerService.class);
+            pausePlayIntent.putExtra("do", "pause");
+            PendingIntent pausePlayPI = PendingIntent.getService(this, 0, pausePlayIntent, PendingIntent.FLAG_ONE_SHOT);
+            Intent closeIntent = new Intent(this,AudioPlayerService.class);
+            closeIntent.setAction("close");
+            closeIntent.putExtra("do", "close");
+            PendingIntent closePI = PendingIntent.getService(this, 0, closeIntent, PendingIntent.FLAG_ONE_SHOT);
+            notification = new NotificationCompat.Builder(this)
+                    .setSmallIcon(R.drawable.ic_add)
+                    .setContentTitle(title)
+                    .setContentText("Playing in Noise App")
+                    .setLargeIcon(icon)
+                    .setStyle(new NotificationCompat.MediaStyle())
+                    .setOngoing(true)
+                    .addAction(R.drawable.ic_action_playback_pause_black, "Pause", pausePlayPI)
+                    .addAction(R.drawable.ic_clear, "Close", closePI)
+                    .build();
+        }
+        else {
+            Intent pausePlayIntent = new Intent(this,AudioPlayerService.class);
+            pausePlayIntent.setAction("play");
+            pausePlayIntent.putExtra("do", "play");
+            PendingIntent pausePlayPI = PendingIntent.getService(this, 0, pausePlayIntent, PendingIntent.FLAG_ONE_SHOT);
+            Intent closeIntent = new Intent(this,AudioPlayerService.class);
+            closeIntent.setAction("close");
+            closeIntent.putExtra("do", "close");
+            PendingIntent closePI = PendingIntent.getService(this, 0, closeIntent, PendingIntent.FLAG_ONE_SHOT);
+            notification = new NotificationCompat.Builder(this)
+                    .setSmallIcon(R.drawable.ic_add)
+                    .setContentTitle(title)
+                    .setContentText("Paused in Noise App")
+                    .setLargeIcon(icon)
+                    .setStyle(new NotificationCompat.MediaStyle())
+                    .setOngoing(true)
+                    .addAction(R.drawable.ic_action_playback_play_black, "Play", pausePlayPI)
+                    .addAction(R.drawable.ic_clear, "Close", closePI)
+                    .build();
+        }
+        //show the notification
         NotificationManager nManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-        nManager.notify(2, notification);
+        nManager.notify(NOTIFICATION_ID, notification);
     }
 
 }

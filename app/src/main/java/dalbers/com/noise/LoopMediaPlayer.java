@@ -57,6 +57,11 @@ public class LoopMediaPlayer {
             mCurrentPlayer.stop();
     }
 
+    public void pause() {
+        if(mCurrentPlayer != null)
+            mCurrentPlayer.pause();
+    }
+
     public void play() {
         mCurrentPlayer = MediaPlayer.create(mContext, mResId);
         mCurrentPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {

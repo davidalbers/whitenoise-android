@@ -52,6 +52,24 @@
             android:id="@+id/brownToggleButton" />
     </LinearLayout>
 
+    <View
+        android:id="@+id/divider1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="#e6e6e6"
+        android:layout_below="@+id/linearLayout"
+        android:layout_marginTop="15dp"
+        android:layout_centerHorizontal="true"/>
+
+    <View
+        android:id="@+id/divider2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="#e6e6e6"
+        android:layout_below="@+id/linearLayout2"
+        android:layout_marginTop="15dp"
+        android:layout_centerHorizontal="true"/>
+
     <SeekBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -99,16 +117,18 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/volume_label"
         android:id="@+id/volumeLabel"
-        android:layout_below="@+id/linearLayout"
-        android:layout_centerHorizontal="true" />
+        android:layout_below="@+id/divider1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"/>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/linearLayout2"
+        android:layout_below="@+id/divider2"
         android:layout_centerHorizontal="true"
-        android:id="@+id/linearLayout3">
+        android:id="@+id/linearLayout3"
+        android:layout_marginTop="15dp">
 
         <TextView
             android:layout_width="wrap_content"

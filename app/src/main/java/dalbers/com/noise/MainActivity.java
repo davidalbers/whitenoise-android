@@ -1,14 +1,10 @@
 package dalbers.com.noise;
 
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.media.session.MediaSession;
 import android.net.Uri;
@@ -16,7 +12,6 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.NotificationCompat;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -281,13 +276,9 @@ public class MainActivity extends AppCompatActivity {
                         //set cursor in text view to last character
                         countdownTimeTextView.setSelection(countdownTimeTextView.getText().length());
                     } else {
-                        //set button image
-                        Drawable addPic = getResources().getDrawable(R.drawable.ic_add);
-                        timerButton.setImageDrawable(addPic);
-
                         addedTimer = false;
-                        //hide text view and hide keyboard
-                        countdownTimeTextView.setVisibility(View.INVISIBLE);
+                        setTimerUIUnsetState();
+                        //hide keyboard
                         imm.hideSoftInputFromWindow(countdownTimeTextView.getWindowToken(), 0);
                         stopTimer();
                         //if playing audio, set button to play
@@ -299,6 +290,14 @@ public class MainActivity extends AppCompatActivity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+    }
+
+    private void setTimerUIUnsetState() {
+        //set button image
+        Drawable addPic = getResources().getDrawable(R.drawable.ic_add);
+        timerButton.setImageDrawable(addPic);
+        //hide time
+        countdownTimeTextView.setVisibility(View.INVISIBLE);
     }
 
     private ServiceConnection playerConnection = new ServiceConnection() {
@@ -470,6 +469,7 @@ public class MainActivity extends AppCompatActivity {
             public void onFinish() {
                 countdownTimeTextView.setText(millisToHMSZeros(0));
                 setPlayButtonPlay();
+                setTimerUIUnsetState();
             }
         };
         audioPlayerService.setTimer(time);
@@ -482,12 +482,15 @@ public class MainActivity extends AppCompatActivity {
         audioPlayerService.cancelTimer();
     }
 
+    /**
+     * pause the timer and set the time to zero
+     */
     private void stopTimer() {
-        //pause the timer and set the time to zero
         pauseTimer();
         if (audioPlayerService != null)
             audioPlayerService.stop();
         countdownTimeTextView.setText(stringToFormattedHMS(millisToHMSZeros(0)));
+        setTimerUIUnsetState();
     }
 
     private void setPlayButtonPause() {
@@ -495,6 +498,7 @@ public class MainActivity extends AppCompatActivity {
         playPic.setBounds(0, 0, 120, 120);
         playButton.setCompoundDrawables(playPic, null, null, null);
         playButton.setText("Pause");
+        audioPlayerService.showNotification(true);
     }
 
     private void setPlayButtonPlay() {
@@ -502,46 +506,43 @@ public class MainActivity extends AppCompatActivity {
         playPic.setBounds(0, 0, 120, 120);
         playButton.setCompoundDrawables(playPic, null, null, null);
         playButton.setText("Play");
-        audioPlayerService.showNotificationWidget();
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://dalbers.com.noise/http/host/path")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
+        setUIBasedOnServiceState();
     }
 
+    private void setUIBasedOnServiceState() {
+        if(audioPlayerService != null) {
+            //sync up play state
+            if(audioPlayerService.isPlaying())
+                setPlayButtonPause();
+            else
+                setPlayButtonPlay();
+            //sync up timer
+            long timeLeft = audioPlayerService.getTimeLeft();
+            //still time left
+            if(timeLeft > 0) {
+                //match the visual timer to the service timer
+                if(audioPlayerService.isPlaying())
+                    startTimer(timeLeft);
+                else //cancel the visual timer since the service timer is also
+                    pauseTimer();
+            }
+            else {
+                //kill the timer just to make sure
+                pauseTimer();
+                countdownTimeTextView.setText(stringToFormattedHMS(millisToHMSZeros(0)));
+                setTimerUIUnsetState();
+            }
+
+        }
+    }
     @Override
     public void onStop() {
         super.onStop();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://dalbers.com.noise/http/host/path")
-        );
-        AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
     }
 }

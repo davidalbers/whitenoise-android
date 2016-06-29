@@ -1,3 +1,5 @@
+<img src="/icon1024.png" width="50">
+---
 This is an Android app that plays white, pink, and brown noise.
 
 Most white noise apps lack features that I would like to have, so I'm making my own app. Those features are:

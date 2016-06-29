@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.media.session.MediaSession;
@@ -35,11 +36,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.Arrays;
 
-/**
- * TODO:
- * -Status bar thingy
- * -icon
- */
 
 public class MainActivity extends AppCompatActivity {
 
@@ -57,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
     private ToggleButton whiteButton;
     private ToggleButton brownButton;
     private GoogleApiClient client;
-    private MediaSession mediaSession;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -292,12 +287,33 @@ public class MainActivity extends AppCompatActivity {
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(audioPlayerService != null && audioPlayerService.isPlaying())
+            audioPlayerService.showNotification(true);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(audioPlayerService != null)
+            audioPlayerService.dismissNotification();
+    }
+
     private void setTimerUIUnsetState() {
         //set button image
         Drawable addPic = getResources().getDrawable(R.drawable.ic_add);
         timerButton.setImageDrawable(addPic);
-        //hide time
-        countdownTimeTextView.setVisibility(View.INVISIBLE);
+        //in portrait mode, time only needs to be hidden
+        //in landscape timer needs to be gone (hidden and takes up no space)
+        //this makes it so the landscape layout moves the timer add/clear button
+        //to the right of the text view when a new timer is added
+        //this might cause janky behavior
+        if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+            countdownTimeTextView.setVisibility(View.INVISIBLE);
+        else
+            countdownTimeTextView.setVisibility(View.GONE);
     }
 
     private ServiceConnection playerConnection = new ServiceConnection() {
@@ -498,7 +514,6 @@ public class MainActivity extends AppCompatActivity {
         playPic.setBounds(0, 0, 120, 120);
         playButton.setCompoundDrawables(playPic, null, null, null);
         playButton.setText("Pause");
-        audioPlayerService.showNotification(true);
     }
 
     private void setPlayButtonPlay() {

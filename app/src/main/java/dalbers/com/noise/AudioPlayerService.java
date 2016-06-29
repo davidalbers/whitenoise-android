@@ -18,6 +18,10 @@ import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
+/**
+ * TODO:
+ * fix service memory leak when app backgrounded (only seen on Samsung?)
+ */
 
 /**
  * A service to play audio on a loop.
@@ -98,7 +102,7 @@ public class AudioPlayerService extends Service {
             else if (action.equals("close")) {
                 stop();
                 stopTimer();
-                ((NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
+                dismissNotification();
             }
         }
 
@@ -135,6 +139,10 @@ public class AudioPlayerService extends Service {
         if(mp != null)
             return mp.isPlaying();
         else return false;
+    }
+
+    public void dismissNotification() {
+        ((NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
     }
 
     /**
@@ -345,9 +353,8 @@ public class AudioPlayerService extends Service {
             default:
                 title = "Noise";
         }
-        //TODO: use actual app icon
         Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
-                R.drawable.ic_action_add);
+                R.mipmap.ic_launcher);
         //make an intent to callback this service when the pause button is pressed
 
         //create the notification
@@ -358,16 +365,21 @@ public class AudioPlayerService extends Service {
             Intent closeIntent = new Intent(this,AudioPlayerService.class);
             closeIntent.setAction("close");
             closeIntent.putExtra("do", "close");
-            PendingIntent closePI = PendingIntent.getService(this, 0, closeIntent, PendingIntent.FLAG_ONE_SHOT);
+            PendingIntent closePI = PendingIntent.getService(getApplicationContext(), 0, closeIntent, PendingIntent.FLAG_ONE_SHOT);
+            Intent openAppIntent = new Intent(getApplicationContext(),MainActivity.class);
+            openAppIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            openAppIntent.putExtra("startedFromNotification", true);
+            PendingIntent openAppPI = PendingIntent.getActivity(getApplicationContext(),0, openAppIntent, PendingIntent.FLAG_ONE_SHOT);
             notification = new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.drawable.ic_add)
+                    .setSmallIcon(R.drawable.ic_statusbar2)
                     .setContentTitle(title)
-                    .setContentText("Playing in Noise App")
+                    .setContentText("Playing")
                     .setLargeIcon(icon)
                     .setStyle(new NotificationCompat.MediaStyle())
                     .setOngoing(true)
                     .addAction(R.drawable.ic_action_playback_pause_black, "Pause", pausePlayPI)
                     .addAction(R.drawable.ic_clear, "Close", closePI)
+                    .setContentIntent(openAppPI)
                     .build();
         }
         else {
@@ -379,15 +391,20 @@ public class AudioPlayerService extends Service {
             closeIntent.setAction("close");
             closeIntent.putExtra("do", "close");
             PendingIntent closePI = PendingIntent.getService(this, 0, closeIntent, PendingIntent.FLAG_ONE_SHOT);
+            Intent openAppIntent = new Intent(getApplicationContext(), MainActivity.class);
+            openAppIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            openAppIntent.putExtra("startedFromNotification", true);
+            PendingIntent openAppPI = PendingIntent.getActivity(getApplicationContext(), 0, openAppIntent, PendingIntent.FLAG_ONE_SHOT);
             notification = new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.drawable.ic_add)
+                    .setSmallIcon(R.drawable.ic_statusbar2)
                     .setContentTitle(title)
-                    .setContentText("Paused in Noise App")
+                    .setContentText("Paused")
                     .setLargeIcon(icon)
                     .setStyle(new NotificationCompat.MediaStyle())
                     .setOngoing(true)
                     .addAction(R.drawable.ic_action_playback_play_black, "Play", pausePlayPI)
                     .addAction(R.drawable.ic_clear, "Close", closePI)
+                    .setContentIntent(openAppPI)
                     .build();
         }
         //show the notification

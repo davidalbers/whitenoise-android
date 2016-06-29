@@ -33,7 +33,7 @@ public class LoopMediaPlayer {
 
     private void createNextMediaPlayer() {
         mNextPlayer = MediaPlayer.create(mContext, mResId);
-
+        mNextPlayer.setVolume(leftVolume, rightVolume);
         mCurrentPlayer.setNextMediaPlayer(mNextPlayer);
         mCurrentPlayer.setOnCompletionListener(onCompletionListener);
     }
@@ -41,7 +41,13 @@ public class LoopMediaPlayer {
     private MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
+            //Release the completed player
+            //replace it with the next player and set the volume
+            //create a new, "next", media player
+            // Note that on Samsung devices the next player will start playing
+            //before this is called.
             mediaPlayer.release();
+
             mCurrentPlayer = mNextPlayer;
 
             mCurrentPlayer.setVolume(leftVolume, rightVolume);
@@ -101,6 +107,8 @@ public class LoopMediaPlayer {
     public void setVolume(float leftVolume, float rightVolume) {
         if(mCurrentPlayer != null) {
             mCurrentPlayer.setVolume(leftVolume, rightVolume);
+            //set the next media players volume also so it will be in sync
+            mNextPlayer.setVolume(leftVolume, rightVolume);
         }
         this.leftVolume = leftVolume;
         this.rightVolume = rightVolume;

@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -53,11 +54,21 @@ public class MainActivity extends AppCompatActivity {
     private ToggleButton whiteButton;
     private ToggleButton brownButton;
     private GoogleApiClient client;
-
+    //preferences keys
+    public static final String PREF_STRING = "dalbers_white_noise";
+    public static final String PREF_COLOR_KEY = "color";
+    public static final String PREF_COLOR_WHITE = "white";
+    public static final String PREF_COLOR_BROWN = "brown";
+    public static final String PREF_COLOR_PINK = "pink";
+    public static final String PREF_VOLUME_KEY = "volume";
+    public static final String PREF_OSCILLATE_KEY = "oscillate";
+    public static final String PREF_DECREASE_KEY = "decrease";
+    public static final String PREF_TIME_KEY = "time";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
         Intent serviceIntent = new Intent(MainActivity.this, AudioPlayerService.class);
         bindService(serviceIntent, playerConnection, Context.BIND_AUTO_CREATE);
 
@@ -285,6 +296,8 @@ public class MainActivity extends AppCompatActivity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
+
     }
 
     @Override

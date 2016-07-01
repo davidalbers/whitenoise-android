@@ -42,12 +42,40 @@ public class AudioPlayerService extends Service {
     private boolean oscillatingDown = true;
     private boolean oscillatingLeft = true;
     private boolean decreaseVolume = false;
+    /**
+     * If using oscillate or decrease, the min volume will be the max multiplied by this value
+     */
     private float minVolumePercent = .2f;
+    /**
+     * One complete oscillation from left to right will happen in this interval
+     */
     private long oscillatePeriod = 8000;
+    /**
+     * Interval the volume timer updates
+     * There doesn't seem to be a performance hit at this interval
+     * and it's fast enough that I can't hear it
+     */
     private long tickPeriod = 100;
-    private long decreaseLength = 60000;
-    public static long DEFAULT_DECREASE_LENGTH = 6000;
+    /**
+     * how long the sound will be decreasing
+     * should go from max to min in this time period
+     * ideally, this is == timer time
+     */
+    private long decreaseLength = -1;
+    /**
+     * 1 hour in milliseconds use this instead of decreaseLength
+     * if no timer exists
+     * */
+    public static long DEFAULT_DECREASE_LENGTH = 3600000;
+    /**
+     * the maximum allowable volume given the current state
+     * if only using oscillate, this should be == initialVolume
+     * if using decrease, this will decrease
+     */
     private float maxVolume = 1.0f;
+    /**
+     * Volume set by the user before oscillation or other things affected it
+     */
     private float initialVolume = 1.0f;
     private Notification notification;
     /**
@@ -187,6 +215,7 @@ public class AudioPlayerService extends Service {
             }
 
             public void onFinish() {
+                millisLeft = 0;
                 mp.stop();
             }
         }.start();

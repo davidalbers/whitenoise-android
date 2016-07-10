@@ -34,8 +34,8 @@ public class AudioPlayerService extends Service {
     private IBinder mBinder = new AudioPlayerBinder();
     private long millisLeft = 0;
     private CountDownTimer countDownTimer;
-    private float leftVolume = 1.0f;
-    private float rightVolume = 1.0f;
+    private float leftVolume = 0.5f;
+    private float rightVolume = 0.5f;
     private Timer volumeChangerTimer;
     private boolean oscillateVolume = false;
     private boolean oscillateVolumeStereo = true;

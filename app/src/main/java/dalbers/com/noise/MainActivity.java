@@ -8,8 +8,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.media.session.MediaSession;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
@@ -29,9 +27,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
@@ -54,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
     private ToggleButton whiteButton;
     private ToggleButton brownButton;
     private GoogleApiClient client;
+    private ToggleButton oscillateButton;
+    private ToggleButton fadeButton;
     //preferences keys
     public static final String PREF_STRING = "dalbers_white_noise";
     public static final String PREF_COLOR_KEY = "color";
@@ -64,11 +64,24 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREF_OSCILLATE_KEY = "oscillate";
     public static final String PREF_DECREASE_KEY = "decrease";
     public static final String PREF_TIME_KEY = "time";
+    public static final String PREF_OSCILLATE_NEVER_ON = "first_oscillate";
+    public static final String PREF_FADE_NEVER_ON = "first_fade";
+    /** true if the user has never ever ever turned on oscillate option*/
+    private boolean oscillateNeverOn = false;
+    /**true if the user has never ever ever turned on fade option*/
+    private boolean fadeNeverOn = false;
+    private int preferredColorFile = R.raw.white;
+    private float preferredVolume = 0.5f;
+    private boolean preferredOscillateState = false;
+    private boolean preferredFadeState = false;
+    private long preferredTime = 0l;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+
+        loadPreferences();
+
         Intent serviceIntent = new Intent(MainActivity.this, AudioPlayerService.class);
         bindService(serviceIntent, playerConnection, Context.BIND_AUTO_CREATE);
 
@@ -243,22 +256,42 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        ToggleButton oscillateButton = (ToggleButton) findViewById(R.id.waveVolumeToggle);
+        oscillateButton = (ToggleButton) findViewById(R.id.waveVolumeToggle);
         if (oscillateButton != null) {
             oscillateButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     audioPlayerService.setOscillateVolume(isChecked);
+                    if(oscillateNeverOn) {
+                        Toast.makeText(MainActivity.this,"Oscillate Volume",Toast.LENGTH_LONG).show();
+                        //update oscillateNeverOn to false in locally and in settings
+                        oscillateNeverOn = false;
+                        SharedPreferences sharedPref = MainActivity.this.
+                                getSharedPreferences(PREF_STRING, Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putBoolean(PREF_OSCILLATE_NEVER_ON,false);
+                        editor.apply();
+                    }
                 }
             });
         }
 
-        ToggleButton decreaseButton = (ToggleButton) findViewById(R.id.decreaseVolumeToggle);
-        if (decreaseButton != null) {
-            decreaseButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        fadeButton = (ToggleButton) findViewById(R.id.decreaseVolumeToggle);
+        if (fadeButton != null) {
+            fadeButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     audioPlayerService.setDecreaseVolume(isChecked);
+                    if(fadeNeverOn) {
+                        Toast.makeText(MainActivity.this,"Fade Volume",Toast.LENGTH_LONG).show();
+                        //update fadeNeverOn to false in locally and in settings
+                        fadeNeverOn = false;
+                        SharedPreferences sharedPref = MainActivity.this.
+                                getSharedPreferences(PREF_STRING, Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putBoolean(PREF_FADE_NEVER_ON,false);
+                        editor.apply();
+                    }
                 }
             });
         }
@@ -367,7 +400,44 @@ public class MainActivity extends AppCompatActivity {
                 HMS[2] * 1000;
         return timeInMillis;
     }
+    private void loadPreferences() {
+        SharedPreferences sharedPref = this.getSharedPreferences(PREF_STRING, Context.MODE_PRIVATE);
+        oscillateNeverOn = sharedPref.getBoolean(PREF_OSCILLATE_NEVER_ON,true);
+        fadeNeverOn = sharedPref.getBoolean(PREF_FADE_NEVER_ON,true);
+        String colorPref = sharedPref.getString(PREF_COLOR_KEY,PREF_COLOR_WHITE);
+        if(colorPref.equals(PREF_COLOR_PINK))
+            preferredColorFile = R.raw.pink;
+        else if(colorPref.equals(PREF_COLOR_BROWN))
+            preferredColorFile = R.raw.brown;
+        else
+            preferredColorFile = R.raw.white;
+        preferredVolume = sharedPref.getFloat(PREF_VOLUME_KEY,0.5f);
+        preferredTime = sharedPref.getLong(PREF_TIME_KEY,0L);
+        preferredOscillateState = sharedPref.getBoolean(PREF_OSCILLATE_KEY,false);
+        preferredFadeState = sharedPref.getBoolean(PREF_DECREASE_KEY,false);
+    }
 
+    /**
+     * Setup the UI and service based on the saved preferences
+     * I'm not sure how to use this right now
+     */
+    private void applyAudioPreferences() {
+        audioPlayerService.setSoundFile(preferredColorFile);
+        audioPlayerService.setMaxVolume(preferredVolume);
+        audioPlayerService.setDecreaseVolume(preferredFadeState);
+        audioPlayerService.setOscillateVolume(preferredOscillateState);
+        audioPlayerService.setTimer(preferredTime);
+        if(preferredColorFile == R.raw.pink)
+            pinkButton.setChecked(true);
+        else if(preferredColorFile == R.raw.brown)
+            brownButton.setChecked(true);
+        else
+            whiteButton.setChecked(true);
+        volumeBar.setProgress((int) (volumeBar.getMax() * preferredVolume));
+        oscillateButton.setChecked(preferredOscillateState);
+        fadeButton.setChecked(preferredFadeState);
+        countdownTimeTextView.setText(millisToHMSZeros(preferredTime));
+    }
     /**
      * Parse hours mins seconds from a string with variable number of numbers and chars
      *

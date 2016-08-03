@@ -8,4 +8,24 @@
     <string name="volume_label">Volume</string>
     <string name="timer_label">Timer</string>
     <string name="hms_initial_value">00h00m00s</string>
+    <string name="dark_theme_toggle">Use Dark Theme</string>
+    <string name="wave_interval_choice_title">Wave Interval</string>
+    <string name="wave_interval_choice_dialog">Choose a wave interval:</string>
+    <string-array name="wave_interval_choices">
+        <item>4 sec</item>
+        <item>6 sec</item>
+        <item>8 sec</item>
+        <item>10 sec</item>
+        <item>15 sec</item>
+    </string-array>
+    <string-array name="wave_interval_choice_values">
+        <item>4</item>
+        <item>6</item>
+        <item>8</item>
+        <item>10</item>
+        <item>15</item>
+    </string-array>
+    <string name="wave_interval_choice_default_value">4</string>
+    <string name="settings_menu_title">Settings</string>
+    <string name="app_settings_group_title">App Settings</string>
 </resources>

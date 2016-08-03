@@ -108,29 +108,29 @@ public class AudioPlayerService extends Service {
             mp = LoopMediaPlayer.create(this, R.raw.white);
         //if a button is pressed in the notification,
         //the service will be started with this extra
-        if(intent.hasExtra("do")) {
-            String action = (String) intent.getExtras().get("do");
-            if (action.equals("pause")) {
-                Log.d(LOG_TAG, "paused");
-                pause();
-                //there's no way to pause the timer
-                //just cancel it and start a new one if play is pressed
-                cancelTimer();
-                showNotification(false);
-            }
-            else if (action.equals("play")) {
-                Log.d(LOG_TAG, "playing");
-                play();
-                //there was a timer before pause was pressed
-                //start it again with the leftover time
-                if(millisLeft > 0)
-                    setTimer(millisLeft);
-                showNotification(true);
-            }
-            else if (action.equals("close")) {
-                stop();
-                stopTimer();
-                dismissNotification();
+        if(intent != null) {
+            if (intent.hasExtra("do")) {
+                String action = (String) intent.getExtras().get("do");
+                if (action.equals("pause")) {
+                    Log.d(LOG_TAG, "paused");
+                    pause();
+                    //there's no way to pause the timer
+                    //just cancel it and start a new one if play is pressed
+                    cancelTimer();
+                    showNotification(false);
+                } else if (action.equals("play")) {
+                    Log.d(LOG_TAG, "playing");
+                    play();
+                    //there was a timer before pause was pressed
+                    //start it again with the leftover time
+                    if (millisLeft > 0)
+                        setTimer(millisLeft);
+                    showNotification(true);
+                } else if (action.equals("close")) {
+                    stop();
+                    stopTimer();
+                    dismissNotification();
+                }
             }
         }
 

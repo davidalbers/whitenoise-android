@@ -23,4 +23,6 @@
         <item name="android:colorBackground">@color/button_material_light</item>
     </style>
 
+    <style name="Dark" parent="Theme.AppCompat" />
+
 </resources>

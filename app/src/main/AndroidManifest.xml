@@ -9,28 +9,35 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="dalbers.com.noise.MainActivity"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation">
-            <!-- ^ Force portrait orientation
+            android:name=".MainActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait">
+
+            <!--
+                 ^ Force portrait orientation
                  this isn't great but using the keyboard
-                 in landscape doesn't show the pretty timer text -->
+                 in landscape doesn't show the pretty timer text
+            -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
 
         <service
             android:name=".AudioPlayerService"
             android:enabled="true"
-            android:exported="true"/><!-- ATTENTION: This was auto-generated to add Google Play services to your project for
-     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
+            android:exported="true" />
+        <!--
+ ATTENTION: This was auto-generated to add Google Play services to your project for
+     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
+        -->
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
+        <activity android:name=".SettingsActivity"></activity>
     </application>
 
 </manifest>

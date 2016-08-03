@@ -8,9 +8,12 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.Spannable;
@@ -19,6 +22,9 @@ import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -35,6 +41,12 @@ import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.Arrays;
 
+/**
+ * TODO:
+ * implement oscillation interval
+ * make settings icon white
+ * remove notification when timer stops
+ */
 
 public class MainActivity extends AppCompatActivity {
 
@@ -66,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREF_TIME_KEY = "time";
     public static final String PREF_OSCILLATE_NEVER_ON = "first_oscillate";
     public static final String PREF_FADE_NEVER_ON = "first_fade";
+    public static final String PREF_USE_DARK_MODE_KEY = "pref_use_dark_mode";
+    public static final String PREF_OSCILLATE_INTERVAL_KEY = "pref_oscillate_interval";
     /** true if the user has never ever ever turned on oscillate option*/
     private boolean oscillateNeverOn = false;
     /**true if the user has never ever ever turned on fade option*/
@@ -75,15 +89,34 @@ public class MainActivity extends AppCompatActivity {
     private boolean preferredOscillateState = false;
     private boolean preferredFadeState = false;
     private long preferredTime = 0l;
+    private boolean useDarkMode = false;
+    private boolean usingDarkMode = false;
+    private int oscillateInterval = 4;
+    private SharedPreferences sharedPref;
+    private boolean isPlayerConnectionBound = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        sharedPref.registerOnSharedPreferenceChangeListener(sharedPrefListener);
+        loadPreferences(sharedPref);
+
+        if(useDarkMode) {
+            setTheme(R.style.Dark);
+            usingDarkMode = true;
+        }
+        else {
+            setTheme(R.style.AppTheme);
+            usingDarkMode = false;
+        }
+
         setContentView(R.layout.activity_main);
 
-        loadPreferences();
-
         Intent serviceIntent = new Intent(MainActivity.this, AudioPlayerService.class);
+        startService(serviceIntent);
         bindService(serviceIntent, playerConnection, Context.BIND_AUTO_CREATE);
+        isPlayerConnectionBound = true;
 
         playButton = (Button) (findViewById(R.id.btnPlay));
         playButton.setOnClickListener(new View.OnClickListener() {
@@ -199,7 +232,8 @@ public class MainActivity extends AppCompatActivity {
                    if(isChecked) {
                        pinkButton.setChecked(false);
                        brownButton.setChecked(false);
-                       audioPlayerService.setSoundFile(R.raw.white);
+                       if(audioPlayerService != null)
+                           audioPlayerService.setSoundFile(R.raw.white);
                    }
                    else {
                        //only uncheck this button if the others are uncheck
@@ -221,7 +255,8 @@ public class MainActivity extends AppCompatActivity {
                         //uncheck other buttons
                         whiteButton.setChecked(false);
                         brownButton.setChecked(false);
-                        audioPlayerService.setSoundFile(R.raw.pink);
+                        if(audioPlayerService != null)
+                            audioPlayerService.setSoundFile(R.raw.pink);
                     }
                     else {
                         //only uncheck this button if the others are uncheck
@@ -242,7 +277,8 @@ public class MainActivity extends AppCompatActivity {
                     if(isChecked) {
                         pinkButton.setChecked(false);
                         whiteButton.setChecked(false);
-                        audioPlayerService.setSoundFile(R.raw.brown);
+                        if(audioPlayerService != null)
+                            audioPlayerService.setSoundFile(R.raw.brown);
                     }
                     else {
                         //only uncheck this button if the others are uncheck
@@ -261,13 +297,14 @@ public class MainActivity extends AppCompatActivity {
             oscillateButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    audioPlayerService.setOscillateVolume(isChecked);
+                    if(audioPlayerService != null)
+                        audioPlayerService.setOscillateVolume(isChecked);
                     if(oscillateNeverOn) {
                         Toast.makeText(MainActivity.this,"Oscillate Volume",Toast.LENGTH_LONG).show();
                         //update oscillateNeverOn to false in locally and in settings
                         oscillateNeverOn = false;
-                        SharedPreferences sharedPref = MainActivity.this.
-                                getSharedPreferences(PREF_STRING, Context.MODE_PRIVATE);
+                        SharedPreferences sharedPref =
+                                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
                         SharedPreferences.Editor editor = sharedPref.edit();
                         editor.putBoolean(PREF_OSCILLATE_NEVER_ON,false);
                         editor.apply();
@@ -281,13 +318,14 @@ public class MainActivity extends AppCompatActivity {
             fadeButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    audioPlayerService.setDecreaseVolume(isChecked);
+                    if(audioPlayerService != null)
+                        audioPlayerService.setDecreaseVolume(isChecked);
                     if(fadeNeverOn) {
                         Toast.makeText(MainActivity.this,"Fade Volume",Toast.LENGTH_LONG).show();
                         //update fadeNeverOn to false in locally and in settings
                         fadeNeverOn = false;
-                        SharedPreferences sharedPref = MainActivity.this.
-                                getSharedPreferences(PREF_STRING, Context.MODE_PRIVATE);
+                        SharedPreferences sharedPref =
+                                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
                         SharedPreferences.Editor editor = sharedPref.edit();
                         editor.putBoolean(PREF_FADE_NEVER_ON,false);
                         editor.apply();
@@ -343,8 +381,51 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if(usingDarkMode != useDarkMode) {
+            //wait until onResume has finished,
+            //then recreate the activity which will change the theme
+            handler.postDelayed(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    recreate();
+                }
+            }, 0);
+        }
         if(audioPlayerService != null)
             audioPlayerService.dismissNotification();
+    }
+
+    Handler handler = new Handler();
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(isPlayerConnectionBound) {
+            unbindService(playerConnection);
+            isPlayerConnectionBound = false;
+        }
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.settings:
+                Intent settingsIntent = new Intent(this,SettingsActivity.class);
+                settingsIntent.putExtra(PREF_USE_DARK_MODE_KEY,usingDarkMode);
+                startActivity(settingsIntent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void setTimerUIUnsetState() {
@@ -400,21 +481,31 @@ public class MainActivity extends AppCompatActivity {
                 HMS[2] * 1000;
         return timeInMillis;
     }
-    private void loadPreferences() {
-        SharedPreferences sharedPref = this.getSharedPreferences(PREF_STRING, Context.MODE_PRIVATE);
-        oscillateNeverOn = sharedPref.getBoolean(PREF_OSCILLATE_NEVER_ON,true);
-        fadeNeverOn = sharedPref.getBoolean(PREF_FADE_NEVER_ON,true);
-        String colorPref = sharedPref.getString(PREF_COLOR_KEY,PREF_COLOR_WHITE);
+
+    SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener()
+    {
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                loadPreferences(prefs);
+        }
+    };
+
+
+    private void loadPreferences(SharedPreferences prefs) {
+        oscillateNeverOn = prefs.getBoolean(PREF_OSCILLATE_NEVER_ON,true);
+        fadeNeverOn = prefs.getBoolean(PREF_FADE_NEVER_ON,true);
+        String colorPref = prefs.getString(PREF_COLOR_KEY,PREF_COLOR_WHITE);
         if(colorPref.equals(PREF_COLOR_PINK))
             preferredColorFile = R.raw.pink;
         else if(colorPref.equals(PREF_COLOR_BROWN))
             preferredColorFile = R.raw.brown;
         else
             preferredColorFile = R.raw.white;
-        preferredVolume = sharedPref.getFloat(PREF_VOLUME_KEY,0.5f);
-        preferredTime = sharedPref.getLong(PREF_TIME_KEY,0L);
-        preferredOscillateState = sharedPref.getBoolean(PREF_OSCILLATE_KEY,false);
-        preferredFadeState = sharedPref.getBoolean(PREF_DECREASE_KEY,false);
+        preferredVolume = prefs.getFloat(PREF_VOLUME_KEY,0.5f);
+        preferredTime = prefs.getLong(PREF_TIME_KEY,0L);
+        preferredOscillateState = prefs.getBoolean(PREF_OSCILLATE_KEY,false);
+        preferredFadeState = prefs.getBoolean(PREF_DECREASE_KEY,false);
+        useDarkMode = prefs.getBoolean(PREF_USE_DARK_MODE_KEY,false);
+        oscillateInterval = prefs.getInt(PREF_OSCILLATE_INTERVAL_KEY,4);
     }
 
     /**

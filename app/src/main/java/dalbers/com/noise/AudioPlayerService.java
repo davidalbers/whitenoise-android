@@ -129,7 +129,6 @@ public class AudioPlayerService extends Service {
                 } else if (action.equals("close")) {
                     stop();
                     stopTimer();
-                    dismissNotification();
                 }
             }
         }
@@ -215,6 +214,7 @@ public class AudioPlayerService extends Service {
             }
 
             public void onFinish() {
+                dismissNotification();
                 millisLeft = 0;
                 mp.stop();
             }
@@ -361,6 +361,9 @@ public class AudioPlayerService extends Service {
         }
     }
 
+    public void setOscillatePeriod(long oscillatePeriod) {
+        this.oscillatePeriod = oscillatePeriod;
+    }
     /**
      * Show a notification with information about the sound being played/paused
      * and a pause button which will callback to this service

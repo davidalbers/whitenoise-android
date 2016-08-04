@@ -7,6 +7,8 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,12 +43,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.Arrays;
 
-/**
- * TODO:
- * implement oscillation interval
- * make settings icon white
- * remove notification when timer stops
- */
 
 public class MainActivity extends AppCompatActivity {
 
@@ -91,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
     private long preferredTime = 0l;
     private boolean useDarkMode = false;
     private boolean usingDarkMode = false;
-    private int oscillateInterval = 4;
+    private long oscillateInterval = 8000;
     private SharedPreferences sharedPref;
     private boolean isPlayerConnectionBound = false;
     @Override
@@ -300,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
                     if(audioPlayerService != null)
                         audioPlayerService.setOscillateVolume(isChecked);
                     if(oscillateNeverOn) {
-                        Toast.makeText(MainActivity.this,"Oscillate Volume",Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this,"Wavy Volume",Toast.LENGTH_LONG).show();
                         //update oscillateNeverOn to false in locally and in settings
                         oscillateNeverOn = false;
                         SharedPreferences sharedPref =
@@ -412,6 +408,15 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+        //set menu icons color
+        for (int i = 0; i < menu.size(); i++) {
+            Drawable drawable = menu.getItem(i).getIcon();
+            if (drawable != null) {
+                drawable.mutate();
+                drawable.setColorFilter(Color.LTGRAY, PorterDuff.Mode.SRC_ATOP);
+            }
+        }
+
         return true;
     }
     @Override
@@ -461,6 +466,7 @@ public class MainActivity extends AppCompatActivity {
                 playPic.setBounds(0, 0, 120, 120);
                 playButton.setCompoundDrawables(playPic, null, null, null);
             }
+            audioPlayerService.setOscillatePeriod(oscillateInterval);
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -505,7 +511,9 @@ public class MainActivity extends AppCompatActivity {
         preferredOscillateState = prefs.getBoolean(PREF_OSCILLATE_KEY,false);
         preferredFadeState = prefs.getBoolean(PREF_DECREASE_KEY,false);
         useDarkMode = prefs.getBoolean(PREF_USE_DARK_MODE_KEY,false);
-        oscillateInterval = prefs.getInt(PREF_OSCILLATE_INTERVAL_KEY,4);
+        oscillateInterval = Integer.parseInt(prefs.getString(PREF_OSCILLATE_INTERVAL_KEY,"4"))*1000;
+        if(audioPlayerService != null)
+            audioPlayerService.setOscillatePeriod(oscillateInterval);
     }
 
     /**

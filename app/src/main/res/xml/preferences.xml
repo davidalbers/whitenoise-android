@@ -7,13 +7,15 @@
         android:key="pref_use_dark_mode"
         android:title="@string/dark_theme_toggle"
         android:defaultValue="false"
+        android:summary="@string/dark_theme_summary"
         />
     <ListPreference
-        android:key="pref_wave_interval"
+        android:key="pref_oscillate_interval"
         android:title="@string/wave_interval_choice_title"
         android:dialogTitle="@string/wave_interval_choice_dialog"
         android:entries="@array/wave_interval_choices"
         android:entryValues="@array/wave_interval_choice_values"
-        android:defaultValue="@string/wave_interval_choice_default_value" />
+        android:defaultValue="@string/wave_interval_choice_default_value"
+        android:summary="@string/oscillate_interval_summary"/>
     </PreferenceCategory>
 </PreferenceScreen>

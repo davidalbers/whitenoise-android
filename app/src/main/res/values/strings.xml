@@ -12,20 +12,23 @@
     <string name="wave_interval_choice_title">Wave Interval</string>
     <string name="wave_interval_choice_dialog">Choose a wave interval:</string>
     <string-array name="wave_interval_choices">
-        <item>4 sec</item>
-        <item>6 sec</item>
         <item>8 sec</item>
         <item>10 sec</item>
+        <item>12 sec</item>
         <item>15 sec</item>
+        <item>30 sec</item>
     </string-array>
     <string-array name="wave_interval_choice_values">
-        <item>4</item>
-        <item>6</item>
         <item>8</item>
         <item>10</item>
+        <item>12</item>
         <item>15</item>
+        <item>30</item>
     </string-array>
-    <string name="wave_interval_choice_default_value">4</string>
+    <string name="wave_interval_choice_default_value">8</string>
     <string name="settings_menu_title">Settings</string>
     <string name="app_settings_group_title">App Settings</string>
+    <string name="dark_theme_summary">Uses less brighter colors. Great for night time use.</string>
+    <string name="oscillate_interval_summary">Time between waves.
+        Higher values are slower, lower values are faster.</string>
 </resources>

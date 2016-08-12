@@ -10,7 +10,6 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -149,13 +148,17 @@ public class MainActivity extends AppCompatActivity {
         countdownTimeTextView.setText(span);
 
         final TextWatcher countdownTimeTextWatcher = new TextWatcher() {
+
+            @Override
             public void afterTextChanged(Editable s) {
                 countdownTimeTextView.setSelection(11);
             }
 
+            @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
+            @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 countdownTimeTextView.removeTextChangedListener(this);
                 //update text
@@ -450,6 +453,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ServiceConnection playerConnection = new ServiceConnection() {
 
+        @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder binder) {
             AudioPlayerService.AudioPlayerBinder audioPlayerBinder = (AudioPlayerService.AudioPlayerBinder) binder;
@@ -469,6 +473,7 @@ public class MainActivity extends AppCompatActivity {
             audioPlayerService.setOscillatePeriod(oscillateInterval);
         }
 
+        @Override
         public void onServiceDisconnected(ComponentName className) {
             audioPlayerService = null;
         }
@@ -488,8 +493,9 @@ public class MainActivity extends AppCompatActivity {
         return timeInMillis;
     }
 
-    SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener()
-    {
+    SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+
+        @Override
         public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                 loadPreferences(prefs);
         }

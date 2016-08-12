@@ -10,7 +10,6 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -33,6 +32,8 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,9 +57,11 @@ public class MainActivity extends AppCompatActivity {
     private EditText countdownTimeTextView;
     private ImageButton timerButton;
     private boolean addedTimer = false;
-    private ToggleButton pinkButton;
-    private ToggleButton whiteButton;
-    private ToggleButton brownButton;
+
+    private RadioButton noiseTypeWhite;
+    private RadioButton noiseTypePink;
+    private RadioButton noiseTypeBrown;
+
     private GoogleApiClient client;
     private ToggleButton oscillateButton;
     private ToggleButton fadeButton;
@@ -219,74 +222,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        final RadioGroup noiseTypes = (RadioGroup) findViewById(R.id.noiseTypes);
+        noiseTypeWhite = (RadioButton) findViewById(R.id.noiseTypeWhite);
+        noiseTypePink = (RadioButton) findViewById(R.id.noiseTypePink);
+        noiseTypeBrown = (RadioButton) findViewById(R.id.noiseTypeBrown);
 
-        whiteButton = (ToggleButton) findViewById(R.id.whiteToggleButton);
-        if (whiteButton != null) {
-            whiteButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-               @Override
-               public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                   if(isChecked) {
-                       pinkButton.setChecked(false);
-                       brownButton.setChecked(false);
-                       if(audioPlayerService != null)
-                           audioPlayerService.setSoundFile(R.raw.white);
-                   }
-                   else {
-                       //only uncheck this button if the others are uncheck
-                       //this is kind of hacky, rejecting touch events in
-                       //onTouchEvent would probably be more sophisticated
-                       if(!pinkButton.isChecked() && !brownButton.isChecked())
-                           whiteButton.setChecked(true);
-                   }
-               }
-            });
-        }
-
-        pinkButton = (ToggleButton) findViewById(R.id.pinkToggleButton);
-        if (pinkButton != null) {
-            pinkButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if(isChecked) {
-                        //uncheck other buttons
-                        whiteButton.setChecked(false);
-                        brownButton.setChecked(false);
-                        if(audioPlayerService != null)
+        noiseTypes.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if (audioPlayerService != null) {
+                    switch (checkedId) {
+                        case R.id.noiseTypeWhite:
+                            audioPlayerService.setSoundFile(R.raw.white);
+                            break;
+                        case R.id.noiseTypePink:
                             audioPlayerService.setSoundFile(R.raw.pink);
-                    }
-                    else {
-                        //only uncheck this button if the others are uncheck
-                        //this is kind of hacky, rejecting touch events in
-                        //onTouchEvent would probably be more sophisticated
-                        if(!whiteButton.isChecked() && !brownButton.isChecked())
-                            pinkButton.setChecked(true);
-                    }
-                }
-            });
-        }
-
-        brownButton = (ToggleButton) findViewById(R.id.brownToggleButton);
-        if (brownButton != null) {
-            brownButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if(isChecked) {
-                        pinkButton.setChecked(false);
-                        whiteButton.setChecked(false);
-                        if(audioPlayerService != null)
+                            break;
+                        case R.id.noiseTypeBrown:
                             audioPlayerService.setSoundFile(R.raw.brown);
+                            break;
                     }
-                    else {
-                        //only uncheck this button if the others are uncheck
-                        //this is kind of hacky, rejecting touch events in
-                        //onTouchEvent would probably be more sophisticated
-                        if(!whiteButton.isChecked() && !pinkButton.isChecked())
-                            brownButton.setChecked(true);
-                    }
-
                 }
-            });
-        }
+            }
+        });
 
         oscillateButton = (ToggleButton) findViewById(R.id.waveVolumeToggle);
         if (oscillateButton != null) {
@@ -527,11 +485,11 @@ public class MainActivity extends AppCompatActivity {
         audioPlayerService.setOscillateVolume(preferredOscillateState);
         audioPlayerService.setTimer(preferredTime);
         if(preferredColorFile == R.raw.pink)
-            pinkButton.setChecked(true);
+            noiseTypePink.setChecked(true);
         else if(preferredColorFile == R.raw.brown)
-            brownButton.setChecked(true);
+            noiseTypeBrown.setChecked(true);
         else
-            whiteButton.setChecked(true);
+            noiseTypeWhite.setChecked(true);
         volumeBar.setProgress((int) (volumeBar.getMax() * preferredVolume));
         oscillateButton.setChecked(preferredOscillateState);
         fadeButton.setChecked(preferredFadeState);

@@ -18,46 +18,43 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 
-
-
-    <LinearLayout
-        android:orientation="horizontal"
+    <RadioGroup
+        android:id="@+id/noiseTypes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-
         android:layout_centerHorizontal="true"
-        android:id="@+id/linearLayout">
-        <ToggleButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/whiteToggleButton"
-            android:textOff="@string/white_label"
-            android:textOn="@string/white_label"
-            android:singleLine="true"
-            android:checked="true"/>
+        android:orientation="horizontal">
 
-        <ToggleButton
+        <android.support.v7.widget.AppCompatRadioButton
+            android:id="@+id/noiseTypeWhite"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textOn="@string/pink_label"
-            android:textOff="@string/pink_label"
-            android:id="@+id/pinkToggleButton" />
+            android:layout_height="match_parent"
+            android:checked="true"
+            android:text="@string/white_label"/>
 
-        <ToggleButton
+        <android.support.v7.widget.AppCompatRadioButton
+            android:id="@+id/noiseTypePink"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textOn="@string/brown_label"
-            android:textOff="@string/brown_label"
-            android:id="@+id/brownToggleButton" />
-    </LinearLayout>
+            android:layout_height="match_parent"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:text="@string/pink_label"/>
+
+        <android.support.v7.widget.AppCompatRadioButton
+            android:id="@+id/noiseTypeBrown"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/brown_label"/>
+
+    </RadioGroup>
 
     <View
         android:id="@+id/divider1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="#e6e6e6"
-        android:layout_below="@+id/linearLayout"
+        android:layout_below="@+id/noiseTypes"
         android:layout_marginTop="15dp"
         android:layout_centerHorizontal="true"/>
 

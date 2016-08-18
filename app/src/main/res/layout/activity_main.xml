@@ -31,6 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:checked="true"
+            android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="@string/white_label"/>
 
         <android.support.v7.widget.AppCompatRadioButton
@@ -39,12 +40,14 @@
             android:layout_height="match_parent"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="@string/pink_label"/>
 
         <android.support.v7.widget.AppCompatRadioButton
             android:id="@+id/noiseTypeBrown"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="@string/brown_label"/>
 
     </RadioGroup>

@@ -360,6 +360,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if(isPlayerConnectionBound) {
+            //dismiss any notification
+            if(audioPlayerService != null)
+                audioPlayerService.dismissNotification();
+            //unbind the service, it will still be running
             unbindService(playerConnection);
             isPlayerConnectionBound = false;
         }
@@ -454,12 +458,16 @@ public class MainActivity extends AppCompatActivity {
         oscillateNeverOn = prefs.getBoolean(PREF_OSCILLATE_NEVER_ON,true);
         fadeNeverOn = prefs.getBoolean(PREF_FADE_NEVER_ON,true);
         String colorPref = prefs.getString(PREF_COLOR_KEY,PREF_COLOR_WHITE);
+        /* This does not work, after the app restarts,
+         *it will always play white noise when brown is selected
+
         if(colorPref.equals(PREF_COLOR_PINK))
             preferredColorFile = R.raw.pink;
         else if(colorPref.equals(PREF_COLOR_BROWN))
             preferredColorFile = R.raw.brown;
         else
             preferredColorFile = R.raw.white;
+            */
         preferredVolume = prefs.getFloat(PREF_VOLUME_KEY,0.5f);
         preferredTime = prefs.getLong(PREF_TIME_KEY,0L);
         preferredOscillateState = prefs.getBoolean(PREF_OSCILLATE_KEY,false);

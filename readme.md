@@ -21,3 +21,5 @@ Some wishlist features are:
 
 ---
 <img src="/noiseScreenshot.png" width="300">
+<img src="/noiseScreenshotDark.png" width="300">
+<img src="/noiseNotification.png" width="300">

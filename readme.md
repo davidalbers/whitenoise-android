@@ -20,6 +20,6 @@ Some wishlist features are:
 * Night mode/Dark theme
 
 ---
-<img src="/noiseScreenshot.png" width="300">
-<img src="/noiseScreenshotDark.png" width="300">
-<img src="/noiseNotification.png" width="300">
+<img src="/noiseScreenshot.png" width="250">
+<img src="/noiseScreenshotDark.png" width="250">
+<img src="/noiseNotification.png" width="250">

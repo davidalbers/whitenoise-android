@@ -93,16 +93,20 @@ public class AudioPlayerService extends Service {
         return mBinder;
     }
 
+    @Override
     public void onCreate()
     {
         volumeChangerTimer = new Timer();
         volumeChangerTimer.schedule(new VolumeChangerTimerTask(), 0, tickPeriod);
     }
+
+    @Override
     public void onDestroy()
     {
         mp.stop();
     }
 
+    @Override
     public int onStartCommand(Intent intent,int flags, int startId){
         if(mp == null)
             mp = LoopMediaPlayer.create(this, R.raw.white);
@@ -209,10 +213,12 @@ public class AudioPlayerService extends Service {
             countDownTimer.cancel();
         countDownTimer = new CountDownTimer(millis, 1000) {
 
+            @Override
             public void onTick(long millisUntilFinished) {
                 millisLeft = millisUntilFinished;
             }
 
+            @Override
             public void onFinish() {
                 dismissNotification();
                 millisLeft = 0;

@@ -15,9 +15,7 @@ I've finished the main features of the app and it's available on the [Play Store
 ---
 Some wishlist features are:
 * Save app state (noise type, volume, etc.) and load it each time app is started
-* A settings page
 * Enable horizontal screen orientation (this includes making the timer work in horizontal orientation)
-* Night mode/Dark theme
 
 ---
 <img src="/noiseScreenshot.png" width="250">

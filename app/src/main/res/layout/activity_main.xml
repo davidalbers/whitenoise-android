@@ -153,15 +153,12 @@
         android:layout_below="@+id/linearLayout3"
         android:layout_centerHorizontal="true">
 
-        <EditText
+        <dalbers.com.timerpicker.TimerTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:ems="10"
-            android:id="@+id/countdownTime"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:gravity="center_horizontal"
-            android:cursorVisible="false"
+            android:id="@+id/timerTextView"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:layout_marginTop="10dp"
             android:visibility="invisible"/>
     </LinearLayout>
 

@@ -14,26 +14,17 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.TextWatcher;
-import android.text.style.RelativeSizeSpan;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -41,6 +32,10 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.Arrays;
+
+import dalbers.com.timerpicker.TimerPickerDialogFragment;
+import dalbers.com.timerpicker.TimerPickerDialogListener;
+import dalbers.com.timerpicker.TimerTextView;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -52,10 +47,9 @@ public class MainActivity extends AppCompatActivity {
     private CountDownTimer editTextCountDownTimer;
     private SeekBar volumeBar;
     private Button playButton;
-    private EditText countdownTimeTextView;
     private ImageButton timerButton;
-    private boolean addedTimer = false;
-
+    private boolean timerActive = false;
+    private TimerTextView timerTextView;
     private RadioButton noiseTypeWhite;
     private RadioButton noiseTypePink;
     private RadioButton noiseTypeBrown;
@@ -128,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         audioPlayerService.play();
                         setPlayButtonPause();
-                        long time = timeStringToMillis(countdownTimeTextView.getText().toString());
+                        long time = timerTextView.getTime();
                         //timer was set before noise was playing,
                         //start the timer with the music
                         if (time != 0) {
@@ -139,71 +133,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        countdownTimeTextView = (EditText) findViewById(R.id.countdownTime);
-        countdownTimeTextView.setText(stringToFormattedHMS(millisToHMSZeros(0)));
-        Spannable span = new SpannableString(countdownTimeTextView.getText());
-        //make "h m s" smaller than numbers
-        span.setSpan(new RelativeSizeSpan(0.6f), 2, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        span.setSpan(new RelativeSizeSpan(0.6f), 6, 8, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        span.setSpan(new RelativeSizeSpan(0.6f), 10, 11, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        //apply text size changes
-        countdownTimeTextView.setText(span);
+        timerTextView = (TimerTextView)findViewById(R.id.timerTextView);
+        if(timerTextView != null)
+            timerTextView.setTime(0);
 
-        final TextWatcher countdownTimeTextWatcher = new TextWatcher() {
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                countdownTimeTextView.setSelection(11);
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                countdownTimeTextView.removeTextChangedListener(this);
-                //update text
-                countdownTimeTextView.setText(stringToFormattedHMS(s.toString()));
-                Spannable span = new SpannableString(countdownTimeTextView.getText());
-                //make "h m s" smaller than numbers
-                span.setSpan(new RelativeSizeSpan(0.6f), 2, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                span.setSpan(new RelativeSizeSpan(0.6f), 6, 8, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                span.setSpan(new RelativeSizeSpan(0.6f), 10, 11, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                //apply text size changes
-                countdownTimeTextView.setText(span);
-                countdownTimeTextView.addTextChangedListener(this);
-            }
-
-
-        };
-
-        countdownTimeTextView.addTextChangedListener(countdownTimeTextWatcher);
-        countdownTimeTextView.setImeActionLabel("Start", KeyEvent.KEYCODE_ENTER);
-        countdownTimeTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                //enter was pressed on timer text box,
-                //if noise is playing, start the timer
-                if (audioPlayerService.isPlaying()) {
-                    long time = timeStringToMillis(v.getText().toString());
-                    startTimer(time);
-                }
-                return false;
-            }
-        });
-
-        //disable moving the cursor
-        countdownTimeTextView.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                countdownTimeTextView.setSelection(countdownTimeTextView.getText().length());
-            }
-        });
 
         volumeBar = (SeekBar) findViewById(R.id.volumeBar);
-
         volumeBar.setProgress(volumeBar.getMax());
         volumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -295,24 +230,11 @@ public class MainActivity extends AppCompatActivity {
             timerButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    if (!addedTimer) {
-                        //set button image
-                        Drawable stopPic = getResources().getDrawable(R.drawable.ic_clear);
-                        timerButton.setImageDrawable(stopPic);
-
-                        addedTimer = true;
-                        //show the text view and make the keyboard popup on it
-                        countdownTimeTextView.setVisibility(View.VISIBLE);
-                        countdownTimeTextView.requestFocus();
-                        imm.showSoftInput(countdownTimeTextView, InputMethodManager.SHOW_IMPLICIT);
-                        //set cursor in text view to last character
-                        countdownTimeTextView.setSelection(countdownTimeTextView.getText().length());
+                    if (!timerActive) {
+                        showPickerDialog();
                     } else {
-                        addedTimer = false;
+                        timerActive = false;
                         setTimerUIUnsetState();
-                        //hide keyboard
-                        imm.hideSoftInputFromWindow(countdownTimeTextView.getWindowToken(), 0);
                         stopTimer();
                         //if playing audio, set button to play
                         setPlayButtonPlay();
@@ -326,6 +248,40 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+    /** Create and show a timer picker */
+    private void showPickerDialog() {
+        TimerPickerDialogFragment timerDialog = new TimerPickerDialogFragment();
+        timerDialog.show(getSupportFragmentManager(), "TimerPickerDialog");
+        timerDialog.setDialogListener(dialogListener);
+    }
+
+    /** Do stuff when timer is set in dialog  */
+    private TimerPickerDialogListener dialogListener = new TimerPickerDialogListener() {
+        @Override
+        public void timeSet(long timeInMillis) {
+            //ignore zero
+            if(timeInMillis != 0) {
+                //set button image
+                Drawable stopPic = getResources().getDrawable(R.drawable.ic_clear);
+                //change button to "clear"
+                timerButton.setImageDrawable(stopPic);
+                timerActive = true;
+                //set timertext and show
+                timerTextView.setTime(timeInMillis);
+                timerTextView.setVisibility(View.VISIBLE);
+                if (audioPlayerService.isPlaying()) {
+                    startTimer(timeInMillis);
+                }
+            }
+        }
+
+        @Override
+        public void dialogCanceled() {
+            //nothing important happened
+        }
+    };
+
 
     @Override
     protected void onPause() {
@@ -388,6 +344,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Visually show that there is no timer by hiding the timertextview and changing the  timer button
+     * back to having a "+"
+     */
     private void setTimerUIUnsetState() {
         //set button image
         Drawable addPic = getResources().getDrawable(R.drawable.ic_add);
@@ -398,9 +358,9 @@ public class MainActivity extends AppCompatActivity {
         //to the right of the text view when a new timer is added
         //this might cause janky behavior
         if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
-            countdownTimeTextView.setVisibility(View.INVISIBLE);
+            timerTextView.setVisibility(View.INVISIBLE);
         else
-            countdownTimeTextView.setVisibility(View.GONE);
+            timerTextView.setVisibility(View.GONE);
     }
 
     private ServiceConnection playerConnection = new ServiceConnection() {
@@ -497,7 +457,7 @@ public class MainActivity extends AppCompatActivity {
         volumeBar.setProgress((int) (volumeBar.getMax() * preferredVolume));
         oscillateButton.setChecked(preferredOscillateState);
         fadeButton.setChecked(preferredFadeState);
-        countdownTimeTextView.setText(millisToHMSZeros(preferredTime));
+        timerTextView.setTime(preferredTime);
     }
     /**
      * Parse hours mins seconds from a string with variable number of numbers and chars
@@ -621,15 +581,15 @@ public class MainActivity extends AppCompatActivity {
         editTextCountDownTimer = new CountDownTimer(time, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                countdownTimeTextView.setText(millisToHMSZeros(millisUntilFinished));
-                Log.d(LOG_TAG, "millis " + millisUntilFinished);
+                timerTextView.setTime(millisUntilFinished);
             }
 
             @Override
             public void onFinish() {
-                countdownTimeTextView.setText(millisToHMSZeros(0));
+                timerTextView.setTime(0);
                 setPlayButtonPlay();
                 setTimerUIUnsetState();
+                timerActive = false;
             }
         };
         audioPlayerService.setTimer(time);
@@ -649,7 +609,8 @@ public class MainActivity extends AppCompatActivity {
         pauseTimer();
         if (audioPlayerService != null)
             audioPlayerService.stop();
-        countdownTimeTextView.setText(stringToFormattedHMS(millisToHMSZeros(0)));
+        timerTextView.setTime(0);
+        timerActive = false;
         setTimerUIUnsetState();
     }
 
@@ -693,7 +654,8 @@ public class MainActivity extends AppCompatActivity {
             else {
                 //kill the timer just to make sure
                 pauseTimer();
-                countdownTimeTextView.setText(stringToFormattedHMS(millisToHMSZeros(0)));
+                timerTextView.setTime(0);
+                timerActive = false;
                 setTimerUIUnsetState();
             }
 

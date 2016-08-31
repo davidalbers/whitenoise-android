@@ -15,6 +15,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -373,13 +374,19 @@ public class MainActivity extends AppCompatActivity {
             float[] volumes = audioPlayerService.getVolume();
             volumeBar.setProgress((int) (volumeBar.getMax() * averageLRVolume(volumes[0], volumes[1])));
             Resources res = MainActivity.this.getResources();
+            //convert from 120dp to pixels
+            int picSizeInPixels = (int)TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, 24, res.getDisplayMetrics());
+
             if (audioPlayerService.isPlaying()) {
                 Drawable playPic = res.getDrawable(R.drawable.ic_action_playback_pause_black);
-                playPic.setBounds(0, 0, 120, 120);
+                float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, res.getDisplayMetrics());
+                playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
                 playButton.setCompoundDrawables(playPic, null, null, null);
             } else {
                 Drawable playPic = res.getDrawable(R.drawable.ic_action_playback_play_black);
-                playPic.setBounds(0, 0, 120, 120);
+
+                playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
                 playButton.setCompoundDrawables(playPic, null, null, null);
             }
             audioPlayerService.setOscillatePeriod(oscillateInterval);

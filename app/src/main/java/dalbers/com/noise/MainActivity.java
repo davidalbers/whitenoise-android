@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -31,8 +30,6 @@ import android.widget.ToggleButton;
 
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
-
-import java.util.Arrays;
 
 import dalbers.com.timerpicker.TimerPickerDialogFragment;
 import dalbers.com.timerpicker.TimerPickerDialogListener;
@@ -164,25 +161,26 @@ public class MainActivity extends AppCompatActivity {
         noiseTypeWhite = (RadioButton) findViewById(R.id.noiseTypeWhite);
         noiseTypePink = (RadioButton) findViewById(R.id.noiseTypePink);
         noiseTypeBrown = (RadioButton) findViewById(R.id.noiseTypeBrown);
-
-        noiseTypes.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (audioPlayerService != null) {
-                    switch (checkedId) {
-                        case R.id.noiseTypeWhite:
-                            audioPlayerService.setSoundFile(R.raw.white);
-                            break;
-                        case R.id.noiseTypePink:
-                            audioPlayerService.setSoundFile(R.raw.pink);
-                            break;
-                        case R.id.noiseTypeBrown:
-                            audioPlayerService.setSoundFile(R.raw.brown);
-                            break;
+        if(noiseTypes != null) {
+            noiseTypes.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup group, int checkedId) {
+                    if (audioPlayerService != null) {
+                        switch (checkedId) {
+                            case R.id.noiseTypeWhite:
+                                audioPlayerService.setSoundFile(R.raw.white);
+                                break;
+                            case R.id.noiseTypePink:
+                                audioPlayerService.setSoundFile(R.raw.pink);
+                                break;
+                            case R.id.noiseTypeBrown:
+                                audioPlayerService.setSoundFile(R.raw.brown);
+                                break;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
         oscillateButton = (ToggleButton) findViewById(R.id.waveVolumeToggle);
         if (oscillateButton != null) {
@@ -353,15 +351,7 @@ public class MainActivity extends AppCompatActivity {
         //set button image
         Drawable addPic = getResources().getDrawable(R.drawable.ic_add);
         timerButton.setImageDrawable(addPic);
-        //in portrait mode, time only needs to be hidden
-        //in landscape timer needs to be gone (hidden and takes up no space)
-        //this makes it so the landscape layout moves the timer add/clear button
-        //to the right of the text view when a new timer is added
-        //this might cause janky behavior
-        if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
-            timerTextView.setVisibility(View.INVISIBLE);
-        else
-            timerTextView.setVisibility(View.GONE);
+        timerTextView.setVisibility(View.GONE);
     }
 
     private ServiceConnection playerConnection = new ServiceConnection() {
@@ -380,12 +370,10 @@ public class MainActivity extends AppCompatActivity {
 
             if (audioPlayerService.isPlaying()) {
                 Drawable playPic = res.getDrawable(R.drawable.ic_action_playback_pause_black);
-                float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, res.getDisplayMetrics());
                 playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
                 playButton.setCompoundDrawables(playPic, null, null, null);
             } else {
                 Drawable playPic = res.getDrawable(R.drawable.ic_action_playback_play_black);
-
                 playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
                 playButton.setCompoundDrawables(playPic, null, null, null);
             }
@@ -397,20 +385,6 @@ public class MainActivity extends AppCompatActivity {
             audioPlayerService = null;
         }
     };
-
-    /**
-     * Convert a string with hours mins seconds and any number of characters to milliseconds
-     *
-     * @param time a string with variable number of numbers and chars
-     * @return milliseconds
-     */
-    private long timeStringToMillis(String time) {
-        int[] HMS = timeStringToHMS(time);
-        long timeInMillis = HMS[0] * 60 * 60 * 1000 +
-                HMS[1] * 60 * 1000 +
-                HMS[2] * 1000;
-        return timeInMillis;
-    }
 
     SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 
@@ -466,109 +440,9 @@ public class MainActivity extends AppCompatActivity {
         fadeButton.setChecked(preferredFadeState);
         timerTextView.setTime(preferredTime);
     }
-    /**
-     * Parse hours mins seconds from a string with variable number of numbers and chars
-     *
-     * @param time a string with variable number of numbers and chars
-     * @return array of ints where index 0 is hours, 1 is minutes, 2 is seconds
-     */
-    private int[] timeStringToHMS(String time) {
-        String stripped = time.replaceAll("[^\\d]", "");
-        int hrs = Integer.parseInt(stripped.substring(0, 2));
-        int mins = Integer.parseInt(stripped.substring(2, 4));
-        int secs = Integer.parseInt(stripped.substring(4, 6));
 
-        mins += secs / 60;
-        secs = secs % 60;
 
-        hrs += mins / 60;
-        mins = mins % 60;
-        return new int[]{hrs, mins, secs};
-    }
 
-    /**
-     * Converts milliseconds to hours minutes and seconds
-     * Where there is a maximum of two digits for each and if there is only
-     * one digit, a zero is added in front
-     * if millis = 60000 this would return "000100" (1 minute)
-     *
-     * @param millis milliseconds
-     * @return string concatenated as hours+mins+seconds with zeros added appropriately
-     */
-    private String millisToHMSZeros(long millis) {
-        int[] HMS = millisToHMS(millis);
-        String formatted = "";
-        if (HMS[0] < 10)
-            formatted += "0" + HMS[0];
-        else formatted += HMS[0];
-
-        if (HMS[1] < 10)
-            formatted += "0" + HMS[1];
-        else formatted += HMS[1];
-
-        if (HMS[2] < 10)
-            formatted += "0" + HMS[2];
-        else formatted += HMS[2];
-
-        return formatted;
-    }
-
-    /**
-     * Converts milliseconds to hours minutes and seconds
-     * Where time 1000 would be 1 second, time 60000 would be 1 minute etc
-     *
-     * @param millis milliseconds
-     * @return array of ints where index 0 is hours, 1 is minutes, 2 is seconds
-     */
-    private int[] millisToHMS(long millis) {
-        //round up
-        //android's countdown timer will not tick precisely on the millisecond
-        //so for example, at 2 milliseconds, you will actually have 1997 ms
-        //(additionally the last tick won't happen)
-        int secs = (int) (millis / 1000.0 + .5);
-        int hrs = secs / (60 * 60);
-        secs = secs % (60 * 60);
-        int mins = secs / (60);
-        secs = secs % 60;
-        return new int[]{hrs, mins, secs};
-    }
-
-    /**
-     * Given a string with a variable amount of numbers and chars
-     * Format it to the hour, min, sec format that looks like "12h 34m 56s"
-     *
-     * @param input string with a variable amount of numbers and chars
-     * @return formatted string that looks like "12h 34m 56s"
-     */
-    private String stringToFormattedHMS(String input) {
-        //backspaced, removed the 's' but the user intended to remove last second number
-        if (input.length() == 10)
-            input = input.substring(0, 9);
-        //remove all non numbers
-        String stripped = input.replaceAll("[^\\d]", "");
-        //remove leading zeros
-        while (stripped.length() > 0) {
-            if (stripped.charAt(0) == '0')
-                stripped = stripped.substring(1);
-            else
-                break;
-        }
-        //any number index >5
-        stripped = stripped.substring(0, Math.min(stripped.length(), 6));
-
-        String preZeros = "";
-        if (stripped.length() < 6) {
-            char[] zeros = new char[6 - stripped.length()];
-            Arrays.fill(zeros, '0');
-            preZeros = new String(zeros);
-        }
-        String fullNums = preZeros + stripped;
-        //format in 12h 34m 56s
-        return fullNums.substring(0, 2) + "h " +
-                fullNums.substring(2, 4) + "m " +
-                fullNums.substring(4, 6) + "s";
-
-    }
 
     /**
      * Get an average of the left and right volumes in case they're different
@@ -623,14 +497,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void setPlayButtonPause() {
         Drawable playPic = getResources().getDrawable(R.drawable.ic_action_playback_pause_black);
-        playPic.setBounds(0, 0, 120, 120);
+        //convert from 120dp to pixels
+        int picSizeInPixels = (int)TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
+        playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
         playButton.setCompoundDrawables(playPic, null, null, null);
         playButton.setText("Pause");
     }
 
     private void setPlayButtonPlay() {
         Drawable playPic = getResources().getDrawable(R.drawable.ic_action_playback_play_black);
-        playPic.setBounds(0, 0, 120, 120);
+        //convert from 120dp to pixels
+        int picSizeInPixels = (int)TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
+        playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
         playButton.setCompoundDrawables(playPic, null, null, null);
         playButton.setText("Play");
     }

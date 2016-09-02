@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--Targets anything in landscape mode smaller than a tablet -->
+<!-- Used in tablets and in portrait mode for everything else -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,7 +10,14 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="dalbers.com.noise.MainActivity">
 
-
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/play_audio"
+        android:id="@+id/btnPlay"
+        android:drawableLeft="@drawable/ic_action_playback_play_black"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
     <RadioGroup
         android:id="@+id/noiseTypes"
@@ -46,31 +53,34 @@
 
     </RadioGroup>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <View
+        android:id="@+id/divider1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="#e6e6e6"
         android:layout_below="@+id/noiseTypes"
-        android:orientation="horizontal"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="5dp"
-        android:id="@+id/volumeGroup">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="@string/volume_label"
-            android:id="@+id/volumeLabel"
+        android:layout_marginTop="15dp"
+        android:layout_centerHorizontal="true"/>
 
-            />
+    <View
+        android:id="@+id/divider2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="#e6e6e6"
+        android:layout_below="@+id/linearLayout2"
+        android:layout_marginTop="15dp"
+        android:layout_centerHorizontal="true"/>
 
-        <SeekBar
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/volumeBar"
-            android:layout_gravity="center"/>
-    </LinearLayout>
+    <SeekBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/volumeBar"
+        android:layout_below="@+id/volumeLabel"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
 
-
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
 
     <LinearLayout
@@ -78,7 +88,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_below="@+id/volumeGroup"
+        android:layout_below="@+id/volumeBar"
         android:id="@+id/linearLayout2">
 
         <ToggleButton
@@ -102,16 +112,24 @@
 
     </LinearLayout>
 
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/volume_label"
+        android:id="@+id/volumeLabel"
+        android:layout_below="@+id/divider1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"/>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/linearLayout2"
+        android:layout_below="@+id/divider2"
         android:layout_centerHorizontal="true"
         android:id="@+id/linearLayout3"
-        android:layout_marginTop="5dp">
+        android:layout_marginTop="15dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -121,14 +139,6 @@
             android:id="@+id/timerLabel"
             android:layout_marginRight="48dp"
             android:layout_gravity="center_vertical"/>
-
-        <dalbers.com.timerpicker.TimerTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/timerTextView"
-            android:textAppearance="@android:style/TextAppearance.Large"
-            android:visibility="gone"
-            android:layout_gravity="center"/>
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -144,16 +154,13 @@
         android:layout_below="@+id/linearLayout3"
         android:layout_centerHorizontal="true">
 
-
+        <dalbers.com.timerpicker.TimerTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/timerTextView"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:layout_marginTop="10dp"
+            android:visibility="invisible"/>
     </LinearLayout>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/play_audio"
-        android:id="@+id/btnPlay"
-        android:drawableLeft="@drawable/ic_action_playback_play_black"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

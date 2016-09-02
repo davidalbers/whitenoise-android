@@ -161,6 +161,7 @@
             android:textAppearance="@android:style/TextAppearance.Large"
             android:layout_marginTop="10dp"
             android:visibility="invisible"/>
+
     </LinearLayout>
 
 </RelativeLayout>

@@ -38,8 +38,6 @@ import dalbers.com.timerpicker.TimerTextView;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static String AUDIO_RES_EXTRA_KEY = "audioRes";
-    private boolean started = false;
     private AudioPlayerService audioPlayerService;
     public static String LOG_TAG = "dalbers.noise/main";
     private CountDownTimer editTextCountDownTimer;
@@ -69,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREF_FADE_NEVER_ON = "first_fade";
     public static final String PREF_USE_DARK_MODE_KEY = "pref_use_dark_mode";
     public static final String PREF_OSCILLATE_INTERVAL_KEY = "pref_oscillate_interval";
+    public static final String SAVE_STATE_TIMER_ACTIVE = "save_state_timer_active";
+    public static final String SAVE_STATE_TIMER_TIME = "save_state_timer_time";
     /** true if the user has never ever ever turned on oscillate option*/
     private boolean oscillateNeverOn = false;
     /**true if the user has never ever ever turned on fade option*/
@@ -132,8 +132,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         timerTextView = (TimerTextView)findViewById(R.id.timerTextView);
-        if(timerTextView != null)
-            timerTextView.setTime(0);
 
 
         volumeBar = (SeekBar) findViewById(R.id.volumeBar);
@@ -241,6 +239,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+
+
+        if (savedInstanceState != null) {
+            // Restore value of members from saved state
+            timerActive = savedInstanceState.getBoolean(SAVE_STATE_TIMER_ACTIVE);
+            long currTime = savedInstanceState.getLong(SAVE_STATE_TIMER_TIME);
+            setTimerUIAdded(currTime);
+        }
+
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -261,14 +268,8 @@ public class MainActivity extends AppCompatActivity {
         public void timeSet(long timeInMillis) {
             //ignore zero
             if(timeInMillis != 0) {
-                //set button image
-                Drawable stopPic = getResources().getDrawable(R.drawable.ic_clear);
-                //change button to "clear"
-                timerButton.setImageDrawable(stopPic);
                 timerActive = true;
-                //set timertext and show
-                timerTextView.setTime(timeInMillis);
-                timerTextView.setVisibility(View.VISIBLE);
+                setTimerUIAdded(timeInMillis);
                 if (audioPlayerService.isPlaying()) {
                     startTimer(timeInMillis);
                 }
@@ -287,6 +288,15 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         if(audioPlayerService != null && audioPlayerService.isPlaying())
             audioPlayerService.showNotification(true);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        // Save the user's current game state
+        savedInstanceState.putBoolean(SAVE_STATE_TIMER_ACTIVE, timerActive);
+        savedInstanceState.putLong(SAVE_STATE_TIMER_TIME, timerTextView.getTime());
+        // Always call the superclass so it can save the view hierarchy state
+        super.onSaveInstanceState(savedInstanceState);
     }
 
     @Override
@@ -354,6 +364,18 @@ public class MainActivity extends AppCompatActivity {
         timerTextView.setVisibility(View.GONE);
     }
 
+    /**
+     * Visually show there is a new timer by showing timer text view with time and changing
+     * the timer button to having an "x"
+     */
+    private void setTimerUIAdded(long currTime) {
+        Drawable stopPic = getResources().getDrawable(R.drawable.ic_clear);
+        //change button to "clear"
+        timerButton.setImageDrawable(stopPic);
+        timerTextView.setTime(currTime);
+        timerTextView.setVisibility(View.VISIBLE);
+    }
+
     private ServiceConnection playerConnection = new ServiceConnection() {
 
         @Override
@@ -362,7 +384,7 @@ public class MainActivity extends AppCompatActivity {
             AudioPlayerService.AudioPlayerBinder audioPlayerBinder = (AudioPlayerService.AudioPlayerBinder) binder;
             audioPlayerService = audioPlayerBinder.getService();
             float[] volumes = audioPlayerService.getVolume();
-            volumeBar.setProgress((int) (volumeBar.getMax() * averageLRVolume(volumes[0], volumes[1])));
+            volumeBar.setProgress((int) (volumeBar.getMax() * Math.max(volumes[0], volumes[1])));
             Resources res = MainActivity.this.getResources();
             //convert from 120dp to pixels
             int picSizeInPixels = (int)TypedValue.applyDimension(
@@ -378,6 +400,7 @@ public class MainActivity extends AppCompatActivity {
                 playButton.setCompoundDrawables(playPic, null, null, null);
             }
             audioPlayerService.setOscillatePeriod(oscillateInterval);
+            setUIBasedOnServiceState();
         }
 
         @Override
@@ -442,19 +465,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
-    /**
-     * Get an average of the left and right volumes in case they're different
-     *
-     * @param left  0f to 1.0f left volume
-     * @param right 0f to 1.0f right volume
-     * @return 0f to 1.0f averaged volume
-     */
-    private float averageLRVolume(float left, float right) {
-        return (left + right) / 2;
-    }
-
     private void startTimer(long time) {
         if (editTextCountDownTimer != null)
             editTextCountDownTimer.cancel();
@@ -518,7 +528,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        setUIBasedOnServiceState();
     }
 
     private void setUIBasedOnServiceState() {
@@ -542,8 +551,11 @@ public class MainActivity extends AppCompatActivity {
                 //kill the timer just to make sure
                 pauseTimer();
                 timerTextView.setTime(0);
-                timerActive = false;
-                setTimerUIUnsetState();
+                if(audioPlayerService.getNotifyUITimerStop()) {
+                    timerActive = false;
+                    setTimerUIUnsetState();
+                    audioPlayerService.markNotifiedUITimerStop();
+                }
             }
 
         }

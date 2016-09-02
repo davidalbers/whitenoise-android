@@ -85,6 +85,8 @@ public class AudioPlayerService extends Service {
      * new one will replace the old ones
      */
     private final int NOTIFICATION_ID = 0;
+
+    private boolean notifyUITimerStop = false;
     @Override
     public IBinder onBind(Intent intent) {
         if(mp == null) {
@@ -190,7 +192,7 @@ public class AudioPlayerService extends Service {
         oscillatingDown = true;
         initialVolume = maxVolume;
         mp.setVolume(maxVolume, maxVolume);
-        Log.d(LOG_TAG,maxVolume+"");
+        Log.d(LOG_TAG, maxVolume + "");
     }
 
     /**
@@ -211,8 +213,8 @@ public class AudioPlayerService extends Service {
         decreaseLength = millis;
         if(countDownTimer != null)
             countDownTimer.cancel();
+        notifyUITimerStop = false;
         countDownTimer = new CountDownTimer(millis, 1000) {
-
             @Override
             public void onTick(long millisUntilFinished) {
                 millisLeft = millisUntilFinished;
@@ -223,12 +225,13 @@ public class AudioPlayerService extends Service {
                 dismissNotification();
                 millisLeft = 0;
                 mp.stop();
+                notifyUITimerStop = true;
             }
         }.start();
     }
 
     public void cancelTimer() {
-
+        notifyUITimerStop = true;
         if(countDownTimer != null) {
             countDownTimer.cancel();
         }
@@ -244,6 +247,9 @@ public class AudioPlayerService extends Service {
         return millisLeft;
     }
 
+    public boolean getNotifyUITimerStop() { return notifyUITimerStop; }
+
+    public void markNotifiedUITimerStop() { notifyUITimerStop = false; }
 
     public void setSoundFile(int resId) {
         mp.setSoundFile(resId);

@@ -86,7 +86,6 @@ public class AudioPlayerService extends Service {
      */
     private final int NOTIFICATION_ID = 0;
 
-    private boolean notifyUITimerStop = false;
     @Override
     public IBinder onBind(Intent intent) {
         if(mp == null) {
@@ -112,6 +111,7 @@ public class AudioPlayerService extends Service {
     public int onStartCommand(Intent intent,int flags, int startId){
         if(mp == null)
             mp = LoopMediaPlayer.create(this, R.raw.white);
+
         //if a button is pressed in the notification,
         //the service will be started with this extra
         if(intent != null) {
@@ -213,7 +213,6 @@ public class AudioPlayerService extends Service {
         decreaseLength = millis;
         if(countDownTimer != null)
             countDownTimer.cancel();
-        notifyUITimerStop = false;
         countDownTimer = new CountDownTimer(millis, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -225,13 +224,11 @@ public class AudioPlayerService extends Service {
                 dismissNotification();
                 millisLeft = 0;
                 mp.stop();
-                notifyUITimerStop = true;
             }
         }.start();
     }
 
     public void cancelTimer() {
-        notifyUITimerStop = true;
         if(countDownTimer != null) {
             countDownTimer.cancel();
         }
@@ -247,9 +244,6 @@ public class AudioPlayerService extends Service {
         return millisLeft;
     }
 
-    public boolean getNotifyUITimerStop() { return notifyUITimerStop; }
-
-    public void markNotifiedUITimerStop() { notifyUITimerStop = false; }
 
     public void setSoundFile(int resId) {
         mp.setSoundFile(resId);

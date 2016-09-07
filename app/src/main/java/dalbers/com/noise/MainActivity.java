@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREF_FADE_NEVER_ON = "first_fade";
     public static final String PREF_USE_DARK_MODE_KEY = "pref_use_dark_mode";
     public static final String PREF_OSCILLATE_INTERVAL_KEY = "pref_oscillate_interval";
-    public static final String SAVE_STATE_TIMER_ACTIVE = "save_state_timer_active";
+    public static final String SAVE_STATE_TIMER_CREATED = "save_state_timer_active";
     public static final String SAVE_STATE_TIMER_TIME = "save_state_timer_time";
     /** true if the user has never ever ever turned on oscillate option*/
     private boolean oscillateNeverOn = false;
@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private long oscillateInterval = 8000;
     private SharedPreferences sharedPref;
     private boolean isPlayerConnectionBound = false;
+    private boolean timerCreatedAndNotStarted = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -240,12 +241,18 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-
+        timerCreatedAndNotStarted = false;
         if (savedInstanceState != null) {
             // Restore value of members from saved state
-            timerActive = savedInstanceState.getBoolean(SAVE_STATE_TIMER_ACTIVE);
             long currTime = savedInstanceState.getLong(SAVE_STATE_TIMER_TIME);
-            setTimerUIAdded(currTime);
+            timerCreatedAndNotStarted = savedInstanceState.getBoolean(SAVE_STATE_TIMER_CREATED);
+            // If the app restarted while a timer was created but not started,
+            // recreate the view state
+            // ignore zero times because the user did not create those.
+            if(timerCreatedAndNotStarted) {
+                timerActive = timerCreatedAndNotStarted;
+                setTimerUIAdded(currTime);
+            }
         }
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -292,8 +299,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        // Save the user's current game state
-        savedInstanceState.putBoolean(SAVE_STATE_TIMER_ACTIVE, timerActive);
+        boolean timerSetAndNotStarted = false;
+        //we only need to save timer state if it was created but not started
+        //if it wasn't created - who cares
+        //if it was started - the service will tell us its state
+        if(audioPlayerService != null && !audioPlayerService.isPlaying() && timerTextView.getTime() != 0)
+            timerSetAndNotStarted = true;
+        savedInstanceState.putBoolean(SAVE_STATE_TIMER_CREATED, timerSetAndNotStarted);
         savedInstanceState.putLong(SAVE_STATE_TIMER_TIME, timerTextView.getTime());
         // Always call the superclass so it can save the view hierarchy state
         super.onSaveInstanceState(savedInstanceState);
@@ -412,9 +424,7 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 
         @Override
-        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                loadPreferences(prefs);
-        }
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) { loadPreferences(prefs); }
     };
 
 
@@ -542,20 +552,18 @@ public class MainActivity extends AppCompatActivity {
             //still time left
             if(timeLeft > 0) {
                 //match the visual timer to the service timer
-                if(audioPlayerService.isPlaying())
+                if(audioPlayerService.isPlaying()) {
+                    setTimerUIAdded(timeLeft);
                     startTimer(timeLeft);
+                }
                 else //cancel the visual timer since the service timer is also
                     pauseTimer();
             }
-            else {
-                //kill the timer just to make sure
-                pauseTimer();
+            else if (!timerCreatedAndNotStarted) {
+                //service says timer is unset and we have no saved state telling us otherwise
                 timerTextView.setTime(0);
-                if(audioPlayerService.getNotifyUITimerStop()) {
-                    timerActive = false;
-                    setTimerUIUnsetState();
-                    audioPlayerService.markNotifiedUITimerStop();
-                }
+                timerActive = false;
+                setTimerUIUnsetState();
             }
 
         }

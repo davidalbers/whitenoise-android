@@ -18,6 +18,6 @@ Some wishlist features are:
 * Enable horizontal screen orientation (this includes making the timer work in horizontal orientation)
 
 ---
-<img src="/noiseScreenshot.png" width="250">
-<img src="/noiseScreenshotDark.png" width="250">
-<img src="/noiseNotification.png" width="250">
+<img src="/screenshots/noiseScreenshot.png" width="250">
+<img src="/screenshots/noiseScreenshotDark.png" width="250">
+<img src="/screenshots/noiseNotification.png" width="250">

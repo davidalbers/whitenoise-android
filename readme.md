@@ -1,4 +1,4 @@
-<img src="/icon1024.png" width="50">
+<img src="/screenshots/icon1024.png" width="50">
 ---
 This is an Android app that plays white, pink, and brown noise.
 

@@ -85,6 +85,7 @@ public class AudioPlayerService extends Service {
      * new one will replace the old ones
      */
     private final int NOTIFICATION_ID = 0;
+
     @Override
     public IBinder onBind(Intent intent) {
         if(mp == null) {
@@ -110,6 +111,7 @@ public class AudioPlayerService extends Service {
     public int onStartCommand(Intent intent,int flags, int startId){
         if(mp == null)
             mp = LoopMediaPlayer.create(this, R.raw.white);
+
         //if a button is pressed in the notification,
         //the service will be started with this extra
         if(intent != null) {
@@ -190,7 +192,7 @@ public class AudioPlayerService extends Service {
         oscillatingDown = true;
         initialVolume = maxVolume;
         mp.setVolume(maxVolume, maxVolume);
-        Log.d(LOG_TAG,maxVolume+"");
+        Log.d(LOG_TAG, maxVolume + "");
     }
 
     /**
@@ -212,7 +214,6 @@ public class AudioPlayerService extends Service {
         if(countDownTimer != null)
             countDownTimer.cancel();
         countDownTimer = new CountDownTimer(millis, 1000) {
-
             @Override
             public void onTick(long millisUntilFinished) {
                 millisLeft = millisUntilFinished;
@@ -228,7 +229,6 @@ public class AudioPlayerService extends Service {
     }
 
     public void cancelTimer() {
-
         if(countDownTimer != null) {
             countDownTimer.cancel();
         }

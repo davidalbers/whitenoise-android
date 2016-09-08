@@ -11,9 +11,10 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation"
-            android:screenOrientation="portrait">
+            >
 
             <!--
+            android:screenOrientation="portrait"
                  ^ Force portrait orientation
                  this isn't great but using the keyboard
                  in landscape doesn't show the pretty timer text

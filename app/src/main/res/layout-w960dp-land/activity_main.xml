@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--portrait mode for all device sizes-->
+<!-- Targets tablets in landscape mode, tested on genymotion Nexus 7 2013
+    Basically just a copy of portrait layout-->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"

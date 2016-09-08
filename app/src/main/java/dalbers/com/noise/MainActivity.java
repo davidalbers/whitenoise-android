@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -14,48 +13,39 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.TextWatcher;
-import android.text.style.RelativeSizeSpan;
 import android.util.Log;
-import android.view.KeyEvent;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
-import java.util.Arrays;
+import dalbers.com.timerpicker.TimerPickerDialogFragment;
+import dalbers.com.timerpicker.TimerPickerDialogListener;
+import dalbers.com.timerpicker.TimerTextView;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    public static String AUDIO_RES_EXTRA_KEY = "audioRes";
-    private boolean started = false;
     private AudioPlayerService audioPlayerService;
     public static String LOG_TAG = "dalbers.noise/main";
     private CountDownTimer editTextCountDownTimer;
     private SeekBar volumeBar;
     private Button playButton;
-    private EditText countdownTimeTextView;
     private ImageButton timerButton;
-    private boolean addedTimer = false;
-
+    private boolean timerActive = false;
+    private TimerTextView timerTextView;
     private RadioButton noiseTypeWhite;
     private RadioButton noiseTypePink;
     private RadioButton noiseTypeBrown;
@@ -77,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREF_FADE_NEVER_ON = "first_fade";
     public static final String PREF_USE_DARK_MODE_KEY = "pref_use_dark_mode";
     public static final String PREF_OSCILLATE_INTERVAL_KEY = "pref_oscillate_interval";
+    public static final String SAVE_STATE_TIMER_CREATED = "save_state_timer_active";
+    public static final String SAVE_STATE_TIMER_TIME = "save_state_timer_time";
     /** true if the user has never ever ever turned on oscillate option*/
     private boolean oscillateNeverOn = false;
     /**true if the user has never ever ever turned on fade option*/
@@ -91,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private long oscillateInterval = 8000;
     private SharedPreferences sharedPref;
     private boolean isPlayerConnectionBound = false;
+    private boolean timerCreatedAndNotStarted = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         audioPlayerService.play();
                         setPlayButtonPause();
-                        long time = timeStringToMillis(countdownTimeTextView.getText().toString());
+                        long time = timerTextView.getTime();
                         //timer was set before noise was playing,
                         //start the timer with the music
                         if (time != 0) {
@@ -139,71 +132,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        countdownTimeTextView = (EditText) findViewById(R.id.countdownTime);
-        countdownTimeTextView.setText(stringToFormattedHMS(millisToHMSZeros(0)));
-        Spannable span = new SpannableString(countdownTimeTextView.getText());
-        //make "h m s" smaller than numbers
-        span.setSpan(new RelativeSizeSpan(0.6f), 2, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        span.setSpan(new RelativeSizeSpan(0.6f), 6, 8, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        span.setSpan(new RelativeSizeSpan(0.6f), 10, 11, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        //apply text size changes
-        countdownTimeTextView.setText(span);
+        timerTextView = (TimerTextView)findViewById(R.id.timerTextView);
 
-        final TextWatcher countdownTimeTextWatcher = new TextWatcher() {
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                countdownTimeTextView.setSelection(11);
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                countdownTimeTextView.removeTextChangedListener(this);
-                //update text
-                countdownTimeTextView.setText(stringToFormattedHMS(s.toString()));
-                Spannable span = new SpannableString(countdownTimeTextView.getText());
-                //make "h m s" smaller than numbers
-                span.setSpan(new RelativeSizeSpan(0.6f), 2, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                span.setSpan(new RelativeSizeSpan(0.6f), 6, 8, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                span.setSpan(new RelativeSizeSpan(0.6f), 10, 11, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                //apply text size changes
-                countdownTimeTextView.setText(span);
-                countdownTimeTextView.addTextChangedListener(this);
-            }
-
-
-        };
-
-        countdownTimeTextView.addTextChangedListener(countdownTimeTextWatcher);
-        countdownTimeTextView.setImeActionLabel("Start", KeyEvent.KEYCODE_ENTER);
-        countdownTimeTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                //enter was pressed on timer text box,
-                //if noise is playing, start the timer
-                if (audioPlayerService.isPlaying()) {
-                    long time = timeStringToMillis(v.getText().toString());
-                    startTimer(time);
-                }
-                return false;
-            }
-        });
-
-        //disable moving the cursor
-        countdownTimeTextView.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                countdownTimeTextView.setSelection(countdownTimeTextView.getText().length());
-            }
-        });
 
         volumeBar = (SeekBar) findViewById(R.id.volumeBar);
-
         volumeBar.setProgress(volumeBar.getMax());
         volumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -228,25 +160,26 @@ public class MainActivity extends AppCompatActivity {
         noiseTypeWhite = (RadioButton) findViewById(R.id.noiseTypeWhite);
         noiseTypePink = (RadioButton) findViewById(R.id.noiseTypePink);
         noiseTypeBrown = (RadioButton) findViewById(R.id.noiseTypeBrown);
-
-        noiseTypes.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (audioPlayerService != null) {
-                    switch (checkedId) {
-                        case R.id.noiseTypeWhite:
-                            audioPlayerService.setSoundFile(R.raw.white);
-                            break;
-                        case R.id.noiseTypePink:
-                            audioPlayerService.setSoundFile(R.raw.pink);
-                            break;
-                        case R.id.noiseTypeBrown:
-                            audioPlayerService.setSoundFile(R.raw.brown);
-                            break;
+        if(noiseTypes != null) {
+            noiseTypes.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup group, int checkedId) {
+                    if (audioPlayerService != null) {
+                        switch (checkedId) {
+                            case R.id.noiseTypeWhite:
+                                audioPlayerService.setSoundFile(R.raw.white);
+                                break;
+                            case R.id.noiseTypePink:
+                                audioPlayerService.setSoundFile(R.raw.pink);
+                                break;
+                            case R.id.noiseTypeBrown:
+                                audioPlayerService.setSoundFile(R.raw.brown);
+                                break;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
         oscillateButton = (ToggleButton) findViewById(R.id.waveVolumeToggle);
         if (oscillateButton != null) {
@@ -295,24 +228,11 @@ public class MainActivity extends AppCompatActivity {
             timerButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    if (!addedTimer) {
-                        //set button image
-                        Drawable stopPic = getResources().getDrawable(R.drawable.ic_clear);
-                        timerButton.setImageDrawable(stopPic);
-
-                        addedTimer = true;
-                        //show the text view and make the keyboard popup on it
-                        countdownTimeTextView.setVisibility(View.VISIBLE);
-                        countdownTimeTextView.requestFocus();
-                        imm.showSoftInput(countdownTimeTextView, InputMethodManager.SHOW_IMPLICIT);
-                        //set cursor in text view to last character
-                        countdownTimeTextView.setSelection(countdownTimeTextView.getText().length());
+                    if (!timerActive) {
+                        showPickerDialog();
                     } else {
-                        addedTimer = false;
+                        timerActive = false;
                         setTimerUIUnsetState();
-                        //hide keyboard
-                        imm.hideSoftInputFromWindow(countdownTimeTextView.getWindowToken(), 0);
                         stopTimer();
                         //if playing audio, set button to play
                         setPlayButtonPlay();
@@ -320,6 +240,21 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+
+        timerCreatedAndNotStarted = false;
+        if (savedInstanceState != null) {
+            // Restore value of members from saved state
+            long currTime = savedInstanceState.getLong(SAVE_STATE_TIMER_TIME);
+            timerCreatedAndNotStarted = savedInstanceState.getBoolean(SAVE_STATE_TIMER_CREATED);
+            // If the app restarted while a timer was created but not started,
+            // recreate the view state
+            // ignore zero times because the user did not create those.
+            if(timerCreatedAndNotStarted) {
+                timerActive = timerCreatedAndNotStarted;
+                setTimerUIAdded(currTime);
+            }
+        }
+
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -327,11 +262,53 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /** Create and show a timer picker */
+    private void showPickerDialog() {
+        TimerPickerDialogFragment timerDialog = new TimerPickerDialogFragment();
+        timerDialog.show(getSupportFragmentManager(), "TimerPickerDialog");
+        timerDialog.setDialogListener(dialogListener);
+    }
+
+    /** Do stuff when timer is set in dialog  */
+    private TimerPickerDialogListener dialogListener = new TimerPickerDialogListener() {
+        @Override
+        public void timeSet(long timeInMillis) {
+            //ignore zero
+            if(timeInMillis != 0) {
+                timerActive = true;
+                setTimerUIAdded(timeInMillis);
+                if (audioPlayerService.isPlaying()) {
+                    startTimer(timeInMillis);
+                }
+            }
+        }
+
+        @Override
+        public void dialogCanceled() {
+            //nothing important happened
+        }
+    };
+
+
     @Override
     protected void onPause() {
         super.onPause();
         if(audioPlayerService != null && audioPlayerService.isPlaying())
             audioPlayerService.showNotification(true);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        boolean timerSetAndNotStarted = false;
+        //we only need to save timer state if it was created but not started
+        //if it wasn't created - who cares
+        //if it was started - the service will tell us its state
+        if(audioPlayerService != null && !audioPlayerService.isPlaying() && timerTextView.getTime() != 0)
+            timerSetAndNotStarted = true;
+        savedInstanceState.putBoolean(SAVE_STATE_TIMER_CREATED, timerSetAndNotStarted);
+        savedInstanceState.putLong(SAVE_STATE_TIMER_TIME, timerTextView.getTime());
+        // Always call the superclass so it can save the view hierarchy state
+        super.onSaveInstanceState(savedInstanceState);
     }
 
     @Override
@@ -388,19 +365,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Visually show that there is no timer by hiding the timertextview and changing the  timer button
+     * back to having a "+"
+     */
     private void setTimerUIUnsetState() {
         //set button image
         Drawable addPic = getResources().getDrawable(R.drawable.ic_add);
         timerButton.setImageDrawable(addPic);
-        //in portrait mode, time only needs to be hidden
-        //in landscape timer needs to be gone (hidden and takes up no space)
-        //this makes it so the landscape layout moves the timer add/clear button
-        //to the right of the text view when a new timer is added
-        //this might cause janky behavior
-        if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
-            countdownTimeTextView.setVisibility(View.INVISIBLE);
-        else
-            countdownTimeTextView.setVisibility(View.GONE);
+        timerTextView.setVisibility(View.GONE);
+    }
+
+    /**
+     * Visually show there is a new timer by showing timer text view with time and changing
+     * the timer button to having an "x"
+     */
+    private void setTimerUIAdded(long currTime) {
+        Drawable stopPic = getResources().getDrawable(R.drawable.ic_clear);
+        //change button to "clear"
+        timerButton.setImageDrawable(stopPic);
+        timerTextView.setTime(currTime);
+        timerTextView.setVisibility(View.VISIBLE);
     }
 
     private ServiceConnection playerConnection = new ServiceConnection() {
@@ -411,18 +396,23 @@ public class MainActivity extends AppCompatActivity {
             AudioPlayerService.AudioPlayerBinder audioPlayerBinder = (AudioPlayerService.AudioPlayerBinder) binder;
             audioPlayerService = audioPlayerBinder.getService();
             float[] volumes = audioPlayerService.getVolume();
-            volumeBar.setProgress((int) (volumeBar.getMax() * averageLRVolume(volumes[0], volumes[1])));
+            volumeBar.setProgress((int) (volumeBar.getMax() * Math.max(volumes[0], volumes[1])));
             Resources res = MainActivity.this.getResources();
+            //convert from 120dp to pixels
+            int picSizeInPixels = (int)TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, 24, res.getDisplayMetrics());
+
             if (audioPlayerService.isPlaying()) {
                 Drawable playPic = res.getDrawable(R.drawable.ic_action_playback_pause_black);
-                playPic.setBounds(0, 0, 120, 120);
+                playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
                 playButton.setCompoundDrawables(playPic, null, null, null);
             } else {
                 Drawable playPic = res.getDrawable(R.drawable.ic_action_playback_play_black);
-                playPic.setBounds(0, 0, 120, 120);
+                playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
                 playButton.setCompoundDrawables(playPic, null, null, null);
             }
             audioPlayerService.setOscillatePeriod(oscillateInterval);
+            setUIBasedOnServiceState();
         }
 
         @Override
@@ -431,26 +421,10 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    /**
-     * Convert a string with hours mins seconds and any number of characters to milliseconds
-     *
-     * @param time a string with variable number of numbers and chars
-     * @return milliseconds
-     */
-    private long timeStringToMillis(String time) {
-        int[] HMS = timeStringToHMS(time);
-        long timeInMillis = HMS[0] * 60 * 60 * 1000 +
-                HMS[1] * 60 * 1000 +
-                HMS[2] * 1000;
-        return timeInMillis;
-    }
-
     SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 
         @Override
-        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                loadPreferences(prefs);
-        }
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) { loadPreferences(prefs); }
     };
 
 
@@ -497,122 +471,9 @@ public class MainActivity extends AppCompatActivity {
         volumeBar.setProgress((int) (volumeBar.getMax() * preferredVolume));
         oscillateButton.setChecked(preferredOscillateState);
         fadeButton.setChecked(preferredFadeState);
-        countdownTimeTextView.setText(millisToHMSZeros(preferredTime));
-    }
-    /**
-     * Parse hours mins seconds from a string with variable number of numbers and chars
-     *
-     * @param time a string with variable number of numbers and chars
-     * @return array of ints where index 0 is hours, 1 is minutes, 2 is seconds
-     */
-    private int[] timeStringToHMS(String time) {
-        String stripped = time.replaceAll("[^\\d]", "");
-        int hrs = Integer.parseInt(stripped.substring(0, 2));
-        int mins = Integer.parseInt(stripped.substring(2, 4));
-        int secs = Integer.parseInt(stripped.substring(4, 6));
-
-        mins += secs / 60;
-        secs = secs % 60;
-
-        hrs += mins / 60;
-        mins = mins % 60;
-        return new int[]{hrs, mins, secs};
+        timerTextView.setTime(preferredTime);
     }
 
-    /**
-     * Converts milliseconds to hours minutes and seconds
-     * Where there is a maximum of two digits for each and if there is only
-     * one digit, a zero is added in front
-     * if millis = 60000 this would return "000100" (1 minute)
-     *
-     * @param millis milliseconds
-     * @return string concatenated as hours+mins+seconds with zeros added appropriately
-     */
-    private String millisToHMSZeros(long millis) {
-        int[] HMS = millisToHMS(millis);
-        String formatted = "";
-        if (HMS[0] < 10)
-            formatted += "0" + HMS[0];
-        else formatted += HMS[0];
-
-        if (HMS[1] < 10)
-            formatted += "0" + HMS[1];
-        else formatted += HMS[1];
-
-        if (HMS[2] < 10)
-            formatted += "0" + HMS[2];
-        else formatted += HMS[2];
-
-        return formatted;
-    }
-
-    /**
-     * Converts milliseconds to hours minutes and seconds
-     * Where time 1000 would be 1 second, time 60000 would be 1 minute etc
-     *
-     * @param millis milliseconds
-     * @return array of ints where index 0 is hours, 1 is minutes, 2 is seconds
-     */
-    private int[] millisToHMS(long millis) {
-        //round up
-        //android's countdown timer will not tick precisely on the millisecond
-        //so for example, at 2 milliseconds, you will actually have 1997 ms
-        //(additionally the last tick won't happen)
-        int secs = (int) (millis / 1000.0 + .5);
-        int hrs = secs / (60 * 60);
-        secs = secs % (60 * 60);
-        int mins = secs / (60);
-        secs = secs % 60;
-        return new int[]{hrs, mins, secs};
-    }
-
-    /**
-     * Given a string with a variable amount of numbers and chars
-     * Format it to the hour, min, sec format that looks like "12h 34m 56s"
-     *
-     * @param input string with a variable amount of numbers and chars
-     * @return formatted string that looks like "12h 34m 56s"
-     */
-    private String stringToFormattedHMS(String input) {
-        //backspaced, removed the 's' but the user intended to remove last second number
-        if (input.length() == 10)
-            input = input.substring(0, 9);
-        //remove all non numbers
-        String stripped = input.replaceAll("[^\\d]", "");
-        //remove leading zeros
-        while (stripped.length() > 0) {
-            if (stripped.charAt(0) == '0')
-                stripped = stripped.substring(1);
-            else
-                break;
-        }
-        //any number index >5
-        stripped = stripped.substring(0, Math.min(stripped.length(), 6));
-
-        String preZeros = "";
-        if (stripped.length() < 6) {
-            char[] zeros = new char[6 - stripped.length()];
-            Arrays.fill(zeros, '0');
-            preZeros = new String(zeros);
-        }
-        String fullNums = preZeros + stripped;
-        //format in 12h 34m 56s
-        return fullNums.substring(0, 2) + "h " +
-                fullNums.substring(2, 4) + "m " +
-                fullNums.substring(4, 6) + "s";
-
-    }
-
-    /**
-     * Get an average of the left and right volumes in case they're different
-     *
-     * @param left  0f to 1.0f left volume
-     * @param right 0f to 1.0f right volume
-     * @return 0f to 1.0f averaged volume
-     */
-    private float averageLRVolume(float left, float right) {
-        return (left + right) / 2;
-    }
 
     private void startTimer(long time) {
         if (editTextCountDownTimer != null)
@@ -621,15 +482,15 @@ public class MainActivity extends AppCompatActivity {
         editTextCountDownTimer = new CountDownTimer(time, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                countdownTimeTextView.setText(millisToHMSZeros(millisUntilFinished));
-                Log.d(LOG_TAG, "millis " + millisUntilFinished);
+                timerTextView.setTime(millisUntilFinished);
             }
 
             @Override
             public void onFinish() {
-                countdownTimeTextView.setText(millisToHMSZeros(0));
+                timerTextView.setTime(0);
                 setPlayButtonPlay();
                 setTimerUIUnsetState();
+                timerActive = false;
             }
         };
         audioPlayerService.setTimer(time);
@@ -649,20 +510,27 @@ public class MainActivity extends AppCompatActivity {
         pauseTimer();
         if (audioPlayerService != null)
             audioPlayerService.stop();
-        countdownTimeTextView.setText(stringToFormattedHMS(millisToHMSZeros(0)));
+        timerTextView.setTime(0);
+        timerActive = false;
         setTimerUIUnsetState();
     }
 
     private void setPlayButtonPause() {
         Drawable playPic = getResources().getDrawable(R.drawable.ic_action_playback_pause_black);
-        playPic.setBounds(0, 0, 120, 120);
+        //convert from 120dp to pixels
+        int picSizeInPixels = (int)TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
+        playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
         playButton.setCompoundDrawables(playPic, null, null, null);
         playButton.setText("Pause");
     }
 
     private void setPlayButtonPlay() {
         Drawable playPic = getResources().getDrawable(R.drawable.ic_action_playback_play_black);
-        playPic.setBounds(0, 0, 120, 120);
+        //convert from 120dp to pixels
+        int picSizeInPixels = (int)TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
+        playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
         playButton.setCompoundDrawables(playPic, null, null, null);
         playButton.setText("Play");
     }
@@ -670,7 +538,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        setUIBasedOnServiceState();
     }
 
     private void setUIBasedOnServiceState() {
@@ -685,15 +552,17 @@ public class MainActivity extends AppCompatActivity {
             //still time left
             if(timeLeft > 0) {
                 //match the visual timer to the service timer
-                if(audioPlayerService.isPlaying())
+                if(audioPlayerService.isPlaying()) {
+                    setTimerUIAdded(timeLeft);
                     startTimer(timeLeft);
+                }
                 else //cancel the visual timer since the service timer is also
                     pauseTimer();
             }
-            else {
-                //kill the timer just to make sure
-                pauseTimer();
-                countdownTimeTextView.setText(stringToFormattedHMS(millisToHMSZeros(0)));
+            else if (!timerCreatedAndNotStarted) {
+                //service says timer is unset and we have no saved state telling us otherwise
+                timerTextView.setTime(0);
+                timerActive = false;
                 setTimerUIUnsetState();
             }
 

@@ -8,8 +8,8 @@ android {
         applicationId "dalbers.com.noise"
         minSdkVersion 19
         targetSdkVersion 24
-        versionCode 5
-        versionName "1.4"
+        versionCode 7
+        versionName "1.6"
     }
     buildTypes {
         release {
@@ -24,4 +24,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.2.0'
     compile 'com.google.android.gms:play-services-appindexing:9.4.0'
+    compile 'com.dalbers.timerpicker:timerpicker:1.0.0'
 }

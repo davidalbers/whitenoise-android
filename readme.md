@@ -13,11 +13,6 @@ Additionally most of the existing apps are ugly/outdated, so I'm attempting to u
 I've finished the main features of the app and it's available on the [Play Store](https://play.google.com/store/apps/details?id=dalbers.com.noise "App Link").
 
 ---
-Some wishlist features are:
-* Save app state (noise type, volume, etc.) and load it each time app is started
-* Enable horizontal screen orientation (this includes making the timer work in horizontal orientation)
-
----
 <img src="/screenshots/noiseScreenshot.png" width="250">
 <img src="/screenshots/noiseScreenshotDark.png" width="250">
 <img src="/screenshots/noiseNotification.png" width="250">

@@ -31,6 +31,7 @@ import android.widget.ToggleButton;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import butterknife.BindView;
 import dalbers.com.timerpicker.TimerPickerDialogFragment;
 import dalbers.com.timerpicker.TimerPickerDialogListener;
 import dalbers.com.timerpicker.TimerTextView;
@@ -38,21 +39,22 @@ import dalbers.com.timerpicker.TimerTextView;
 
 public class MainActivity extends AppCompatActivity {
 
+    @BindView(R.id.volumeBar) SeekBar volumeBar;
+    @BindView(R.id.btnPlay) Button playButton;
+    @BindView(R.id.timerButton) ImageButton timerButton;
+    @BindView(R.id.timerTextView) TimerTextView timerTextView;
+    @BindView(R.id.noiseTypes) RadioGroup noiseTypes;
+    @BindView(R.id.noiseTypeWhite) RadioButton noiseTypeWhite;
+    @BindView(R.id.noiseTypePink) RadioButton noiseTypePink;
+    @BindView(R.id.noiseTypeBrown) RadioButton noiseTypeBrown;
+    @BindView(R.id.waveVolumeToggle) ToggleButton oscillateButton;
+    @BindView(R.id.decreaseVolumeToggle) ToggleButton fadeButton;
+
     private AudioPlayerService audioPlayerService;
     public static String LOG_TAG = "dalbers.noise/main";
     private CountDownTimer editTextCountDownTimer;
-    private SeekBar volumeBar;
-    private Button playButton;
-    private ImageButton timerButton;
-    private boolean timerActive = false;
-    private TimerTextView timerTextView;
-    private RadioButton noiseTypeWhite;
-    private RadioButton noiseTypePink;
-    private RadioButton noiseTypeBrown;
-
+    boolean timerActive = false;
     private GoogleApiClient client;
-    private ToggleButton oscillateButton;
-    private ToggleButton fadeButton;
     //preferences keys
     public static final String PREF_STRING = "dalbers_white_noise";
     public static final String PREF_COLOR_KEY = "color";
@@ -108,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         bindService(serviceIntent, playerConnection, Context.BIND_AUTO_CREATE);
         isPlayerConnectionBound = true;
 
-        playButton = (Button) (findViewById(R.id.btnPlay));
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,10 +133,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        timerTextView = (TimerTextView)findViewById(R.id.timerTextView);
-
-
-        volumeBar = (SeekBar) findViewById(R.id.volumeBar);
         volumeBar.setProgress(volumeBar.getMax());
         volumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -156,90 +153,75 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final RadioGroup noiseTypes = (RadioGroup) findViewById(R.id.noiseTypes);
-        noiseTypeWhite = (RadioButton) findViewById(R.id.noiseTypeWhite);
-        noiseTypePink = (RadioButton) findViewById(R.id.noiseTypePink);
-        noiseTypeBrown = (RadioButton) findViewById(R.id.noiseTypeBrown);
-        if(noiseTypes != null) {
-            noiseTypes.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(RadioGroup group, int checkedId) {
-                    if (audioPlayerService != null) {
-                        switch (checkedId) {
-                            case R.id.noiseTypeWhite:
-                                audioPlayerService.setSoundFile(R.raw.white);
-                                break;
-                            case R.id.noiseTypePink:
-                                audioPlayerService.setSoundFile(R.raw.pink);
-                                break;
-                            case R.id.noiseTypeBrown:
-                                audioPlayerService.setSoundFile(R.raw.brown);
-                                break;
-                        }
+        noiseTypes.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if (audioPlayerService != null) {
+                    switch (checkedId) {
+                        case R.id.noiseTypeWhite:
+                            audioPlayerService.setSoundFile(R.raw.white);
+                            break;
+                        case R.id.noiseTypePink:
+                            audioPlayerService.setSoundFile(R.raw.pink);
+                            break;
+                        case R.id.noiseTypeBrown:
+                            audioPlayerService.setSoundFile(R.raw.brown);
+                            break;
                     }
                 }
-            });
-        }
+            }
+        });
 
-        oscillateButton = (ToggleButton) findViewById(R.id.waveVolumeToggle);
-        if (oscillateButton != null) {
-            oscillateButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if(audioPlayerService != null)
-                        audioPlayerService.setOscillateVolume(isChecked);
-                    if(oscillateNeverOn) {
-                        Toast.makeText(MainActivity.this,"Wavy Volume",Toast.LENGTH_LONG).show();
-                        //update oscillateNeverOn to false in locally and in settings
-                        oscillateNeverOn = false;
-                        SharedPreferences sharedPref =
-                                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                        SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putBoolean(PREF_OSCILLATE_NEVER_ON,false);
-                        editor.apply();
-                    }
+        oscillateButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (audioPlayerService != null)
+                    audioPlayerService.setOscillateVolume(isChecked);
+                if (oscillateNeverOn) {
+                    Toast.makeText(MainActivity.this, "Wavy Volume", Toast.LENGTH_LONG).show();
+                    //update oscillateNeverOn to false in locally and in settings
+                    oscillateNeverOn = false;
+                    SharedPreferences sharedPref =
+                            PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putBoolean(PREF_OSCILLATE_NEVER_ON, false);
+                    editor.apply();
                 }
-            });
-        }
+            }
+        });
 
-        fadeButton = (ToggleButton) findViewById(R.id.decreaseVolumeToggle);
-        if (fadeButton != null) {
-            fadeButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if(audioPlayerService != null)
-                        audioPlayerService.setDecreaseVolume(isChecked);
-                    if(fadeNeverOn) {
-                        Toast.makeText(MainActivity.this,"Fade Volume",Toast.LENGTH_LONG).show();
-                        //update fadeNeverOn to false in locally and in settings
-                        fadeNeverOn = false;
-                        SharedPreferences sharedPref =
-                                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                        SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putBoolean(PREF_FADE_NEVER_ON,false);
-                        editor.apply();
-                    }
+        fadeButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (audioPlayerService != null)
+                    audioPlayerService.setDecreaseVolume(isChecked);
+                if (fadeNeverOn) {
+                    Toast.makeText(MainActivity.this, "Fade Volume", Toast.LENGTH_LONG).show();
+                    //update fadeNeverOn to false in locally and in settings
+                    fadeNeverOn = false;
+                    SharedPreferences sharedPref =
+                            PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putBoolean(PREF_FADE_NEVER_ON, false);
+                    editor.apply();
                 }
-            });
-        }
+            }
+        });
 
-        timerButton = (ImageButton) findViewById(R.id.timerButton);
-        if (timerButton != null) {
-            timerButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (!timerActive) {
-                        showPickerDialog();
-                    } else {
-                        timerActive = false;
-                        setTimerUIUnsetState();
-                        stopTimer();
-                        //if playing audio, set button to play
-                        setPlayButtonPlay();
-                    }
+        timerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!timerActive) {
+                    showPickerDialog();
+                } else {
+                    timerActive = false;
+                    setTimerUIUnsetState();
+                    stopTimer();
+                    //if playing audio, set button to play
+                    setPlayButtonPlay();
                 }
-            });
-        }
+            }
+        });
 
         timerCreatedAndNotStarted = false;
         if (savedInstanceState != null) {

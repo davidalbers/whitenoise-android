@@ -31,7 +31,9 @@ import android.widget.ToggleButton;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import butterknife.BindDrawable;
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import dalbers.com.timerpicker.TimerPickerDialogFragment;
 import dalbers.com.timerpicker.TimerPickerDialogListener;
 import dalbers.com.timerpicker.TimerTextView;
@@ -49,6 +51,11 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.noiseTypeBrown) RadioButton noiseTypeBrown;
     @BindView(R.id.waveVolumeToggle) ToggleButton oscillateButton;
     @BindView(R.id.decreaseVolumeToggle) ToggleButton fadeButton;
+
+    @BindDrawable(R.drawable.ic_add) Drawable addPic;
+    @BindDrawable(R.drawable.ic_action_playback_play_black) Drawable playPic;
+    @BindDrawable(R.drawable.ic_action_playback_pause_black) Drawable pausePic;
+    @BindDrawable(R.drawable.ic_clear) Drawable stopPic;
 
     private AudioPlayerService audioPlayerService;
     public static String LOG_TAG = "dalbers.noise/main";
@@ -104,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
         Intent serviceIntent = new Intent(MainActivity.this, AudioPlayerService.class);
         startService(serviceIntent);
@@ -353,7 +361,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setTimerUIUnsetState() {
         //set button image
-        Drawable addPic = getResources().getDrawable(R.drawable.ic_add);
         timerButton.setImageDrawable(addPic);
         timerTextView.setVisibility(View.GONE);
     }
@@ -363,7 +370,6 @@ public class MainActivity extends AppCompatActivity {
      * the timer button to having an "x"
      */
     private void setTimerUIAdded(long currTime) {
-        Drawable stopPic = getResources().getDrawable(R.drawable.ic_clear);
         //change button to "clear"
         timerButton.setImageDrawable(stopPic);
         timerTextView.setTime(currTime);
@@ -385,11 +391,9 @@ public class MainActivity extends AppCompatActivity {
                     TypedValue.COMPLEX_UNIT_DIP, 24, res.getDisplayMetrics());
 
             if (audioPlayerService.isPlaying()) {
-                Drawable playPic = res.getDrawable(R.drawable.ic_action_playback_pause_black);
-                playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
-                playButton.setCompoundDrawables(playPic, null, null, null);
+                pausePic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
+                playButton.setCompoundDrawables(pausePic, null, null, null);
             } else {
-                Drawable playPic = res.getDrawable(R.drawable.ic_action_playback_play_black);
                 playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
                 playButton.setCompoundDrawables(playPic, null, null, null);
             }
@@ -498,17 +502,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setPlayButtonPause() {
-        Drawable playPic = getResources().getDrawable(R.drawable.ic_action_playback_pause_black);
         //convert from 120dp to pixels
         int picSizeInPixels = (int)TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
-        playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
-        playButton.setCompoundDrawables(playPic, null, null, null);
+        pausePic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
+        playButton.setCompoundDrawables(pausePic, null, null, null);
         playButton.setText("Pause");
     }
 
     private void setPlayButtonPlay() {
-        Drawable playPic = getResources().getDrawable(R.drawable.ic_action_playback_play_black);
         //convert from 120dp to pixels
         int picSizeInPixels = (int)TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());

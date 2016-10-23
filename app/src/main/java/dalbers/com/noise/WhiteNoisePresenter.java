@@ -7,6 +7,8 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import audio.WhiteNoiseAudioService;
+
 /**
  * Created by davidalbers on 10/2/16.
  */
@@ -15,7 +17,7 @@ public class WhiteNoisePresenter {
     /**Reference to the main activity, our presenter*/
     private MainActivity mainActivity;
     /**Handles playing and manipulating music*/
-    private AudioPlayerService audioPlayerService;
+    private WhiteNoiseAudioService whiteNoiseAudioService;
     /**Handles updating time visually*/
     private CountDownTimer editTextCountDownTimer;
     /**Timer was created and has not been cleared or run out*/
@@ -49,6 +51,10 @@ public class WhiteNoisePresenter {
         brown
     }
 
+    /**
+     * Which noise file is playing or will be played currently
+     */
+    private int currNoiseResId = R.raw.white;
     public static final String PREF_USE_DARK_MODE_KEY = "pref_use_dark_mode";
     public static final String PREF_OSCILLATE_INTERVAL_KEY = "pref_oscillate_interval";
 
@@ -60,13 +66,13 @@ public class WhiteNoisePresenter {
 
     /**Either pause or play the noise, depending on state*/
     public void playPause() {
-        if (audioPlayerService != null) {
-            if (audioPlayerService.isPlaying()) {
-                audioPlayerService.stop();
+        if (whiteNoiseAudioService != null) {
+            if (whiteNoiseAudioService.isPlaying()) {
+                whiteNoiseAudioService.stop();
                 mainActivity.setPlayButtonPlay();
                 pauseTimer();
             } else {
-                audioPlayerService.play();
+                whiteNoiseAudioService.play();
                 mainActivity.setPlayButtonPause();
                 //timer was set before noise was playing,
                 //start the timer with the music
@@ -82,8 +88,8 @@ public class WhiteNoisePresenter {
      * @param volume a float in range 0.0 to 1.0 where 1.0 is max and 0.0 is mute.
      */
     public void setVolume(float volume) {
-        if (audioPlayerService != null)
-            audioPlayerService.setMaxVolume(volume);
+        if (whiteNoiseAudioService != null)
+            whiteNoiseAudioService.setMaxVolume(volume);
     }
 
     /**
@@ -91,24 +97,24 @@ public class WhiteNoisePresenter {
      * @param color
      */
     public void setNoiseColor(NoiseColors color) {
-        if (audioPlayerService != null) {
+        if (whiteNoiseAudioService != null) {
             switch (color) {
                 case white:
-                    audioPlayerService.setSoundFile(R.raw.white);
                     break;
                 case pink:
-                    audioPlayerService.setSoundFile(R.raw.pink);
+                    currNoiseResId = R.raw.pink;
                     break;
                 case brown:
-                    audioPlayerService.setSoundFile(R.raw.brown);
+                    currNoiseResId = R.raw.brown;
                     break;
             }
+            whiteNoiseAudioService.setSoundFile(currNoiseResId);
         }
     }
 
     public void toggleOscillation(boolean oscillateOn) {
-        if(audioPlayerService != null)
-            audioPlayerService.setOscillateVolume(oscillateOn);
+        if(whiteNoiseAudioService != null)
+            whiteNoiseAudioService.setOscillateVolume(oscillateOn);
         if(oscillateNeverOn) {
             mainActivity.explainOscillation();
             //update oscillateNeverOn to false in locally and in settings
@@ -122,8 +128,8 @@ public class WhiteNoisePresenter {
     }
 
     public void toggleFade(boolean fadeOn) {
-        if(audioPlayerService != null)
-            audioPlayerService.setDecreaseVolume(fadeOn);
+        if(whiteNoiseAudioService != null)
+            whiteNoiseAudioService.setDecreaseVolume(fadeOn);
         if(fadeNeverOn) {
            mainActivity.explainFade();
             //update fadeNeverOn to false in locally and in settings
@@ -170,7 +176,7 @@ public class WhiteNoisePresenter {
                 onTimerFinished();
             }
         };
-        audioPlayerService.setTimer(time);
+        whiteNoiseAudioService.setTimer(time);
         editTextCountDownTimer.start();
     }
 
@@ -191,7 +197,7 @@ public class WhiteNoisePresenter {
     private void pauseTimer() {
         if (editTextCountDownTimer != null)
             editTextCountDownTimer.cancel();
-        audioPlayerService.cancelTimer();
+        whiteNoiseAudioService.cancelTimer();
     }
 
     /**
@@ -199,8 +205,8 @@ public class WhiteNoisePresenter {
      */
     private void stopTimer() {
         pauseTimer();
-        if (audioPlayerService != null)
-            audioPlayerService.stop();
+        if (whiteNoiseAudioService != null)
+            whiteNoiseAudioService.stop();
         mainActivity.setTime(0);
         timerActive = false;
         mainActivity.setTimerUIUnsetState();
@@ -210,14 +216,14 @@ public class WhiteNoisePresenter {
         currTime = time;
         timerActive = true;
         mainActivity.setTimerUIAdded(time);
-        if (audioPlayerService != null && audioPlayerService.isPlaying()) {
+        if (whiteNoiseAudioService != null && whiteNoiseAudioService.isPlaying()) {
             startTimer(time);
         }
     }
 
     public void showAnyNotification() {
-        if(audioPlayerService != null && audioPlayerService.isPlaying())
-            audioPlayerService.showNotification(true);
+        if(whiteNoiseAudioService != null && whiteNoiseAudioService.isPlaying())
+            whiteNoiseAudioService.showNotification(true);
     }
 
     public void saveInstance(Bundle savedInstanceState) {
@@ -236,8 +242,8 @@ public class WhiteNoisePresenter {
     }
 
     public void dismissAnyNotification() {
-        if(audioPlayerService != null)
-            audioPlayerService.dismissNotification();
+        if(whiteNoiseAudioService != null)
+            whiteNoiseAudioService.dismissNotification();
     }
 
    /**
@@ -254,11 +260,11 @@ public class WhiteNoisePresenter {
     public static final String PREF_DECREASE_KEY = "decrease";
     public static final String PREF_TIME_KEY = "time";
     private void applyAudioPreferences() {
-        audioPlayerService.setSoundFile(preferredColorFile);
-        audioPlayerService.setMaxVolume(preferredVolume);
-        audioPlayerService.setDecreaseVolume(preferredFadeState);
-        audioPlayerService.setOscillateVolume(preferredOscillateState);
-        audioPlayerService.setTimer(preferredTime);
+        whiteNoiseAudioService.setSoundFile(preferredColorFile);
+        whiteNoiseAudioService.setMaxVolume(preferredVolume);
+        whiteNoiseAudioService.setDecreaseVolume(preferredFadeState);
+        whiteNoiseAudioService.setOscillateVolume(preferredOscillateState);
+        whiteNoiseAudioService.setTimer(preferredTime);
         if(preferredColorFile == R.raw.pink)
             noiseTypePink.setChecked(true);
         else if(preferredColorFile == R.raw.brown)
@@ -295,35 +301,36 @@ public class WhiteNoisePresenter {
         Log.d(MainActivity.LOG_TAG, "look at prefs, using dark mode? " + useDarkMode);
     }
 
-    public void setAudioPlayerService(AudioPlayerService audioPlayerService) {
-        this.audioPlayerService = audioPlayerService;
-        if(this.audioPlayerService != null) {
-            float[] volumes = audioPlayerService.getVolume();
-            mainActivity.setVolume(Math.max(volumes[0], volumes[1]));
+    public void setWhiteNoiseAudioService(WhiteNoiseAudioService whiteNoiseAudioService) {
+        this.whiteNoiseAudioService = whiteNoiseAudioService;
+        if(this.whiteNoiseAudioService != null) {
+            float volume = whiteNoiseAudioService.getVolume();
+            mainActivity.setVolume(volume);
 
-            if (audioPlayerService.isPlaying()) {
+            if (whiteNoiseAudioService.isPlaying()) {
                 mainActivity.setPlayButtonPause();
             } else {
                 mainActivity.setPlayButtonPlay();
             }
-            audioPlayerService.setOscillatePeriod(oscillateInterval);
+            whiteNoiseAudioService.setOscillatePeriod(oscillateInterval);
             setUIBasedOnServiceState();
+            whiteNoiseAudioService.setSoundFile(currNoiseResId);
         }
     }
 
    private void setUIBasedOnServiceState() {
-        if(audioPlayerService != null) {
+        if(whiteNoiseAudioService != null) {
             //sync up play state
-            if(audioPlayerService.isPlaying())
+            if(whiteNoiseAudioService.isPlaying())
                 mainActivity.setPlayButtonPause();
             else
                 mainActivity.setPlayButtonPlay();
             //sync up timer
-            long timeLeft = audioPlayerService.getTimeLeft();
+            long timeLeft = whiteNoiseAudioService.getTimeLeft();
             //still time left, according to service
             if(timeLeft > 0) {
                 //match the visual timer to the service timer
-                if(audioPlayerService.isPlaying()) {
+                if(whiteNoiseAudioService.isPlaying()) {
                     mainActivity.setTimerUIAdded(timeLeft);
                     startTimer(timeLeft);
                 }

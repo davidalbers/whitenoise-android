@@ -27,6 +27,7 @@ import android.widget.ToggleButton;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import audio.WhiteNoiseAudioService;
 import dalbers.com.timerpicker.TimerPickerDialogFragment;
 import dalbers.com.timerpicker.TimerPickerDialogListener;
 import dalbers.com.timerpicker.TimerTextView;
@@ -65,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        Intent serviceIntent = new Intent(MainActivity.this, AudioPlayerService.class);
+        Intent serviceIntent = new Intent(MainActivity.this, WhiteNoiseAudioService.class);
         startService(serviceIntent);
         bindService(serviceIntent, playerConnection, Context.BIND_AUTO_CREATE);
         isPlayerConnectionBound = true;
@@ -340,15 +341,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder binder) {
-            AudioPlayerService.AudioPlayerBinder audioPlayerBinder = (AudioPlayerService.AudioPlayerBinder) binder;
-            AudioPlayerService audioPlayerService = audioPlayerBinder.getService();
-            whiteNoisePresenter.setAudioPlayerService(audioPlayerService);
-
+            WhiteNoiseAudioService.AudioServiceBinder audioServiceBinder = (WhiteNoiseAudioService.AudioServiceBinder) binder;
+            WhiteNoiseAudioService whiteNoiseAudioService = (WhiteNoiseAudioService)audioServiceBinder.getService();
+            whiteNoisePresenter.setWhiteNoiseAudioService(whiteNoiseAudioService);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName className) {
-            whiteNoisePresenter.setAudioPlayerService(null);
+            whiteNoisePresenter.setWhiteNoiseAudioService(null);
         }
     };
 }

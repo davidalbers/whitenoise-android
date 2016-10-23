@@ -27,7 +27,7 @@
         </activity>
 
         <service
-            android:name=".AudioPlayerService"
+            android:name="audio.WhiteNoiseAudioService"
             android:enabled="true"
             android:exported="true" />
         <!--

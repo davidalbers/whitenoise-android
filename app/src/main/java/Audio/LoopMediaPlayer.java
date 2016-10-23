@@ -1,4 +1,4 @@
-package dalbers.com.noise;
+package audio;
 
 import android.content.Context;
 import android.media.MediaPlayer;
@@ -18,9 +18,8 @@ public class LoopMediaPlayer {
     private MediaPlayer mCurrentPlayer = null;
     private MediaPlayer mNextPlayer = null;
 
-    public static LoopMediaPlayer create(Context context, int resId) {
+    public static LoopMediaPlayer create(Context context) {
         LoopMediaPlayer looper = new LoopMediaPlayer(context);
-        looper.mResId = resId;
         return looper;
     }
 

@@ -1,42 +1,29 @@
-package dalbers.com.noise;
+package audio;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Binder;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
-/**
- * TODO:
- * fix service memory leak when app backgrounded (only seen on Samsung?)
- */
+
+import dalbers.com.noise.R;
 
 /**
- * A service to play audio on a loop.
- * Features oscillating and decreasing volume.
- * Uses LoopMediaPlayer for looping audio.
+ * A modified BaseLoopAudioService that adds
+ *  timer and oscillating and decreasing volume.
  */
-public class AudioPlayerService extends Service {
-    private LoopMediaPlayer mp;
+public class WhiteNoiseAudioService extends BaseLoopAudioService
+        implements WhiteNoiseAudioInterface {
     private static String LOG_TAG = "dalbers.noise:audioPlayer";
-    private IBinder mBinder = new AudioPlayerBinder();
     private long millisLeft = 0;
     private CountDownTimer countDownTimer;
     private float leftVolume = 0.5f;
     private float rightVolume = 0.5f;
-    private Timer volumeChangerTimer;
     private boolean oscillateVolume = false;
     private boolean oscillateVolumeStereo = true;
     private boolean oscillatingDown = true;
@@ -77,41 +64,18 @@ public class AudioPlayerService extends Service {
      * Volume set by the user before oscillation or other things affected it
      */
     private float initialVolume = 1.0f;
-    private Notification notification;
-    /**
-     * Used when showing the notification,
-     * unique within the app,
-     * if multiple notify()s are called with the same id,
-     * new one will replace the old ones
-     */
-    private final int NOTIFICATION_ID = 0;
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        if(mp == null) {
-            mp = LoopMediaPlayer.create(this, R.raw.white);
-        }
-        return mBinder;
-    }
 
     @Override
     public void onCreate()
     {
-        volumeChangerTimer = new Timer();
+        super.onCreate();
+        Timer volumeChangerTimer = new Timer();
         volumeChangerTimer.schedule(new VolumeChangerTimerTask(), 0, tickPeriod);
     }
 
-    @Override
-    public void onDestroy()
-    {
-        mp.stop();
-    }
 
     @Override
     public int onStartCommand(Intent intent,int flags, int startId){
-        if(mp == null)
-            mp = LoopMediaPlayer.create(this, R.raw.white);
-
         //if a button is pressed in the notification,
         //the service will be started with this extra
         if(intent != null) {
@@ -138,44 +102,7 @@ public class AudioPlayerService extends Service {
                 }
             }
         }
-
-        return START_STICKY;
-    }
-
-    public class AudioPlayerBinder extends Binder {
-        AudioPlayerService getService() {
-            return AudioPlayerService.this;
-        }
-    }
-
-    public void play() {
-        mp.play();
-    }
-
-    public void stop() {
-        if(mp != null)
-            mp.stop();
-        //reset volumes to initial values
-        leftVolume = initialVolume;
-        rightVolume = initialVolume;
-    }
-
-    public void pause() {
-        if(mp != null)
-            mp.pause();
-        //reset volumes to initial values
-//        leftVolume = initialVolume;
-//        rightVolume = initialVolume;
-    }
-
-    public boolean isPlaying() {
-        if(mp != null)
-            return mp.isPlaying();
-        else return false;
-    }
-
-    public void dismissNotification() {
-        ((NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
+        return super.onStartCommand(intent,flags,startId);
     }
 
     /**
@@ -192,7 +119,7 @@ public class AudioPlayerService extends Service {
         oscillatingDown = true;
         initialVolume = maxVolume;
         mp.setVolume(maxVolume, maxVolume);
-        Log.d(LOG_TAG, maxVolume + "");
+//        Log.d(LOG_TAG, maxVolume + "");
     }
 
     /**
@@ -202,11 +129,9 @@ public class AudioPlayerService extends Service {
      * @param rightVolume a value 0.0 to 1.0 where 1.0 is max of the device
      */
     private void setVolume(float leftVolume, float rightVolume) {
-
         mp.setVolume(leftVolume, rightVolume);
     }
 
-    public float[] getVolume() { return new float[] {leftVolume,rightVolume}; }
 
     public void setTimer(final long millis) {
         millisLeft = millis;
@@ -244,9 +169,9 @@ public class AudioPlayerService extends Service {
         return millisLeft;
     }
 
-
+    @Override
     public void setSoundFile(int resId) {
-        mp.setSoundFile(resId);
+        super.setSoundFile(resId);
         mp.setVolume(maxVolume,maxVolume);
     }
 
@@ -257,8 +182,6 @@ public class AudioPlayerService extends Service {
     public void setDecreaseVolume(boolean decreaseVolume) {
         this.decreaseVolume = decreaseVolume;
     }
-
-
 
     Runnable volumeRunnable = new Runnable() {
         @Override
@@ -370,6 +293,7 @@ public class AudioPlayerService extends Service {
     public void setOscillatePeriod(long oscillatePeriod) {
         this.oscillatePeriod = oscillatePeriod;
     }
+
     /**
      * Show a notification with information about the sound being played/paused
      * and a pause button which will callback to this service
@@ -393,62 +317,7 @@ public class AudioPlayerService extends Service {
         }
         Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
                 R.mipmap.ic_launcher);
-        //make an intent to callback this service when the pause button is pressed
-
-        //create the notification
-        if(playing) {
-            Intent pausePlayIntent = new Intent(this,AudioPlayerService.class);
-            pausePlayIntent.putExtra("do", "pause");
-            PendingIntent pausePlayPI = PendingIntent.getService(this, 0, pausePlayIntent, PendingIntent.FLAG_ONE_SHOT);
-            Intent closeIntent = new Intent(this,AudioPlayerService.class);
-            closeIntent.setAction("close");
-            closeIntent.putExtra("do", "close");
-            PendingIntent closePI = PendingIntent.getService(getApplicationContext(), 0, closeIntent, PendingIntent.FLAG_ONE_SHOT);
-            Intent openAppIntent = new Intent(getApplicationContext(),MainActivity.class);
-            openAppIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            openAppIntent.putExtra("startedFromNotification", true);
-            PendingIntent openAppPI = PendingIntent.getActivity(getApplicationContext(),0, openAppIntent, PendingIntent.FLAG_ONE_SHOT);
-            notification = new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.drawable.ic_statusbar2)
-                    .setContentTitle(title)
-                    .setContentText("Playing")
-                    .setLargeIcon(icon)
-                    .setStyle(new NotificationCompat.MediaStyle())
-                    .setOngoing(true)
-                    .addAction(R.drawable.ic_action_playback_pause_black, "Pause", pausePlayPI)
-                    .addAction(R.drawable.ic_clear, "Close", closePI)
-                    .setContentIntent(openAppPI)
-                    .build();
-        }
-        else {
-            Intent pausePlayIntent = new Intent(this,AudioPlayerService.class);
-            pausePlayIntent.setAction("play");
-            pausePlayIntent.putExtra("do", "play");
-            PendingIntent pausePlayPI = PendingIntent.getService(this, 0, pausePlayIntent, PendingIntent.FLAG_ONE_SHOT);
-            Intent closeIntent = new Intent(this,AudioPlayerService.class);
-            closeIntent.setAction("close");
-            closeIntent.putExtra("do", "close");
-            PendingIntent closePI = PendingIntent.getService(this, 0, closeIntent, PendingIntent.FLAG_ONE_SHOT);
-            Intent openAppIntent = new Intent(getApplicationContext(), MainActivity.class);
-            openAppIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            openAppIntent.putExtra("startedFromNotification", true);
-            PendingIntent openAppPI = PendingIntent.getActivity(getApplicationContext(), 0, openAppIntent, PendingIntent.FLAG_ONE_SHOT);
-            notification = new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.drawable.ic_statusbar2)
-                    .setContentTitle(title)
-                    .setContentText("Paused")
-                    .setLargeIcon(icon)
-                    .setStyle(new NotificationCompat.MediaStyle())
-                    .setOngoing(true)
-                    .addAction(R.drawable.ic_action_playback_play_black, "Play", pausePlayPI)
-                    .addAction(R.drawable.ic_clear, "Close", closePI)
-                    .setContentIntent(openAppPI)
-                    .build();
-        }
-        //show the notification
-        NotificationManager nManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-        nManager.notify(NOTIFICATION_ID, notification);
+        super.showNotification(playing,icon,title);
     }
-
 }
 

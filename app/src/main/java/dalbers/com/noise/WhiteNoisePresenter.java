@@ -1,5 +1,6 @@
 package dalbers.com.noise;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -7,17 +8,19 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+
+import audio.WhiteNoiseAudioInterface;
 import audio.WhiteNoiseAudioService;
 
 /**
  * Created by davidalbers on 10/2/16.
  */
-public class WhiteNoisePresenter {
+public class WhiteNoisePresenter implements WhiteNoiseContract.Presenter {
 
     /**Reference to the main activity, our presenter*/
-    private MainActivity mainActivity;
+    private WhiteNoiseContract.View view;
     /**Handles playing and manipulating music*/
-    private WhiteNoiseAudioService whiteNoiseAudioService;
+    private WhiteNoiseAudioInterface whiteNoiseAudioService;
     /**Handles updating time visually*/
     private CountDownTimer editTextCountDownTimer;
     /**Timer was created and has not been cleared or run out*/
@@ -58,22 +61,32 @@ public class WhiteNoisePresenter {
     public static final String PREF_USE_DARK_MODE_KEY = "pref_use_dark_mode";
     public static final String PREF_OSCILLATE_INTERVAL_KEY = "pref_oscillate_interval";
 
-    public WhiteNoisePresenter(MainActivity mainActivity, SharedPreferences prefs) {
-        this.mainActivity = mainActivity;
-        prefs.registerOnSharedPreferenceChangeListener(sharedPrefListener);
-        loadPreferences(prefs);
+    public WhiteNoisePresenter(WhiteNoiseContract.View view) {
+        this.view = view;
     }
 
-    /**Either pause or play the noise, depending on state*/
+    /**
+     * Construct the presenter with all dependencies. This probably can't be used in production
+     * because a real service is created asynchronously. The only use for this is for testing
+     * with fake/mocked params
+     * @param view
+     * @param audioService
+     */
+    public WhiteNoisePresenter(WhiteNoiseContract.View view, WhiteNoiseAudioInterface audioService) {
+        this.view = view;
+        setWhiteNoiseAudioService(audioService);
+    }
+
+        /**Either pause or play the noise, depending on state*/
     public void playPause() {
         if (whiteNoiseAudioService != null) {
             if (whiteNoiseAudioService.isPlaying()) {
                 whiteNoiseAudioService.stop();
-                mainActivity.setPlayButtonPlay();
+                view.setPlayButtonPlay();
                 pauseTimer();
             } else {
                 whiteNoiseAudioService.play();
-                mainActivity.setPlayButtonPause();
+                view.setPlayButtonPause();
                 //timer was set before noise was playing,
                 //start the timer with the music
                 if (currTime != 0) {
@@ -100,6 +113,7 @@ public class WhiteNoisePresenter {
         if (whiteNoiseAudioService != null) {
             switch (color) {
                 case white:
+                    currNoiseResId = R.raw.white;
                     break;
                 case pink:
                     currNoiseResId = R.raw.pink;
@@ -116,14 +130,10 @@ public class WhiteNoisePresenter {
         if(whiteNoiseAudioService != null)
             whiteNoiseAudioService.setOscillateVolume(oscillateOn);
         if(oscillateNeverOn) {
-            mainActivity.explainOscillation();
+            view.explainOscillation();
             //update oscillateNeverOn to false in locally and in settings
             oscillateNeverOn = false;
-            SharedPreferences sharedPref =
-                    PreferenceManager.getDefaultSharedPreferences(mainActivity.getBaseContext());
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putBoolean(PREF_OSCILLATE_NEVER_ON, false);
-            editor.apply();
+            view.saveOscillateNeverOn(oscillateNeverOn,PREF_OSCILLATE_NEVER_ON);
         }
     }
 
@@ -131,14 +141,10 @@ public class WhiteNoisePresenter {
         if(whiteNoiseAudioService != null)
             whiteNoiseAudioService.setDecreaseVolume(fadeOn);
         if(fadeNeverOn) {
-           mainActivity.explainFade();
+           view.explainFade();
             //update fadeNeverOn to false in locally and in settings
             fadeNeverOn = false;
-            SharedPreferences sharedPref =
-                    PreferenceManager.getDefaultSharedPreferences(mainActivity.getBaseContext());
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putBoolean(PREF_FADE_NEVER_ON, false);
-            editor.apply();
+            view.saveFadeNeverOn(fadeNeverOn,PREF_FADE_NEVER_ON);
         }
     }
 
@@ -147,13 +153,13 @@ public class WhiteNoisePresenter {
      */
     public void createCancelTimer() {
         if (!timerActive) {
-            mainActivity.showPickerDialog();
+            view.showPickerDialog();
         } else {
             timerActive = false;
-            mainActivity.setTimerUIUnsetState();
+            view.setTimerUIUnsetState();
             stopTimer();
             //if playing audio, set button to play
-            mainActivity.setPlayButtonPlay();
+            view.setPlayButtonPlay();
         }
     }
 
@@ -168,7 +174,7 @@ public class WhiteNoisePresenter {
             @Override
             public void onTick(long millisUntilFinished) {
                 currTime = millisUntilFinished;
-                mainActivity.setTime(millisUntilFinished);
+                view.setTime(millisUntilFinished);
             }
 
             @Override
@@ -184,9 +190,9 @@ public class WhiteNoisePresenter {
      * Update state when timer finishes
      */
     private void onTimerFinished() {
-        mainActivity.setTime(0);
-        mainActivity.setPlayButtonPlay();
-        mainActivity.setTimerUIUnsetState();
+        view.setTime(0);
+        view.setPlayButtonPlay();
+        view.setTimerUIUnsetState();
         timerActive = false;
         currTime = 0;
     }
@@ -207,15 +213,15 @@ public class WhiteNoisePresenter {
         pauseTimer();
         if (whiteNoiseAudioService != null)
             whiteNoiseAudioService.stop();
-        mainActivity.setTime(0);
+        view.setTime(0);
         timerActive = false;
-        mainActivity.setTimerUIUnsetState();
+        view.setTimerUIUnsetState();
     }
 
     public void setTime(long time) {
         currTime = time;
         timerActive = true;
-        mainActivity.setTimerUIAdded(time);
+        view.setTimerUIAdded(time);
         if (whiteNoiseAudioService != null && whiteNoiseAudioService.isPlaying()) {
             startTimer(time);
         }
@@ -277,7 +283,7 @@ public class WhiteNoisePresenter {
         timerTextView.setTime(preferredTime);
     }*/
 
-    private void loadPreferences(SharedPreferences prefs) {
+    public void loadPreferences(SharedPreferences prefs) {
         oscillateNeverOn = prefs.getBoolean(PREF_OSCILLATE_NEVER_ON,true);
         fadeNeverOn = prefs.getBoolean(PREF_FADE_NEVER_ON,true);
 
@@ -298,20 +304,14 @@ public class WhiteNoisePresenter {
         //preferredFadeState = prefs.getBoolean(PREF_DECREASE_KEY,false);
         useDarkMode = prefs.getBoolean(PREF_USE_DARK_MODE_KEY,false);
         oscillateInterval = Integer.parseInt(prefs.getString(PREF_OSCILLATE_INTERVAL_KEY,"4"))*1000;
-        Log.d(MainActivity.LOG_TAG, "look at prefs, using dark mode? " + useDarkMode);
     }
 
-    public void setWhiteNoiseAudioService(WhiteNoiseAudioService whiteNoiseAudioService) {
+    public void setWhiteNoiseAudioService(WhiteNoiseAudioInterface whiteNoiseAudioService) {
         this.whiteNoiseAudioService = whiteNoiseAudioService;
         if(this.whiteNoiseAudioService != null) {
             float volume = whiteNoiseAudioService.getVolume();
-            mainActivity.setVolume(volume);
+            view.setVolume(volume);
 
-            if (whiteNoiseAudioService.isPlaying()) {
-                mainActivity.setPlayButtonPause();
-            } else {
-                mainActivity.setPlayButtonPlay();
-            }
             whiteNoiseAudioService.setOscillatePeriod(oscillateInterval);
             setUIBasedOnServiceState();
             whiteNoiseAudioService.setSoundFile(currNoiseResId);
@@ -322,16 +322,16 @@ public class WhiteNoisePresenter {
         if(whiteNoiseAudioService != null) {
             //sync up play state
             if(whiteNoiseAudioService.isPlaying())
-                mainActivity.setPlayButtonPause();
+                view.setPlayButtonPause();
             else
-                mainActivity.setPlayButtonPlay();
+                view.setPlayButtonPlay();
             //sync up timer
             long timeLeft = whiteNoiseAudioService.getTimeLeft();
             //still time left, according to service
             if(timeLeft > 0) {
                 //match the visual timer to the service timer
                 if(whiteNoiseAudioService.isPlaying()) {
-                    mainActivity.setTimerUIAdded(timeLeft);
+                    view.setTimerUIAdded(timeLeft);
                     startTimer(timeLeft);
                 }
                 else //cancel the visual timer since the service timer is also
@@ -340,18 +340,14 @@ public class WhiteNoisePresenter {
             else if (!timerActive) {
                 //service says timer is unset and the user did not create a timer before
                 //service got connected, so set timer to zero
-                mainActivity.setTime(0);
+                view.setTime(0);
                 timerActive = false;
-                mainActivity.setTimerUIUnsetState();
+                view.setTimerUIUnsetState();
             }
 
         }
    }
 
-    SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) { loadPreferences(prefs); }
-    };
 
     public boolean getUseDarkMode() {
         return useDarkMode;
@@ -370,7 +366,7 @@ public class WhiteNoisePresenter {
                 @Override
                 public void run()
                 {
-                    mainActivity.recreate();
+                    view.recreateView();
                 }
             }, 0);
         }

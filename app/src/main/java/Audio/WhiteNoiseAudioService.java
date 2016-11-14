@@ -19,7 +19,7 @@ import dalbers.com.noise.R;
  */
 public class WhiteNoiseAudioService extends BaseLoopAudioService
         implements WhiteNoiseAudioInterface {
-    private static String LOG_TAG = "dalbers.noise:audioPlayer";
+    private static String LOG_TAG = "dalbers/audioPlayer";
     private long millisLeft = 0;
     private CountDownTimer countDownTimer;
     private float leftVolume = 0.5f;
@@ -59,11 +59,11 @@ public class WhiteNoiseAudioService extends BaseLoopAudioService
      * if only using oscillate, this should be == initialVolume
      * if using decrease, this will decrease
      */
-    private float maxVolume = 1.0f;
+    private float maxVolume = .5f;
     /**
      * Volume set by the user before oscillation or other things affected it
      */
-    private float initialVolume = 1.0f;
+    private float initialVolume = .5f;
 
     @Override
     public void onCreate()
@@ -82,14 +82,12 @@ public class WhiteNoiseAudioService extends BaseLoopAudioService
             if (intent.hasExtra("do")) {
                 String action = (String) intent.getExtras().get("do");
                 if (action.equals("pause")) {
-                    Log.d(LOG_TAG, "paused");
                     pause();
                     //there's no way to pause the timer
                     //just cancel it and start a new one if play is pressed
                     cancelTimer();
                     showNotification(false);
                 } else if (action.equals("play")) {
-                    Log.d(LOG_TAG, "playing");
                     play();
                     //there was a timer before pause was pressed
                     //start it again with the leftover time
@@ -113,13 +111,16 @@ public class WhiteNoiseAudioService extends BaseLoopAudioService
      * @param maxVolume a value 0.0 to 1.0 where 1.0 is max of the device
      */
     public void setMaxVolume(float maxVolume) {
+        if(maxVolume < 0)
+            maxVolume = 0;
+        if(maxVolume > 1.0)
+            maxVolume = 1.0f;
         this.maxVolume = maxVolume;
         leftVolume = maxVolume;
         rightVolume = maxVolume;
         oscillatingDown = true;
         initialVolume = maxVolume;
         mp.setVolume(maxVolume, maxVolume);
-//        Log.d(LOG_TAG, maxVolume + "");
     }
 
     /**
@@ -129,6 +130,10 @@ public class WhiteNoiseAudioService extends BaseLoopAudioService
      * @param rightVolume a value 0.0 to 1.0 where 1.0 is max of the device
      */
     private void setVolume(float leftVolume, float rightVolume) {
+        if(maxVolume < 0)
+            maxVolume = 0;
+        if(maxVolume > 1.0)
+            maxVolume = 1.0f;
         mp.setVolume(leftVolume, rightVolume);
     }
 
@@ -227,7 +232,6 @@ public class WhiteNoiseAudioService extends BaseLoopAudioService
             rightVolume = maxVolume;
             oscillatingDown = true;
         }
-        Log.d(LOG_TAG, leftVolume + "," + rightVolume);
     }
 
     /**
@@ -263,7 +267,6 @@ public class WhiteNoiseAudioService extends BaseLoopAudioService
             oscillatingDown = true;
             oscillatingLeft = !oscillatingLeft;
         }
-        Log.d(LOG_TAG,leftVolume+","+rightVolume);
     }
 
     public void decreaseForTick() {
@@ -278,7 +281,6 @@ public class WhiteNoiseAudioService extends BaseLoopAudioService
             maxVolume += delta;
         }
 
-        Log.d(LOG_TAG,maxVolume+"");
     }
 
 

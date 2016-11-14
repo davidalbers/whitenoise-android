@@ -3,7 +3,7 @@ package audio;
 /**
  * Created by davidalbers on 10/22/16.
  */
-public interface WhiteNoiseAudioInterface {
+public interface WhiteNoiseAudioInterface extends BaseLoopAudioInterface {
 
 
     /**

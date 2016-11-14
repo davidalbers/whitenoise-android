@@ -33,7 +33,7 @@ import dalbers.com.timerpicker.TimerPickerDialogListener;
 import dalbers.com.timerpicker.TimerTextView;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements WhiteNoiseContract.View {
 
 
     public static String LOG_TAG = "dalbers.noise/main";
@@ -43,22 +43,22 @@ public class MainActivity extends AppCompatActivity {
     private TimerTextView timerTextView;
     private GoogleApiClient client;
     private boolean isPlayerConnectionBound = false;
-
-    private WhiteNoisePresenter whiteNoisePresenter;
+    public WhiteNoisePresenter whiteNoisePresenter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SharedPreferences sharedPref =
                 PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        whiteNoisePresenter = new WhiteNoisePresenter(this,sharedPref);
+        whiteNoisePresenter = new WhiteNoisePresenter(this);
+        //load saved prefs into presenter
+        sharedPref.registerOnSharedPreferenceChangeListener(sharedPrefListener);
+        whiteNoisePresenter.loadPreferences(sharedPref);
         //let presenter decide if we want to use dark mode
         boolean useDarkMode = whiteNoisePresenter.getUseDarkMode();
         if(useDarkMode) {
-            Log.d(LOG_TAG,"setting theme to dark mode");
             setTheme(R.style.Dark);
         }
         else {
-            Log.d(LOG_TAG,"setting theme to regular");
             setTheme(R.style.AppTheme);
         }
         //let the presenter know we've set dark mode on/off
@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         volumeBar = (SeekBar) findViewById(R.id.volumeBar);
-        volumeBar.setProgress(volumeBar.getMax());
+        volumeBar.setProgress(volumeBar.getMax()/2);
         volumeBar.setOnSeekBarChangeListener(volumeChangeListener);
 
         final RadioGroup noiseTypes = (RadioGroup) findViewById(R.id.noiseTypes);
@@ -175,6 +175,29 @@ public class MainActivity extends AppCompatActivity {
         TimerPickerDialogFragment timerDialog = new TimerPickerDialogFragment();
         timerDialog.show(getSupportFragmentManager(), "TimerPickerDialog");
         timerDialog.setDialogListener(dialogListener);
+    }
+
+    @Override
+    public void saveOscillateNeverOn(boolean oscillateOn, String saveKey) {
+        SharedPreferences sharedPref =
+                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(saveKey, oscillateOn);
+        editor.apply();
+    }
+
+    @Override
+    public void saveFadeNeverOn(boolean fadeNeverOn, String prefFadeNeverOn) {
+        SharedPreferences sharedPref =
+                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(prefFadeNeverOn, false);
+        editor.apply();
+    }
+
+    @Override
+    public void recreateView() {
+        recreate();
     }
 
     /** Do stuff when timer is set in dialog  */
@@ -329,7 +352,8 @@ public class MainActivity extends AppCompatActivity {
      * Set the ProgressBar that displays volume
      */
     public void setVolume(float volume) {
-       volumeBar.setProgress((int) (volumeBar.getMax() * volume));
+        Log.d(LOG_TAG,"setvolume: "+volume);
+        volumeBar.setProgress((int) (volumeBar.getMax() * volume));
     }
 
     /**
@@ -349,6 +373,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName className) {
             whiteNoisePresenter.setWhiteNoiseAudioService(null);
+        }
+    };
+
+    SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+            whiteNoisePresenter.loadPreferences(prefs);
         }
     };
 }

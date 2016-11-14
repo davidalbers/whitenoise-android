@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v7.app.NotificationCompat;
+import android.util.Log;
 
 import dalbers.com.noise.MainActivity;
 import dalbers.com.noise.R;
@@ -18,7 +19,7 @@ import dalbers.com.noise.R;
  * Provides basic functionality for playing audio on a loop.
  * Created by davidalbers on 10/17/16.
  */
-abstract class BaseLoopAudioService extends Service {
+abstract class BaseLoopAudioService extends Service implements BaseLoopAudioInterface {
     protected LoopMediaPlayer mp;
     private IBinder mBinder = new AudioServiceBinder();
 
@@ -86,7 +87,7 @@ abstract class BaseLoopAudioService extends Service {
 
     public float getVolume() {
         //average of left and right volume
-        return mp.getVolume()[0] * mp.getVolume()[1] / 2;
+        return (mp.getVolume()[0] + mp.getVolume()[1]) / 2;
     }
 
     public class AudioServiceBinder extends Binder {

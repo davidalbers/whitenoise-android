@@ -27,8 +27,8 @@ public class LoopMediaPlayer {
         mContext = context;
     }
 
-    private float leftVolume = 1.0f;
-    private float rightVolume = 1.0f;
+    private float leftVolume = .5f;
+    private float rightVolume = .5f;
 
     private void createNextMediaPlayer() {
         mNextPlayer = MediaPlayer.create(mContext, mResId);

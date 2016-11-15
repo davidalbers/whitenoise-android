@@ -59,4 +59,6 @@ public interface WhiteNoiseAudioInterface extends BaseLoopAudioInterface {
      * and a pause button which will callback to this service
      */
     void showNotification(boolean playing);
+
+    float getInitialVolume();
 }

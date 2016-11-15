@@ -321,5 +321,9 @@ public class WhiteNoiseAudioService extends BaseLoopAudioService
                 R.mipmap.ic_launcher);
         super.showNotification(playing,icon,title);
     }
+
+    public float getInitialVolume() {
+        return initialVolume;
+    }
 }
 

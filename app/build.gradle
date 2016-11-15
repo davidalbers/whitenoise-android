@@ -16,6 +16,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    //Mock Android library objects will return their default objects when used
+    //This is only for CountDownTimer. Dependency injection would probably fix this
+    //but not sure how to do that with the countdownTimer
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
 }
 
 dependencies {

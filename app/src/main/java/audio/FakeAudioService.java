@@ -106,6 +106,11 @@ public class FakeAudioService implements WhiteNoiseAudioInterface {
     }
 
     @Override
+    public float getInitialVolume() {
+        return volume;
+    }
+
+    @Override
     public float getVolume() {
         return volume;
     }

@@ -12,7 +12,8 @@ public class LoopMediaPlayer {
     public static final String TAG = LoopMediaPlayer.class.getSimpleName();
 
     private Context mContext = null;
-    private int mResId = 0;
+    public static int NO_SOUND_ID = -1;
+    private int mResId = NO_SOUND_ID;
     private int mCounter = 1;
 
     private MediaPlayer mCurrentPlayer = null;

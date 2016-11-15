@@ -1,16 +1,15 @@
 package dalbers.com.noise;
 
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 
 import audio.WhiteNoiseAudioInterface;
-import audio.WhiteNoiseAudioService;
+
+import static audio.LoopMediaPlayer.NO_SOUND_ID;
 
 /**
  * Created by davidalbers on 10/2/16.
@@ -309,12 +308,13 @@ public class WhiteNoisePresenter implements WhiteNoiseContract.Presenter {
     public void setWhiteNoiseAudioService(WhiteNoiseAudioInterface whiteNoiseAudioService) {
         this.whiteNoiseAudioService = whiteNoiseAudioService;
         if(this.whiteNoiseAudioService != null) {
-            float volume = whiteNoiseAudioService.getVolume();
+            float volume = whiteNoiseAudioService.getInitialVolume();
             view.setVolume(volume);
-
             whiteNoiseAudioService.setOscillatePeriod(oscillateInterval);
+            //if no sound file set, set it to white by default
+            if(whiteNoiseAudioService.getSoundFile() == NO_SOUND_ID)
+                whiteNoiseAudioService.setSoundFile(R.raw.white);
             setUIBasedOnServiceState();
-            whiteNoiseAudioService.setSoundFile(currNoiseResId);
         }
     }
 

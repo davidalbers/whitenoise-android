@@ -418,6 +418,8 @@ public class AudioPlayerService extends Service {
                     .addAction(R.drawable.ic_action_playback_pause_black, "Pause", pausePlayPI)
                     .addAction(R.drawable.ic_clear, "Close", closePI)
                     .setContentIntent(openAppPI)
+                    .setVisibility(Notification.VISIBILITY_PUBLIC)
+                    .setPriority(Notification.PRIORITY_MAX)
                     .build();
         }
         else {
@@ -443,6 +445,8 @@ public class AudioPlayerService extends Service {
                     .addAction(R.drawable.ic_action_playback_play_black, "Play", pausePlayPI)
                     .addAction(R.drawable.ic_clear, "Close", closePI)
                     .setContentIntent(openAppPI)
+                    .setVisibility(Notification.VISIBILITY_PUBLIC)
+                    .setPriority(Notification.PRIORITY_MAX)
                     .build();
         }
         //show the notification

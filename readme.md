@@ -15,9 +15,11 @@ I've finished the main features of the app and it's available on the [Play Store
 ---
 Some wishlist features are:
 * Save app state (noise type, volume, etc.) and load it each time app is started
-* Enable horizontal screen orientation (this includes making the timer work in horizontal orientation)
 
 ---
 <img src="/screenshots/noiseScreenshot.png" width="250">
 <img src="/screenshots/noiseScreenshotDark.png" width="250">
 <img src="/screenshots/noiseNotification.png" width="250">
+
+---
+The source code for this app is licensed under the MIT license. This means you can do what ever you want with the code as long as you include the [LICENSE.txt](https://github.com/davidalbers/whitenoise/blob/master/LICENSE.txt "License Link").

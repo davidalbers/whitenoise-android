@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--portrait mode for all device sizes-->
+<?xml version="1.0" encoding="utf-8"?><!--portrait mode for all device sizes-->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,6 +9,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="dalbers.com.noise.MainActivity">
 
-    <include layout="@layout/general_layout"/>
+    <include layout="@layout/general_layout" />
 
 </RelativeLayout>

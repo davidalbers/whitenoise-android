@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Targets tablets in landscape mode, tested on genymotion Nexus 7 2013
+<?xml version="1.0" encoding="utf-8"?><!-- Targets tablets in landscape mode, tested on genymotion Nexus 7 2013
     Basically just a copy of portrait layout-->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -11,6 +10,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="dalbers.com.noise.MainActivity">
 
-    <include layout="@layout/general_layout"/>
+    <include layout="@layout/general_layout" />
 
 </RelativeLayout>

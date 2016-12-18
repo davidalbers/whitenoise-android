@@ -10,8 +10,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation"
-            >
+            android:configChanges="orientation">
 
             <!--
             android:screenOrientation="portrait"

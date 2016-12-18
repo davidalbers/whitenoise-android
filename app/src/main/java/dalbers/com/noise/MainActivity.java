@@ -31,7 +31,6 @@ import android.widget.ToggleButton;
 import butterknife.BindDrawable;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
 import dalbers.com.timerpicker.TimerPickerDialogFragment;
 import dalbers.com.timerpicker.TimerPickerDialogListener;
 import dalbers.com.timerpicker.TimerTextView;
@@ -39,26 +38,6 @@ import dalbers.com.timerpicker.TimerTextView;
 
 public class MainActivity extends AppCompatActivity {
 
-    @BindView(R.id.volumeBar) SeekBar volumeBar;
-    @BindView(R.id.btnPlay) Button playButton;
-    @BindView(R.id.timerButton) ImageButton timerButton;
-    @BindView(R.id.timerTextView) TimerTextView timerTextView;
-    @BindView(R.id.noiseTypes) RadioGroup noiseTypes;
-    @BindView(R.id.noiseTypeWhite) RadioButton noiseTypeWhite;
-    @BindView(R.id.noiseTypePink) RadioButton noiseTypePink;
-    @BindView(R.id.noiseTypeBrown) RadioButton noiseTypeBrown;
-    @BindView(R.id.waveVolumeToggle) ToggleButton oscillateButton;
-    @BindView(R.id.decreaseVolumeToggle) ToggleButton fadeButton;
-
-    @BindDrawable(R.drawable.ic_add) Drawable addPic;
-    @BindDrawable(R.drawable.ic_action_playback_play_black) Drawable playPic;
-    @BindDrawable(R.drawable.ic_action_playback_pause_black) Drawable pausePic;
-    @BindDrawable(R.drawable.ic_clear) Drawable stopPic;
-
-    private AudioPlayerService audioPlayerService;
-    public static String LOG_TAG = "dalbers.noise/main";
-    private CountDownTimer editTextCountDownTimer;
-    boolean timerActive = false;
     //preferences keys
     public static final String PREF_STRING = "dalbers_white_noise";
     public static final String PREF_COLOR_KEY = "color";
@@ -75,9 +54,46 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREF_OSCILLATE_INTERVAL_KEY = "pref_oscillate_interval";
     public static final String SAVE_STATE_TIMER_CREATED = "save_state_timer_active";
     public static final String SAVE_STATE_TIMER_TIME = "save_state_timer_time";
-    /** true if the user has never ever ever turned on oscillate option*/
+    public static String LOG_TAG = "dalbers.noise/main";
+    @BindView(R.id.volumeBar)
+    SeekBar volumeBar;
+    @BindView(R.id.btnPlay)
+    Button playButton;
+    @BindView(R.id.timerButton)
+    ImageButton timerButton;
+    @BindView(R.id.timerTextView)
+    TimerTextView timerTextView;
+    @BindView(R.id.noiseTypes)
+    RadioGroup noiseTypes;
+    @BindView(R.id.noiseTypeWhite)
+    RadioButton noiseTypeWhite;
+    @BindView(R.id.noiseTypePink)
+    RadioButton noiseTypePink;
+    @BindView(R.id.noiseTypeBrown)
+    RadioButton noiseTypeBrown;
+    @BindView(R.id.waveVolumeToggle)
+    ToggleButton oscillateButton;
+    @BindView(R.id.decreaseVolumeToggle)
+    ToggleButton fadeButton;
+    @BindDrawable(R.drawable.ic_add)
+    Drawable addPic;
+    @BindDrawable(R.drawable.ic_action_playback_play_black)
+    Drawable playPic;
+    @BindDrawable(R.drawable.ic_action_playback_pause_black)
+    Drawable pausePic;
+    @BindDrawable(R.drawable.ic_clear)
+    Drawable stopPic;
+    boolean timerActive = false;
+    Handler handler = new Handler();
+    private AudioPlayerService audioPlayerService;
+    private CountDownTimer editTextCountDownTimer;
+    /**
+     * true if the user has never ever ever turned on oscillate option
+     */
     private boolean oscillateNeverOn = false;
-    /**true if the user has never ever ever turned on fade option*/
+    /**
+     * true if the user has never ever ever turned on fade option
+     */
     private boolean fadeNeverOn = false;
     private int preferredColorFile = R.raw.white;
     private float preferredVolume = 0.5f;
@@ -87,9 +103,67 @@ public class MainActivity extends AppCompatActivity {
     private boolean useDarkMode = false;
     private boolean usingDarkMode = false;
     private long oscillateInterval = 8000;
+    SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+            loadPreferences(prefs);
+        }
+    };
     private SharedPreferences sharedPref;
     private boolean isPlayerConnectionBound = false;
     private boolean timerCreatedAndNotStarted = false;
+    /**
+     * Do stuff when timer is set in dialog
+     */
+    private TimerPickerDialogListener dialogListener = new TimerPickerDialogListener() {
+        @Override
+        public void timeSet(long timeInMillis) {
+            //ignore zero
+            if (timeInMillis != 0) {
+                timerActive = true;
+                setTimerUIAdded(timeInMillis);
+                if (audioPlayerService.isPlaying()) {
+                    startTimer(timeInMillis);
+                }
+            }
+        }
+
+        @Override
+        public void dialogCanceled() {
+            //nothing important happened
+        }
+    };
+    private ServiceConnection playerConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder binder) {
+            AudioPlayerService.AudioPlayerBinder audioPlayerBinder = (AudioPlayerService.AudioPlayerBinder) binder;
+            audioPlayerService = audioPlayerBinder.getService();
+            float[] volumes = audioPlayerService.getVolume();
+            volumeBar.setProgress((int) (volumeBar.getMax() * Math.max(volumes[0], volumes[1])));
+            Resources res = MainActivity.this.getResources();
+            //convert from 120dp to pixels
+            int picSizeInPixels = (int) TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, 24, res.getDisplayMetrics());
+
+            if (audioPlayerService.isPlaying()) {
+                pausePic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
+                playButton.setCompoundDrawables(pausePic, null, null, null);
+            } else {
+                playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
+                playButton.setCompoundDrawables(playPic, null, null, null);
+            }
+            audioPlayerService.setOscillatePeriod(oscillateInterval);
+            setUIBasedOnServiceState();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName className) {
+            audioPlayerService = null;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,11 +173,10 @@ public class MainActivity extends AppCompatActivity {
         sharedPref.registerOnSharedPreferenceChangeListener(sharedPrefListener);
         loadPreferences(sharedPref);
 
-        if(useDarkMode) {
+        if (useDarkMode) {
             setTheme(R.style.Dark);
             usingDarkMode = true;
-        }
-        else {
+        } else {
             setTheme(R.style.AppTheme);
             usingDarkMode = false;
         }
@@ -237,45 +310,26 @@ public class MainActivity extends AppCompatActivity {
             // If the app restarted while a timer was created but not started,
             // recreate the view state
             // ignore zero times because the user did not create those.
-            if(timerCreatedAndNotStarted) {
+            if (timerCreatedAndNotStarted) {
                 timerActive = timerCreatedAndNotStarted;
                 setTimerUIAdded(currTime);
             }
         }
     }
 
-    /** Create and show a timer picker */
+    /**
+     * Create and show a timer picker
+     */
     private void showPickerDialog() {
         TimerPickerDialogFragment timerDialog = new TimerPickerDialogFragment();
         timerDialog.show(getSupportFragmentManager(), "TimerPickerDialog");
         timerDialog.setDialogListener(dialogListener);
     }
 
-    /** Do stuff when timer is set in dialog  */
-    private TimerPickerDialogListener dialogListener = new TimerPickerDialogListener() {
-        @Override
-        public void timeSet(long timeInMillis) {
-            //ignore zero
-            if(timeInMillis != 0) {
-                timerActive = true;
-                setTimerUIAdded(timeInMillis);
-                if (audioPlayerService.isPlaying()) {
-                    startTimer(timeInMillis);
-                }
-            }
-        }
-
-        @Override
-        public void dialogCanceled() {
-            //nothing important happened
-        }
-    };
-
-
     @Override
     protected void onPause() {
         super.onPause();
-        if(audioPlayerService != null && audioPlayerService.isPlaying())
+        if (audioPlayerService != null && audioPlayerService.isPlaying())
             audioPlayerService.showNotification(true);
     }
 
@@ -285,7 +339,7 @@ public class MainActivity extends AppCompatActivity {
         //we only need to save timer state if it was created but not started
         //if it wasn't created - who cares
         //if it was started - the service will tell us its state
-        if(audioPlayerService != null && !audioPlayerService.isPlaying() && timerTextView.getTime() != 0)
+        if (audioPlayerService != null && !audioPlayerService.isPlaying() && timerTextView.getTime() != 0)
             timerSetAndNotStarted = true;
         savedInstanceState.putBoolean(SAVE_STATE_TIMER_CREATED, timerSetAndNotStarted);
         savedInstanceState.putLong(SAVE_STATE_TIMER_TIME, timerTextView.getTime());
@@ -296,50 +350,47 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(usingDarkMode != useDarkMode) {
+        if (usingDarkMode != useDarkMode) {
             //wait until onResume has finished,
             //then recreate the activity which will change the theme
-            handler.postDelayed(new Runnable()
-            {
+            handler.postDelayed(new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     recreate();
                 }
             }, 0);
         }
-        if(audioPlayerService != null)
+        if (audioPlayerService != null)
             audioPlayerService.dismissNotification();
     }
-
-    Handler handler = new Handler();
-
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(isPlayerConnectionBound) {
+        if (isPlayerConnectionBound) {
             //dismiss any notification
-            if(audioPlayerService != null)
+            if (audioPlayerService != null)
                 audioPlayerService.dismissNotification();
             //unbind the service, it will still be running
             unbindService(playerConnection);
             isPlayerConnectionBound = false;
         }
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.settings:
-                Intent settingsIntent = new Intent(this,SettingsActivity.class);
-                settingsIntent.putExtra(PREF_USE_DARK_MODE_KEY,usingDarkMode);
+                Intent settingsIntent = new Intent(this, SettingsActivity.class);
+                settingsIntent.putExtra(PREF_USE_DARK_MODE_KEY, usingDarkMode);
                 startActivity(settingsIntent);
                 return true;
             default:
@@ -368,48 +419,10 @@ public class MainActivity extends AppCompatActivity {
         timerTextView.setVisibility(View.VISIBLE);
     }
 
-    private ServiceConnection playerConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder binder) {
-            AudioPlayerService.AudioPlayerBinder audioPlayerBinder = (AudioPlayerService.AudioPlayerBinder) binder;
-            audioPlayerService = audioPlayerBinder.getService();
-            float[] volumes = audioPlayerService.getVolume();
-            volumeBar.setProgress((int) (volumeBar.getMax() * Math.max(volumes[0], volumes[1])));
-            Resources res = MainActivity.this.getResources();
-            //convert from 120dp to pixels
-            int picSizeInPixels = (int)TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, 24, res.getDisplayMetrics());
-
-            if (audioPlayerService.isPlaying()) {
-                pausePic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
-                playButton.setCompoundDrawables(pausePic, null, null, null);
-            } else {
-                playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
-                playButton.setCompoundDrawables(playPic, null, null, null);
-            }
-            audioPlayerService.setOscillatePeriod(oscillateInterval);
-            setUIBasedOnServiceState();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName className) {
-            audioPlayerService = null;
-        }
-    };
-
-    SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) { loadPreferences(prefs); }
-    };
-
-
     private void loadPreferences(SharedPreferences prefs) {
-        oscillateNeverOn = prefs.getBoolean(PREF_OSCILLATE_NEVER_ON,true);
-        fadeNeverOn = prefs.getBoolean(PREF_FADE_NEVER_ON,true);
-        String colorPref = prefs.getString(PREF_COLOR_KEY,PREF_COLOR_WHITE);
+        oscillateNeverOn = prefs.getBoolean(PREF_OSCILLATE_NEVER_ON, true);
+        fadeNeverOn = prefs.getBoolean(PREF_FADE_NEVER_ON, true);
+        String colorPref = prefs.getString(PREF_COLOR_KEY, PREF_COLOR_WHITE);
         /* This does not work, after the app restarts,
          *it will always play white noise when brown is selected
 
@@ -420,13 +433,13 @@ public class MainActivity extends AppCompatActivity {
         else
             preferredColorFile = R.raw.white;
             */
-        preferredVolume = prefs.getFloat(PREF_VOLUME_KEY,0.5f);
-        preferredTime = prefs.getLong(PREF_TIME_KEY,0L);
-        preferredOscillateState = prefs.getBoolean(PREF_OSCILLATE_KEY,false);
-        preferredFadeState = prefs.getBoolean(PREF_DECREASE_KEY,false);
-        useDarkMode = prefs.getBoolean(PREF_USE_DARK_MODE_KEY,false);
-        oscillateInterval = Integer.parseInt(prefs.getString(PREF_OSCILLATE_INTERVAL_KEY,"4"))*1000;
-        if(audioPlayerService != null)
+        preferredVolume = prefs.getFloat(PREF_VOLUME_KEY, 0.5f);
+        preferredTime = prefs.getLong(PREF_TIME_KEY, 0L);
+        preferredOscillateState = prefs.getBoolean(PREF_OSCILLATE_KEY, false);
+        preferredFadeState = prefs.getBoolean(PREF_DECREASE_KEY, false);
+        useDarkMode = prefs.getBoolean(PREF_USE_DARK_MODE_KEY, false);
+        oscillateInterval = Integer.parseInt(prefs.getString(PREF_OSCILLATE_INTERVAL_KEY, "4")) * 1000;
+        if (audioPlayerService != null)
             audioPlayerService.setOscillatePeriod(oscillateInterval);
     }
 
@@ -440,9 +453,9 @@ public class MainActivity extends AppCompatActivity {
         audioPlayerService.setDecreaseVolume(preferredFadeState);
         audioPlayerService.setOscillateVolume(preferredOscillateState);
         audioPlayerService.setTimer(preferredTime);
-        if(preferredColorFile == R.raw.pink)
+        if (preferredColorFile == R.raw.pink)
             noiseTypePink.setChecked(true);
-        else if(preferredColorFile == R.raw.brown)
+        else if (preferredColorFile == R.raw.brown)
             noiseTypeBrown.setChecked(true);
         else
             noiseTypeWhite.setChecked(true);
@@ -495,7 +508,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setPlayButtonPause() {
         //convert from 120dp to pixels
-        int picSizeInPixels = (int)TypedValue.applyDimension(
+        int picSizeInPixels = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
         pausePic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
         playButton.setCompoundDrawables(pausePic, null, null, null);
@@ -504,7 +517,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setPlayButtonPlay() {
         //convert from 120dp to pixels
-        int picSizeInPixels = (int)TypedValue.applyDimension(
+        int picSizeInPixels = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
         playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
         playButton.setCompoundDrawables(playPic, null, null, null);
@@ -517,25 +530,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUIBasedOnServiceState() {
-        if(audioPlayerService != null) {
+        if (audioPlayerService != null) {
             //sync up play state
-            if(audioPlayerService.isPlaying())
+            if (audioPlayerService.isPlaying())
                 setPlayButtonPause();
             else
                 setPlayButtonPlay();
             //sync up timer
             long timeLeft = audioPlayerService.getTimeLeft();
             //still time left
-            if(timeLeft > 0) {
+            if (timeLeft > 0) {
                 //match the visual timer to the service timer
-                if(audioPlayerService.isPlaying()) {
+                if (audioPlayerService.isPlaying()) {
                     setTimerUIAdded(timeLeft);
                     startTimer(timeLeft);
-                }
-                else //cancel the visual timer since the service timer is also
+                } else //cancel the visual timer since the service timer is also
                     pauseTimer();
-            }
-            else if (!timerCreatedAndNotStarted) {
+            } else if (!timerCreatedAndNotStarted) {
                 //service says timer is unset and we have no saved state telling us otherwise
                 timerTextView.setTime(0);
                 timerActive = false;

@@ -30,8 +30,20 @@ import java.util.TimerTask;
  */
 public class AudioPlayerService extends Service {
 
-    private LoopMediaPlayer mp;
+    /**
+     * 1 hour in milliseconds use this instead of decreaseLength
+     * if no timer exists
+     */
+    public static long DEFAULT_DECREASE_LENGTH = 3600000;
     private static String LOG_TAG = AudioPlayerService.class.getSimpleName();
+    /**
+     * Used when showing the notification,
+     * unique within the app,
+     * if multiple notify()s are called with the same id,
+     * new one will replace the old ones
+     */
+    private final int NOTIFICATION_ID = 0;
+    private LoopMediaPlayer mp;
     private IBinder mBinder = new AudioPlayerBinder();
     private long millisLeft = 0;
     private CountDownTimer countDownTimer;
@@ -64,11 +76,6 @@ public class AudioPlayerService extends Service {
      */
     private long decreaseLength = -1;
     /**
-     * 1 hour in milliseconds use this instead of decreaseLength
-     * if no timer exists
-     * */
-    public static long DEFAULT_DECREASE_LENGTH = 3600000;
-    /**
      * the maximum allowable volume given the current state
      * if only using oscillate, this should be == initialVolume
      * if using decrease, this will decrease
@@ -78,44 +85,56 @@ public class AudioPlayerService extends Service {
      * Volume set by the user before oscillation or other things affected it
      */
     private float initialVolume = 1.0f;
+    Runnable volumeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mp != null && mp.isPlaying()) {
+                if (oscillateVolume) {
+                    if (decreaseVolume)
+                        decreaseForTick();
+                    if (oscillateVolumeStereo)
+                        oscillateStereoForTick();
+                    else
+                        oscillateForTick();
+                    setVolume(leftVolume, rightVolume);
+                } else if (decreaseVolume) {
+                    decreaseForTick();
+                    leftVolume = maxVolume;
+                    rightVolume = maxVolume;
+                    setVolume(leftVolume, rightVolume);
+                }
+            }
+        }
+    };
     private Notification notification;
-    /**
-     * Used when showing the notification,
-     * unique within the app,
-     * if multiple notify()s are called with the same id,
-     * new one will replace the old ones
-     */
-    private final int NOTIFICATION_ID = 0;
 
     @Override
     public IBinder onBind(Intent intent) {
-        if(mp == null) {
+        if (mp == null) {
             mp = LoopMediaPlayer.create(this, R.raw.white);
         }
         return mBinder;
     }
 
     @Override
-    public void onCreate()
-    {
+    public void onCreate() {
         volumeChangerTimer = new Timer();
         volumeChangerTimer.schedule(new VolumeChangerTimerTask(), 0, tickPeriod);
     }
 
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         mp.stop();
     }
 
     @Override
-    public int onStartCommand(Intent intent,int flags, int startId){
-        if(mp == null)
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (mp == null)
             mp = LoopMediaPlayer.create(this, R.raw.white);
 
         //if a button is pressed in the notification,
         //the service will be started with this extra
-        if(intent != null) {
+        if (intent != null) {
             if (intent.hasExtra("do")) {
                 String action = (String) intent.getExtras().get("do");
                 if (action.equals("pause")) {
@@ -143,18 +162,12 @@ public class AudioPlayerService extends Service {
         return START_STICKY;
     }
 
-    public class AudioPlayerBinder extends Binder {
-        AudioPlayerService getService() {
-            return AudioPlayerService.this;
-        }
-    }
-
     public void play() {
         mp.play();
     }
 
     public void stop() {
-        if(mp != null)
+        if (mp != null)
             mp.stop();
         //reset volumes to initial values
         leftVolume = initialVolume;
@@ -162,7 +175,7 @@ public class AudioPlayerService extends Service {
     }
 
     public void pause() {
-        if(mp != null)
+        if (mp != null)
             mp.pause();
         //reset volumes to initial values
 //        leftVolume = initialVolume;
@@ -170,7 +183,7 @@ public class AudioPlayerService extends Service {
     }
 
     public boolean isPlaying() {
-        if(mp != null)
+        if (mp != null)
             return mp.isPlaying();
         else return false;
     }
@@ -184,6 +197,7 @@ public class AudioPlayerService extends Service {
      * If oscillating or decreasing volume are not being used,
      * this will be the volume. If they are being used, neither
      * will use a volume higher than this volume
+     *
      * @param maxVolume a value 0.0 to 1.0 where 1.0 is max of the device
      */
     public void setMaxVolume(float maxVolume) {
@@ -199,7 +213,8 @@ public class AudioPlayerService extends Service {
     /**
      * Set the volume of the media player. This will not update this service's
      * volume or associated variables, use setMaxVolume() to do that.
-     * @param leftVolume a value 0.0 to 1.0 where 1.0 is max of the device
+     *
+     * @param leftVolume  a value 0.0 to 1.0 where 1.0 is max of the device
      * @param rightVolume a value 0.0 to 1.0 where 1.0 is max of the device
      */
     private void setVolume(float leftVolume, float rightVolume) {
@@ -207,12 +222,14 @@ public class AudioPlayerService extends Service {
         mp.setVolume(leftVolume, rightVolume);
     }
 
-    public float[] getVolume() { return new float[] {leftVolume,rightVolume}; }
+    public float[] getVolume() {
+        return new float[]{leftVolume, rightVolume};
+    }
 
     public void setTimer(final long millis) {
         millisLeft = millis;
         decreaseLength = millis;
-        if(countDownTimer != null)
+        if (countDownTimer != null)
             countDownTimer.cancel();
         countDownTimer = new CountDownTimer(millis, 1000) {
             @Override
@@ -230,7 +247,7 @@ public class AudioPlayerService extends Service {
     }
 
     public void cancelTimer() {
-        if(countDownTimer != null) {
+        if (countDownTimer != null) {
             countDownTimer.cancel();
         }
     }
@@ -248,7 +265,7 @@ public class AudioPlayerService extends Service {
 
     public void setSoundFile(int resId) {
         mp.setSoundFile(resId);
-        mp.setVolume(maxVolume,maxVolume);
+        mp.setVolume(maxVolume, maxVolume);
     }
 
     public void setOscillateVolume(boolean oscillateVolume) {
@@ -259,46 +276,23 @@ public class AudioPlayerService extends Service {
         this.decreaseVolume = decreaseVolume;
     }
 
-    Runnable volumeRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if(mp != null && mp.isPlaying()) {
-                if(oscillateVolume) {
-                    if(decreaseVolume)
-                        decreaseForTick();
-                    if(oscillateVolumeStereo)
-                        oscillateStereoForTick();
-                    else
-                        oscillateForTick();
-                    setVolume(leftVolume, rightVolume);
-                }
-                else if(decreaseVolume) {
-                    decreaseForTick();
-                    leftVolume = maxVolume;
-                    rightVolume = maxVolume;
-                    setVolume(leftVolume,rightVolume);
-                }
-            }
-        }
-    };
-
     /**
      * Oscillate volume from masterVolume to (masterVolume*minVolumePercent)
      * Going from max to min to max takes 'oscillatePeriod' milliseconds
      */
     public void oscillateForTick() {
         float minVolume = (initialVolume * minVolumePercent);
-        float delta = (maxVolume-minVolume) / (oscillatePeriod / 2 / tickPeriod);
-        if(oscillatingDown)
+        float delta = (maxVolume - minVolume) / (oscillatePeriod / 2 / tickPeriod);
+        if (oscillatingDown)
             delta = -1 * delta;
         leftVolume += delta;
         rightVolume += delta;
-        if(leftVolume <= minVolume || rightVolume <= minVolume) {
+        if (leftVolume <= minVolume || rightVolume <= minVolume) {
             leftVolume = minVolume;
             rightVolume = minVolume;
             oscillatingDown = false;
         }
-        if(leftVolume >= maxVolume || rightVolume >= maxVolume) {
+        if (leftVolume >= maxVolume || rightVolume >= maxVolume) {
             leftVolume = maxVolume;
             rightVolume = maxVolume;
             oscillatingDown = true;
@@ -317,34 +311,34 @@ public class AudioPlayerService extends Service {
      */
     public void oscillateStereoForTick() {
         float minVolume = (initialVolume * minVolumePercent);
-        float delta = (maxVolume-minVolume) / (oscillatePeriod / 2 / tickPeriod);
-        if(oscillatingDown)
+        float delta = (maxVolume - minVolume) / (oscillatePeriod / 2 / tickPeriod);
+        if (oscillatingDown)
             delta = -1 * delta;
-        if(oscillatingLeft)
+        if (oscillatingLeft)
             leftVolume += delta;
         else
             rightVolume += delta;
-        if(leftVolume <= minVolume || rightVolume <= minVolume) {
-            if(oscillatingLeft)
+        if (leftVolume <= minVolume || rightVolume <= minVolume) {
+            if (oscillatingLeft)
                 leftVolume = minVolume;
             else
                 rightVolume = minVolume;
             oscillatingDown = false;
         }
-        if(leftVolume >= maxVolume && rightVolume >= maxVolume && !oscillatingDown) {
-            if(oscillatingLeft)
+        if (leftVolume >= maxVolume && rightVolume >= maxVolume && !oscillatingDown) {
+            if (oscillatingLeft)
                 leftVolume = maxVolume;
             else
                 rightVolume = maxVolume;
             oscillatingDown = true;
             oscillatingLeft = !oscillatingLeft;
         }
-        Log.d(LOG_TAG,leftVolume+","+rightVolume);
+        Log.d(LOG_TAG, leftVolume + "," + rightVolume);
     }
 
     public void decreaseForTick() {
         float minVolume = (initialVolume * minVolumePercent);
-        if(maxVolume > minVolume) {
+        if (maxVolume > minVolume) {
             float delta = 0.0f;
             if (decreaseLength == -1)
                 delta = -1 * (maxVolume - minVolume) / (DEFAULT_DECREASE_LENGTH / tickPeriod);
@@ -353,21 +347,13 @@ public class AudioPlayerService extends Service {
             maxVolume += delta;
         }
 
-        Log.d(LOG_TAG,maxVolume+"");
-    }
-
-
-    class VolumeChangerTimerTask extends TimerTask {
-        @Override
-        public void run() {
-            Handler volumeHandler = new Handler(Looper.getMainLooper());
-            volumeHandler.post(volumeRunnable);
-        }
+        Log.d(LOG_TAG, maxVolume + "");
     }
 
     public void setOscillatePeriod(long oscillatePeriod) {
         this.oscillatePeriod = oscillatePeriod;
     }
+
     /**
      * Show a notification with information about the sound being played/paused
      * and a pause button which will callback to this service
@@ -375,8 +361,7 @@ public class AudioPlayerService extends Service {
     public void showNotification(boolean playing) {
         String title;
         //which noise is playing?
-        switch (mp.getSoundFile())
-        {
+        switch (mp.getSoundFile()) {
             case R.raw.white:
                 title = "White Noise";
                 break;
@@ -394,18 +379,18 @@ public class AudioPlayerService extends Service {
         //make an intent to callback this service when the pause button is pressed
 
         //create the notification
-        if(playing) {
-            Intent pausePlayIntent = new Intent(this,AudioPlayerService.class);
+        if (playing) {
+            Intent pausePlayIntent = new Intent(this, AudioPlayerService.class);
             pausePlayIntent.putExtra("do", "pause");
             PendingIntent pausePlayPI = PendingIntent.getService(this, 0, pausePlayIntent, PendingIntent.FLAG_ONE_SHOT);
-            Intent closeIntent = new Intent(this,AudioPlayerService.class);
+            Intent closeIntent = new Intent(this, AudioPlayerService.class);
             closeIntent.setAction("close");
             closeIntent.putExtra("do", "close");
             PendingIntent closePI = PendingIntent.getService(getApplicationContext(), 0, closeIntent, PendingIntent.FLAG_ONE_SHOT);
-            Intent openAppIntent = new Intent(getApplicationContext(),MainActivity.class);
+            Intent openAppIntent = new Intent(getApplicationContext(), MainActivity.class);
             openAppIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             openAppIntent.putExtra("startedFromNotification", true);
-            PendingIntent openAppPI = PendingIntent.getActivity(getApplicationContext(),0, openAppIntent, PendingIntent.FLAG_ONE_SHOT);
+            PendingIntent openAppPI = PendingIntent.getActivity(getApplicationContext(), 0, openAppIntent, PendingIntent.FLAG_ONE_SHOT);
             notification = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_statusbar2)
                     .setContentTitle(title)
@@ -419,13 +404,12 @@ public class AudioPlayerService extends Service {
                     .setVisibility(Notification.VISIBILITY_PUBLIC)
                     .setPriority(Notification.PRIORITY_MAX)
                     .build();
-        }
-        else {
-            Intent pausePlayIntent = new Intent(this,AudioPlayerService.class);
+        } else {
+            Intent pausePlayIntent = new Intent(this, AudioPlayerService.class);
             pausePlayIntent.setAction("play");
             pausePlayIntent.putExtra("do", "play");
             PendingIntent pausePlayPI = PendingIntent.getService(this, 0, pausePlayIntent, PendingIntent.FLAG_ONE_SHOT);
-            Intent closeIntent = new Intent(this,AudioPlayerService.class);
+            Intent closeIntent = new Intent(this, AudioPlayerService.class);
             closeIntent.setAction("close");
             closeIntent.putExtra("do", "close");
             PendingIntent closePI = PendingIntent.getService(this, 0, closeIntent, PendingIntent.FLAG_ONE_SHOT);
@@ -450,5 +434,19 @@ public class AudioPlayerService extends Service {
         //show the notification
         NotificationManager nManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.notify(NOTIFICATION_ID, notification);
+    }
+
+    public class AudioPlayerBinder extends Binder {
+        AudioPlayerService getService() {
+            return AudioPlayerService.this;
+        }
+    }
+
+    class VolumeChangerTimerTask extends TimerTask {
+        @Override
+        public void run() {
+            Handler volumeHandler = new Handler(Looper.getMainLooper());
+            volumeHandler.post(volumeRunnable);
+        }
     }
 }

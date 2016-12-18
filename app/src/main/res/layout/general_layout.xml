@@ -1,7 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Used in tablets and in portrait mode for everything else -->
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!-- Used in tablets and in portrait mode for everything else -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -25,7 +23,7 @@
             android:layout_height="match_parent"
             android:checked="true"
             android:text="@string/white_label"
-            android:textAppearance="?android:attr/textAppearanceLarge"/>
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <android.support.v7.widget.AppCompatRadioButton
             android:id="@+id/noiseTypePink"
@@ -34,14 +32,14 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:text="@string/pink_label"
-            android:textAppearance="?android:attr/textAppearanceLarge"/>
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <android.support.v7.widget.AppCompatRadioButton
             android:id="@+id/noiseTypeBrown"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text="@string/brown_label"
-            android:textAppearance="?android:attr/textAppearanceLarge"/>
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
     </RadioGroup>
 
@@ -51,12 +49,12 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:text="@string/volume_label"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <SeekBar
         android:id="@+id/volumeBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -70,7 +68,7 @@
             android:text=""
             android:textOff="@string/blank"
             android:textOn="@string/blank"
-            android:textSize="0sp"/>
+            android:textSize="0sp" />
 
         <ToggleButton
             android:id="@+id/decreaseVolumeToggle"
@@ -80,7 +78,7 @@
             android:text=""
             android:textOff="@string/blank"
             android:textOn="@string/blank"
-            android:textSize="0sp"/>
+            android:textSize="0sp" />
 
     </LinearLayout>
 
@@ -96,13 +94,13 @@
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="48dp"
             android:text="@string/timer_label"
-            android:textAppearance="?android:attr/textAppearanceLarge"/>
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <ImageButton
             android:id="@+id/timerButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_add"/>
+            android:src="@drawable/ic_add" />
 
     </LinearLayout>
 
@@ -112,18 +110,18 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:textAppearance="@android:style/TextAppearance.Large"
-        android:visibility="invisible"/>
+        android:visibility="invisible" />
 
     <Space
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1" />
 
     <Button
         android:id="@+id/btnPlay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:drawableStart="@drawable/ic_action_playback_play_black"
-        android:text="@string/play_audio"/>
+        android:text="@string/play_audio" />
 
 </LinearLayout>

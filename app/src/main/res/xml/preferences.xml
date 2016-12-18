@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
-        android:title="@string/app_settings_group_title"
-        android:key="pref_key_storage_settings">
-    <CheckBoxPreference
-        android:key="pref_use_dark_mode"
-        android:title="@string/dark_theme_toggle"
-        android:defaultValue="false"
-        android:summary="@string/dark_theme_summary"
-        />
-    <ListPreference
-        android:key="pref_oscillate_interval"
-        android:title="@string/wave_interval_choice_title"
-        android:dialogTitle="@string/wave_interval_choice_dialog"
-        android:entries="@array/wave_interval_choices"
-        android:entryValues="@array/wave_interval_choice_values"
-        android:defaultValue="@string/wave_interval_choice_default_value"
-        android:summary="@string/oscillate_interval_summary"/>
+        android:key="pref_key_storage_settings"
+        android:title="@string/app_settings_group_title">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_use_dark_mode"
+            android:summary="@string/dark_theme_summary"
+            android:title="@string/dark_theme_toggle" />
+        <ListPreference
+            android:defaultValue="@string/wave_interval_choice_default_value"
+            android:dialogTitle="@string/wave_interval_choice_dialog"
+            android:entries="@array/wave_interval_choices"
+            android:entryValues="@array/wave_interval_choice_values"
+            android:key="pref_oscillate_interval"
+            android:summary="@string/oscillate_interval_summary"
+            android:title="@string/wave_interval_choice_title" />
     </PreferenceCategory>
 </PreferenceScreen>

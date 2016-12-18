@@ -1,16 +1,11 @@
 package dalbers.com.noise;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-
-
 public class SettingsActivity extends PreferenceActivity{
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         boolean useDarkMode = getIntent().getBooleanExtra(MainActivity.PREF_USE_DARK_MODE_KEY,false);
@@ -36,7 +31,3 @@ public class SettingsActivity extends PreferenceActivity{
     }
 
 }
-
-
-
-

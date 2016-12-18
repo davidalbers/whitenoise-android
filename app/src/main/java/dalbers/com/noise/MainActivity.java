@@ -31,6 +31,7 @@ import android.widget.ToggleButton;
 import butterknife.BindDrawable;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
 import dalbers.com.timerpicker.TimerPickerDialogFragment;
 import dalbers.com.timerpicker.TimerPickerDialogListener;
 import dalbers.com.timerpicker.TimerTextView;
@@ -89,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPref;
     private boolean isPlayerConnectionBound = false;
     private boolean timerCreatedAndNotStarted = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

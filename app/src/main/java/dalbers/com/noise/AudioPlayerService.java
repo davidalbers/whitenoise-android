@@ -29,8 +29,9 @@ import java.util.TimerTask;
  * Uses LoopMediaPlayer for looping audio.
  */
 public class AudioPlayerService extends Service {
+
     private LoopMediaPlayer mp;
-    private static String LOG_TAG = "dalbers.noise:audioPlayer";
+    private static String LOG_TAG = AudioPlayerService.class.getSimpleName();
     private IBinder mBinder = new AudioPlayerBinder();
     private long millisLeft = 0;
     private CountDownTimer countDownTimer;
@@ -258,8 +259,6 @@ public class AudioPlayerService extends Service {
         this.decreaseVolume = decreaseVolume;
     }
 
-
-
     Runnable volumeRunnable = new Runnable() {
         @Override
         public void run() {
@@ -344,7 +343,6 @@ public class AudioPlayerService extends Service {
     }
 
     public void decreaseForTick() {
-
         float minVolume = (initialVolume * minVolumePercent);
         if(maxVolume > minVolume) {
             float delta = 0.0f;
@@ -453,6 +451,4 @@ public class AudioPlayerService extends Service {
         NotificationManager nManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.notify(NOTIFICATION_ID, notification);
     }
-
 }
-

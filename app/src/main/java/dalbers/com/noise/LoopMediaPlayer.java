@@ -112,10 +112,7 @@ public class LoopMediaPlayer {
         }
         this.leftVolume = leftVolume;
         this.rightVolume = rightVolume;
-
     }
 
     public float[] getVolume() { return new float[]{leftVolume, rightVolume}; }
-
-
 }

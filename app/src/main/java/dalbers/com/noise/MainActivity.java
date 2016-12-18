@@ -28,12 +28,10 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
-
 import butterknife.BindDrawable;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
 import dalbers.com.timerpicker.TimerPickerDialogFragment;
 import dalbers.com.timerpicker.TimerPickerDialogListener;
 import dalbers.com.timerpicker.TimerTextView;
@@ -61,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
     public static String LOG_TAG = "dalbers.noise/main";
     private CountDownTimer editTextCountDownTimer;
     boolean timerActive = false;
-    private GoogleApiClient client;
     //preferences keys
     public static final String PREF_STRING = "dalbers_white_noise";
     public static final String PREF_COLOR_KEY = "color";
@@ -93,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPref;
     private boolean isPlayerConnectionBound = false;
     private boolean timerCreatedAndNotStarted = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -244,12 +242,6 @@ public class MainActivity extends AppCompatActivity {
                 setTimerUIAdded(currTime);
             }
         }
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
-
-
     }
 
     /** Create and show a timer picker */
@@ -551,10 +543,5 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
-    }
-    @Override
-    public void onStop() {
-        super.onStop();
-        client.disconnect();
     }
 }

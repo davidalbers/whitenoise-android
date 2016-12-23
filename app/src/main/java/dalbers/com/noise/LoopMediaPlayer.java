@@ -12,8 +12,9 @@ public class LoopMediaPlayer {
     public static final String TAG = LoopMediaPlayer.class.getSimpleName();
 
     private Context mContext = null;
-    private int mResId = 0;
+    private int mResId = NO_SOUND_FILE;
     private int mCounter = 1;
+    public static int NO_SOUND_FILE = -1;
 
     private MediaPlayer mCurrentPlayer = null;
     private MediaPlayer mNextPlayer = null;
@@ -42,13 +43,15 @@ public class LoopMediaPlayer {
         mContext = context;
     }
 
-    public static LoopMediaPlayer create(Context context, int resId) {
+    public static LoopMediaPlayer create(Context context) {
         LoopMediaPlayer looper = new LoopMediaPlayer(context);
-        looper.mResId = resId;
         return looper;
     }
 
     private void createNextMediaPlayer() {
+        //default to playing white noise if none selected
+        if(mResId == NO_SOUND_FILE)
+            mResId = R.raw.white;
         mNextPlayer = MediaPlayer.create(mContext, mResId);
         mNextPlayer.setVolume(leftVolume, rightVolume);
         mCurrentPlayer.setNextMediaPlayer(mNextPlayer);
@@ -66,6 +69,9 @@ public class LoopMediaPlayer {
     }
 
     public void play() {
+        //default to playing white noise if none selected
+        if(mResId == NO_SOUND_FILE)
+            mResId = R.raw.white;
         mCurrentPlayer = MediaPlayer.create(mContext, mResId);
         mCurrentPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override

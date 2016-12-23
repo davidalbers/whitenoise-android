@@ -12,6 +12,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.annotation.RawRes;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.TypedValue;
@@ -34,6 +35,8 @@ import butterknife.ButterKnife;
 import dalbers.com.timerpicker.TimerPickerDialogFragment;
 import dalbers.com.timerpicker.TimerPickerDialogListener;
 import dalbers.com.timerpicker.TimerTextView;
+
+import static dalbers.com.noise.LoopMediaPlayer.NO_SOUND_FILE;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -148,6 +151,8 @@ public class MainActivity extends AppCompatActivity {
             int picSizeInPixels = (int) TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_DIP, 24, res.getDisplayMetrics());
 
+            if(audioPlayerService.getSoundFile() == NO_SOUND_FILE)
+                audioPlayerService.setSoundFile(R.raw.white);
             if (audioPlayerService.isPlaying()) {
                 pausePic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
                 playButton.setCompoundDrawables(pausePic, null, null, null);
@@ -155,6 +160,8 @@ public class MainActivity extends AppCompatActivity {
                 playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
                 playButton.setCompoundDrawables(playPic, null, null, null);
             }
+            //sync UI with service's chosen sound file
+            setCheckedNoiseType(audioPlayerService.getSoundFile());
             audioPlayerService.setOscillatePeriod(oscillateInterval);
             setUIBasedOnServiceState();
         }
@@ -164,6 +171,27 @@ public class MainActivity extends AppCompatActivity {
             audioPlayerService = null;
         }
     };
+
+    /**
+     * Set the checked sound file in the UI
+     * @param soundFile
+     */
+    private void setCheckedNoiseType(@RawRes int soundFile) {
+        switch (soundFile) {
+            case R.raw.white:
+                noiseTypeWhite.setChecked(true);
+                break;
+            case R.raw.brown:
+                noiseTypeBrown.setChecked(true);
+                break;
+            case R.raw.pink:
+                noiseTypePink.setChecked(true);
+                break;
+            default:
+                noiseTypeWhite.setChecked(true);
+                break;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -111,7 +111,7 @@ public class AudioPlayerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         if (mp == null) {
-            mp = LoopMediaPlayer.create(this, R.raw.white);
+            mp = LoopMediaPlayer.create(this);
         }
         return mBinder;
     }
@@ -130,7 +130,7 @@ public class AudioPlayerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (mp == null)
-            mp = LoopMediaPlayer.create(this, R.raw.white);
+            mp = LoopMediaPlayer.create(this);
 
         //if a button is pressed in the notification,
         //the service will be started with this extra
@@ -335,6 +335,10 @@ public class AudioPlayerService extends Service {
             oscillatingLeft = !oscillatingLeft;
         }
         Log.d(LOG_TAG, leftVolume + "," + rightVolume);
+    }
+
+    public int getSoundFile() {
+        return mp.getSoundFile();
     }
 
     public void decreaseForTick() {

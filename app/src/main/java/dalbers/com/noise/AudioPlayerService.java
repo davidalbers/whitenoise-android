@@ -155,6 +155,7 @@ public class AudioPlayerService extends Service {
                 } else if (action.equals("close")) {
                     stop();
                     stopTimer();
+                    dismissNotification();
                 }
             }
         }

@@ -14,6 +14,8 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.annotation.RawRes;
+import android.support.annotation.StringRes;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
@@ -276,7 +278,7 @@ public class AudioPlayerService extends Service {
     }
 
 
-    public void setSoundFile(int resId) {
+    public void setSoundFile(@RawRes int resId) {
         mp.setSoundFile(resId);
         mp.setVolume(maxVolume, maxVolume);
     }
@@ -310,7 +312,6 @@ public class AudioPlayerService extends Service {
             rightVolume = maxVolume;
             oscillatingDown = true;
         }
-        Log.d(LOG_TAG, leftVolume + "," + rightVolume);
     }
 
     /**
@@ -346,10 +347,9 @@ public class AudioPlayerService extends Service {
             oscillatingDown = true;
             oscillatingLeft = !oscillatingLeft;
         }
-        Log.d(LOG_TAG, leftVolume + "," + rightVolume);
     }
 
-    public int getSoundFile() {
+    @RawRes public int getSoundFile() {
         return mp.getSoundFile();
     }
 
@@ -376,21 +376,20 @@ public class AudioPlayerService extends Service {
      * and a pause button which will callback to this service
      */
     public void showNotification(boolean playing) {
-        String title;
+        @StringRes int titleRes;
         //which noise is playing?
         switch (mp.getSoundFile()) {
-            case R.raw.white:
-                title = "White Noise";
-                break;
             case R.raw.brown:
-                title = "Brown Noise";
+                titleRes = R.string.notification_brown_type;
                 break;
             case R.raw.pink:
-                title = "Pink Noise";
+                titleRes = R.string.notification_pink_type;
                 break;
             default:
-                title = "Noise";
+                titleRes = R.string.notification_white_type;
+                break;
         }
+        String title = getString(titleRes);
         Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
                 R.mipmap.ic_launcher);
         //make an intent to callback this service when the pause button is pressed
@@ -421,12 +420,13 @@ public class AudioPlayerService extends Service {
                     (NotificationCompat.Builder) new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_statusbar2)
                     .setContentTitle(title)
-                    .setContentText("Playing")
+                    .setContentText(getString(R.string.notification_playing))
                     .setLargeIcon(icon)
                     .setStyle(new NotificationCompat.MediaStyle())
                     .setOngoing(true)
-                    .addAction(R.drawable.ic_action_playback_pause_black, "Pause", pausePlayPI)
-                    .addAction(R.drawable.ic_clear, "Close", closePI)
+                    .addAction(R.drawable.ic_action_playback_pause_black,
+                            getString(R.string.audio_pause), pausePlayPI)
+                    .addAction(R.drawable.ic_clear, getString(R.string.notification_close), closePI)
                     .setContentIntent(openAppPI)
                     .setPriority(Notification.PRIORITY_MAX);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -460,12 +460,13 @@ public class AudioPlayerService extends Service {
                     (NotificationCompat.Builder) new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_statusbar2)
                     .setContentTitle(title)
-                    .setContentText("Paused")
+                    .setContentText(getString(R.string.notification_paused))
                     .setLargeIcon(icon)
                     .setStyle(new NotificationCompat.MediaStyle())
                     .setOngoing(true)
-                    .addAction(R.drawable.ic_action_playback_play_black, "Play", pausePlayPI)
-                    .addAction(R.drawable.ic_clear, "Close", closePI)
+                    .addAction(R.drawable.ic_action_playback_play_black,
+                            getString(R.string.audio_play), pausePlayPI)
+                    .addAction(R.drawable.ic_clear, getString(R.string.notification_close), closePI)
                     .setContentIntent(openAppPI)
                     .setPriority(Notification.PRIORITY_MAX);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

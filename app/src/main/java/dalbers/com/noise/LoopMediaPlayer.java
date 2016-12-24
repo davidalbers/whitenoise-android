@@ -2,6 +2,7 @@ package dalbers.com.noise;
 
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.support.annotation.RawRes;
 import android.util.Log;
 
 /**
@@ -13,7 +14,7 @@ class LoopMediaPlayer {
     private static final String TAG = LoopMediaPlayer.class.getSimpleName();
 
     private Context mContext = null;
-    private int mResId = NO_SOUND_FILE;
+    @RawRes private int mResId = NO_SOUND_FILE;
     private int mCounter = 1;
     static final int NO_SOUND_FILE = -1;
 
@@ -84,11 +85,11 @@ class LoopMediaPlayer {
         createNextMediaPlayer();
     }
 
-    int getSoundFile() {
+    @RawRes int getSoundFile() {
         return mResId;
     }
 
-    void setSoundFile(int resId) {
+    void setSoundFile(@RawRes int resId) {
         //reset if a different file
         if (resId != mResId) {
             boolean wasPlaying = false;

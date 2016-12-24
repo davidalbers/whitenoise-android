@@ -35,4 +35,10 @@
     <string name="audio_play">Play</string>
     <string name="fade_volume_toast">Fade Volume</string>
     <string name="wave_volume_toast">Wavy Volume</string>
+    <string name="notification_paused">Paused</string>
+    <string name="notification_close">Close</string>
+    <string name="notification_playing">Playing</string>
+    <string name="notification_white_type">White Noise</string>
+    <string name="notification_brown_type">Brown Noise</string>
+    <string name="notification_pink_type">Pink Noise</string>
 </resources>

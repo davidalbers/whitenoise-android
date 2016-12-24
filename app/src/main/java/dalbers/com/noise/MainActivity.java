@@ -44,15 +44,6 @@ import static dalbers.com.noise.LoopMediaPlayer.NO_SOUND_FILE;
 public class MainActivity extends AppCompatActivity {
 
     //preferences keys
-    public static final String PREF_STRING = "dalbers_white_noise";
-    public static final String PREF_COLOR_KEY = "color";
-    public static final String PREF_COLOR_WHITE = "white";
-    public static final String PREF_COLOR_BROWN = "brown";
-    public static final String PREF_COLOR_PINK = "pink";
-    public static final String PREF_VOLUME_KEY = "volume";
-    public static final String PREF_OSCILLATE_KEY = "oscillate";
-    public static final String PREF_DECREASE_KEY = "decrease";
-    public static final String PREF_TIME_KEY = "time";
     public static final String PREF_OSCILLATE_NEVER_ON = "first_oscillate";
     public static final String PREF_FADE_NEVER_ON = "first_fade";
     public static final String PREF_USE_DARK_MODE_KEY = "pref_use_dark_mode";
@@ -134,6 +125,26 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    RadioGroup.OnCheckedChangeListener noiseChangeListener =
+            new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup group, int checkedId) {
+                    if (audioPlayerService != null) {
+                        switch (checkedId) {
+                            case R.id.noiseTypePink:
+                                audioPlayerService.setSoundFile(R.raw.pink);
+                                break;
+                            case R.id.noiseTypeBrown:
+                                audioPlayerService.setSoundFile(R.raw.brown);
+                                break;
+                            default:
+                                audioPlayerService.setSoundFile(R.raw.white);
+                                break;
+                        }
+                    }
+                }
+            };
+
     private ServiceConnection playerConnection = new ServiceConnection() {
 
         @Override
@@ -171,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
 
         /**
          * Set the checked sound file in the UI
-         * @param soundFile
+         * @param soundFile file which is currently playing
          */
         private void setCheckedNoiseType(@RawRes int soundFile) {
             switch (soundFile) {
@@ -285,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
         if (audioPlayerService != null)
             audioPlayerService.setOscillateVolume(isChecked);
         if (oscillateNeverOn) {
-            Toast.makeText(MainActivity.this, "Wavy Volume", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, getString(R.string.wave_volume_toast), Toast.LENGTH_LONG).show();
             //update oscillateNeverOn to false in locally and in settings
             oscillateNeverOn = false;
             SharedPreferences sharedPref =
@@ -301,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
         if (audioPlayerService != null)
             audioPlayerService.setDecreaseVolume(isChecked);
         if (fadeNeverOn) {
-            Toast.makeText(MainActivity.this, "Fade Volume", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, getString(R.string.fade_volume_toast), Toast.LENGTH_LONG).show();
             //update fadeNeverOn to false in locally and in settings
             fadeNeverOn = false;
             SharedPreferences sharedPref =
@@ -325,25 +336,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    RadioGroup.OnCheckedChangeListener noiseChangeListener =
-            new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-            if (audioPlayerService != null) {
-                switch (checkedId) {
-                    case R.id.noiseTypePink:
-                        audioPlayerService.setSoundFile(R.raw.pink);
-                        break;
-                    case R.id.noiseTypeBrown:
-                        audioPlayerService.setSoundFile(R.raw.brown);
-                        break;
-                    default:
-                        audioPlayerService.setSoundFile(R.raw.white);
-                        break;
-                }
-            }
-            }
-        };
 
 
     @OnClick(R.id.btnPlay)
@@ -483,7 +475,6 @@ public class MainActivity extends AppCompatActivity {
     private void startTimer(long time) {
         if (editTextCountDownTimer != null)
             editTextCountDownTimer.cancel();
-        Log.d(LOG_TAG, "setting timer for " + time);
         editTextCountDownTimer = new CountDownTimer(time, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -526,7 +517,7 @@ public class MainActivity extends AppCompatActivity {
                 TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
         pausePic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
         playButton.setCompoundDrawables(pausePic, null, null, null);
-        playButton.setText("Pause");
+        playButton.setText(getString(R.string.audio_pause));
     }
 
     private void setPlayButtonPlay() {
@@ -535,7 +526,7 @@ public class MainActivity extends AppCompatActivity {
                 TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
         playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
         playButton.setCompoundDrawables(playPic, null, null, null);
-        playButton.setText("Play");
+        playButton.setText(getString(R.string.audio_play));
     }
 
 }

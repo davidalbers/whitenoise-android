@@ -6,15 +6,16 @@ import android.util.Log;
 
 /**
  * Created by davidalbers on 4/10/16.
+ * Plays an audio file on repeat
  */
-public class LoopMediaPlayer {
+class LoopMediaPlayer {
 
-    public static final String TAG = LoopMediaPlayer.class.getSimpleName();
+    private static final String TAG = LoopMediaPlayer.class.getSimpleName();
 
     private Context mContext = null;
     private int mResId = NO_SOUND_FILE;
     private int mCounter = 1;
-    public static final int NO_SOUND_FILE = -1;
+    static final int NO_SOUND_FILE = -1;
 
     private MediaPlayer mCurrentPlayer = null;
     private MediaPlayer mNextPlayer = null;
@@ -43,7 +44,7 @@ public class LoopMediaPlayer {
         mContext = context;
     }
 
-    public static LoopMediaPlayer create(Context context) {
+    static LoopMediaPlayer create(Context context) {
         return new LoopMediaPlayer(context);
     }
 
@@ -57,12 +58,12 @@ public class LoopMediaPlayer {
         mCurrentPlayer.setOnCompletionListener(onCompletionListener);
     }
 
-    public void stop() {
+    void stop() {
         if (mCurrentPlayer != null)
             mCurrentPlayer.stop();
     }
 
-    public void pause() {
+    void pause() {
         if (mCurrentPlayer != null)
             mCurrentPlayer.pause();
     }
@@ -83,11 +84,11 @@ public class LoopMediaPlayer {
         createNextMediaPlayer();
     }
 
-    public int getSoundFile() {
+    int getSoundFile() {
         return mResId;
     }
 
-    public void setSoundFile(int resId) {
+    void setSoundFile(int resId) {
         //reset if a different file
         if (resId != mResId) {
             boolean wasPlaying = false;
@@ -101,13 +102,11 @@ public class LoopMediaPlayer {
         }
     }
 
-    public boolean isPlaying() {
-        if (mCurrentPlayer == null)
-            return false;
-        return mCurrentPlayer.isPlaying();
+    boolean isPlaying() {
+        return mCurrentPlayer != null && mCurrentPlayer.isPlaying();
     }
 
-    public void setVolume(float leftVolume, float rightVolume) {
+    void setVolume(float leftVolume, float rightVolume) {
         if (mCurrentPlayer != null) {
             mCurrentPlayer.setVolume(leftVolume, rightVolume);
             //set the next media players volume also so it will be in sync
@@ -117,7 +116,4 @@ public class LoopMediaPlayer {
         this.rightVolume = rightVolume;
     }
 
-    public float[] getVolume() {
-        return new float[]{leftVolume, rightVolume};
-    }
 }

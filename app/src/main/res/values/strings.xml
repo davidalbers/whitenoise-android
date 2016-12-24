@@ -31,4 +31,8 @@
     <string name="dark_theme_summary">Uses less brighter colors. Great for night time use.</string>
     <string name="oscillate_interval_summary">Time between waves.
         Higher values are slower, lower values are faster.</string>
+    <string name="audio_pause">Pause</string>
+    <string name="audio_play">Play</string>
+    <string name="fade_volume_toast">Fade Volume</string>
+    <string name="wave_volume_toast">Wavy Volume</string>
 </resources>

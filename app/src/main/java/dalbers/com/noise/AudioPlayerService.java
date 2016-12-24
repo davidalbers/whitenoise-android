@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Binder;
+import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
@@ -147,18 +148,20 @@ public class AudioPlayerService extends Service {
         //the service will be started with this extra
         if (intent != null && intent.hasExtra(DO_ACTION)) {
             String action = (String) intent.getExtras().get(DO_ACTION);
-            switch(action) {
-                case PAUSE_ACTION:
-                    handleNotificationPause();
-                    break;
-                case PLAY_ACTION:
-                    handleNotificationPlay();
-                    break;
-                case CLOSE_ACTION:
-                    handleNotificationClose();
-                    break;
-                default:
-                    break;
+            if (action != null) {
+                switch(action) {
+                    case PAUSE_ACTION:
+                        handleNotificationPause();
+                        break;
+                    case PLAY_ACTION:
+                        handleNotificationPlay();
+                        break;
+                    case CLOSE_ACTION:
+                        handleNotificationClose();
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -206,9 +209,7 @@ public class AudioPlayerService extends Service {
     }
 
     public boolean isPlaying() {
-        if (mp != null)
-            return mp.isPlaying();
-        else return false;
+        return mp != null && mp.isPlaying();
     }
 
     public void dismissNotification() {
@@ -416,7 +417,8 @@ public class AudioPlayerService extends Service {
                     0,
                     openAppIntent,
                     PendingIntent.FLAG_ONE_SHOT);
-            notification = new NotificationCompat.Builder(this)
+            NotificationCompat.Builder builder =
+                    (NotificationCompat.Builder) new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_statusbar2)
                     .setContentTitle(title)
                     .setContentText("Playing")
@@ -426,9 +428,11 @@ public class AudioPlayerService extends Service {
                     .addAction(R.drawable.ic_action_playback_pause_black, "Pause", pausePlayPI)
                     .addAction(R.drawable.ic_clear, "Close", closePI)
                     .setContentIntent(openAppPI)
-                    .setVisibility(Notification.VISIBILITY_PUBLIC)
-                    .setPriority(Notification.PRIORITY_MAX)
-                    .build();
+                    .setPriority(Notification.PRIORITY_MAX);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+            }
+            notification = builder.build();
         } else {
             Intent pausePlayIntent = new Intent(this, AudioPlayerService.class);
             pausePlayIntent.setAction(PLAY_ACTION);
@@ -452,7 +456,8 @@ public class AudioPlayerService extends Service {
                     0,
                     openAppIntent,
                     PendingIntent.FLAG_ONE_SHOT);
-            notification = new NotificationCompat.Builder(this)
+            NotificationCompat.Builder builder =
+                    (NotificationCompat.Builder) new NotificationCompat.Builder(this)
                     .setSmallIcon(R.drawable.ic_statusbar2)
                     .setContentTitle(title)
                     .setContentText("Paused")
@@ -462,13 +467,15 @@ public class AudioPlayerService extends Service {
                     .addAction(R.drawable.ic_action_playback_play_black, "Play", pausePlayPI)
                     .addAction(R.drawable.ic_clear, "Close", closePI)
                     .setContentIntent(openAppPI)
-                    .setVisibility(Notification.VISIBILITY_PUBLIC)
-                    .setPriority(Notification.PRIORITY_MAX)
-                    .build();
+                    .setPriority(Notification.PRIORITY_MAX);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+            }
+            notification = builder.build();
+
         }
         //show the notification
-        NotificationManager nManager =
-                (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager nManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         nManager.notify(NOTIFICATION_ID, notification);
     }
 

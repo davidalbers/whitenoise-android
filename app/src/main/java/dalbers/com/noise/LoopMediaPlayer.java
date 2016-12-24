@@ -14,7 +14,7 @@ public class LoopMediaPlayer {
     private Context mContext = null;
     private int mResId = NO_SOUND_FILE;
     private int mCounter = 1;
-    public static int NO_SOUND_FILE = -1;
+    public static final int NO_SOUND_FILE = -1;
 
     private MediaPlayer mCurrentPlayer = null;
     private MediaPlayer mNextPlayer = null;
@@ -44,8 +44,7 @@ public class LoopMediaPlayer {
     }
 
     public static LoopMediaPlayer create(Context context) {
-        LoopMediaPlayer looper = new LoopMediaPlayer(context);
-        return looper;
+        return new LoopMediaPlayer(context);
     }
 
     private void createNextMediaPlayer() {
@@ -103,7 +102,8 @@ public class LoopMediaPlayer {
     }
 
     public boolean isPlaying() {
-        if (mCurrentPlayer == null) return false;
+        if (mCurrentPlayer == null)
+            return false;
         return mCurrentPlayer.isPlaying();
     }
 

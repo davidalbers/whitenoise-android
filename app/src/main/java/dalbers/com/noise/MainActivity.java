@@ -155,19 +155,13 @@ public class MainActivity extends AppCompatActivity {
             audioPlayerService = audioPlayerBinder.getService();
             float[] volumes = audioPlayerService.getVolume();
             volumeBar.setProgress((int) (volumeBar.getMax() * Math.max(volumes[0], volumes[1])));
-            Resources res = MainActivity.this.getResources();
-            //convert from 120dp to pixels
-            int picSizeInPixels = (int) TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, 24, res.getDisplayMetrics());
 
             if(audioPlayerService.getSoundFile() == NO_SOUND_FILE)
                 audioPlayerService.setSoundFile(R.raw.white);
             if (audioPlayerService.isPlaying()) {
-                pausePic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
-                playButton.setCompoundDrawables(pausePic, null, null, null);
+                setPlayButtonPause();
             } else {
-                playPic.setBounds(0, 0, picSizeInPixels, picSizeInPixels);
-                playButton.setCompoundDrawables(playPic, null, null, null);
+                setPlayButtonPlay();
             }
             //sync UI with service's chosen sound file
             setCheckedNoiseType(audioPlayerService.getSoundFile());
@@ -403,8 +397,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             }, 0);
         }
-        if (audioPlayerService != null)
+        if (audioPlayerService != null) {
             audioPlayerService.dismissNotification();
+            if(audioPlayerService.isPlaying())
+                setPlayButtonPause();
+            else
+                setPlayButtonPlay();
+
+        }
     }
 
     @Override

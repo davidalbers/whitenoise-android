@@ -10,7 +10,7 @@ Most white noise apps lack features that I would like to have, so I'm making my 
 
 Additionally most of the existing apps are ugly/outdated, so I'm attempting to use a simple Material design.
 
-I've finished the main features of the app and it's available on the [Play Store](https://play.google.com/store/apps/details?id=dalbers.com.noise "App Link").
+I've finished the main features of the app. It's available on the [Play Store](https://play.google.com/store/apps/details?id=dalbers.com.noise "App Link") and [here](https://github.com/davidalbers/whitenoise/releases/tag/v1.8).
 
 ---
 Some wishlist features are:

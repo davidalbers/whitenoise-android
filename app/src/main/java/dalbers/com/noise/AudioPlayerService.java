@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.CountDownTimer;
@@ -122,6 +123,12 @@ public class AudioPlayerService extends Service {
     private static final String PLAY_ACTION = "play";
     private static final String DO_ACTION = "do";
 
+    /**
+     * If the player loses focus and it was playing, then set this true
+     * When and if we regain focus, you know to start playing again if this is true
+     */
+    private boolean startPlayingWhenFocusRegained = false;
+
     @Override
     public IBinder onBind(Intent intent) {
         if (mp == null) {
@@ -170,10 +177,30 @@ public class AudioPlayerService extends Service {
         return START_STICKY;
     }
 
+    AudioManager.OnAudioFocusChangeListener focusChangeListener =
+        new AudioManager.OnAudioFocusChangeListener() {
+        @Override
+        public void onAudioFocusChange(int focusChange) {
+            if (focusChange > 0 && startPlayingWhenFocusRegained) {
+                play();
+                startPlayingWhenFocusRegained = false;
+            }
+            else if (focusChange < 0 && isPlaying()) {
+                //we lost audio focus, stop playing
+                pause();
+                if(focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT
+                        || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+                    //in these cases, we can expect to get audio back soon
+                    startPlayingWhenFocusRegained = true;
+                }
+            }
+        }
+    };
+
     private void handleNotificationPause() {
         pause();
         //there's no way to pause the timer
-        //just cancel it and start a new one if play is pressed
+        //just cancel it and start a new one (with the old time) if play is pressed
         cancelTimer();
         showNotification(false);
     }
@@ -195,6 +222,11 @@ public class AudioPlayerService extends Service {
 
     public void play() {
         mp.play();
+        //every time we start playing, we have to request audio focus and listen for other
+        //apps also listening for focus with the focusChangeListener
+        AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        audioManager.requestAudioFocus(focusChangeListener, AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN);
     }
 
     public void stop() {

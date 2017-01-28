@@ -1,6 +1,7 @@
 package dalbers.com.noise;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.support.annotation.RawRes;
 import android.util.Log;
@@ -57,6 +58,8 @@ class LoopMediaPlayer {
         mNextPlayer.setVolume(leftVolume, rightVolume);
         mCurrentPlayer.setNextMediaPlayer(mNextPlayer);
         mCurrentPlayer.setOnCompletionListener(onCompletionListener);
+        mCurrentPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mNextPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
     }
 
     void stop() {
@@ -81,6 +84,7 @@ class LoopMediaPlayer {
                 mCurrentPlayer.start();
             }
         });
+        mCurrentPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         createNextMediaPlayer();
     }
@@ -116,5 +120,6 @@ class LoopMediaPlayer {
         this.leftVolume = leftVolume;
         this.rightVolume = rightVolume;
     }
+
 
 }

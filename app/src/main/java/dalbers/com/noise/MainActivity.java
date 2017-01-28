@@ -7,6 +7,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -50,6 +51,14 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREF_OSCILLATE_INTERVAL_KEY = "pref_oscillate_interval";
     public static final String SAVE_STATE_TIMER_CREATED = "save_state_timer_active";
     public static final String SAVE_STATE_TIMER_TIME = "save_state_timer_time";
+    public static final String PREF_LAST_USED_COLOR = "last_used_color";
+    public static final String PREF_COLOR_WHITE = "last_color_was_white";
+    public static final String PREF_COLOR_PINK = "last_color_was_pink";
+    public static final String PREF_COLOR_BROWN = "last_color_was_brown";
+    public static final String PREF_LAST_VOLUME = "last_volume";
+    public static final String PREF_LAST_USED_WAVY = "last_used_wavy";
+    public static final String PREF_LAST_USED_FADE = "last_used_fade";
+    public static final String PREF_LAST_TIMER_TIME = "last_timer_time";
     public static final String LOG_TAG = "dalbers.noise/main";
     @BindView(R.id.volumeBar)
     SeekBar volumeBar;
@@ -94,7 +103,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean useDarkMode = false;
     private boolean usingDarkMode = false;
     private long oscillateInterval = 8000;
-    SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+    SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener
+            = new SharedPreferences.OnSharedPreferenceChangeListener() {
 
         @Override
         public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
@@ -117,6 +127,8 @@ public class MainActivity extends AppCompatActivity {
                     startTimer(timeInMillis);
                 }
             }
+            PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit()
+                    .putLong(PREF_LAST_TIMER_TIME, timeInMillis).apply();
         }
 
         @Override
@@ -130,17 +142,23 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onCheckedChanged(RadioGroup group, int checkedId) {
                     if (audioPlayerService != null) {
+                        SharedPreferences.Editor editor = PreferenceManager
+                                .getDefaultSharedPreferences(getBaseContext()).edit();
                         switch (checkedId) {
                             case R.id.noiseTypePink:
                                 audioPlayerService.setSoundFile(R.raw.pink);
+                                editor.putString(PREF_LAST_USED_COLOR, PREF_COLOR_PINK);
                                 break;
                             case R.id.noiseTypeBrown:
                                 audioPlayerService.setSoundFile(R.raw.brown);
+                                editor.putString(PREF_LAST_USED_COLOR, PREF_COLOR_BROWN);
                                 break;
                             default:
                                 audioPlayerService.setSoundFile(R.raw.white);
+                                editor.putString(PREF_LAST_USED_COLOR, PREF_COLOR_WHITE);
                                 break;
                         }
+                        editor.apply();
                     }
                 }
             };
@@ -153,19 +171,28 @@ public class MainActivity extends AppCompatActivity {
             AudioPlayerService.AudioPlayerBinder audioPlayerBinder =
                     (AudioPlayerService.AudioPlayerBinder) binder;
             audioPlayerService = audioPlayerBinder.getService();
-            float[] volumes = audioPlayerService.getVolume();
-            volumeBar.setProgress((int) (volumeBar.getMax() * Math.max(volumes[0], volumes[1])));
 
-            if(audioPlayerService.getSoundFile() == NO_SOUND_FILE)
-                audioPlayerService.setSoundFile(R.raw.white);
+            if(audioPlayerService.getSoundFile() == NO_SOUND_FILE) {
+                if(noiseTypePink.isChecked())
+                    audioPlayerService.setSoundFile(R.raw.pink);
+                else if (noiseTypeBrown.isChecked())
+                    audioPlayerService.setSoundFile(R.raw.brown);
+                else
+                    audioPlayerService.setSoundFile(R.raw.white);
+            }
             if (audioPlayerService.isPlaying()) {
                 setPlayButtonPause();
             } else {
                 setPlayButtonPlay();
             }
-            //sync UI with service's chosen sound file
-            setCheckedNoiseType(audioPlayerService.getSoundFile());
+
             audioPlayerService.setOscillatePeriod(oscillateInterval);
+            audioPlayerService.setOscillateVolume(oscillateButton.isChecked());
+            audioPlayerService.setDecreaseVolume(fadeButton.isChecked());
+            audioPlayerService.setMaxVolume(
+                    calculateVolumePercent(volumeBar.getProgress(), volumeBar));
+
+            //sync UI with service's chosen sound file
             setUIBasedOnServiceState();
         }
 
@@ -210,24 +237,37 @@ public class MainActivity extends AppCompatActivity {
                     } else //cancel the visual timer since the service timer is also
                         pauseTimer();
                 } else if (!timerCreatedAndNotStarted) {
-                    //service says timer is unset and we have no saved state telling us otherwise
-                    timerTextView.setTime(0);
-                    timerActive = false;
-                    setTimerUIUnsetState();
+                    //service says timer is unset, check shared pref for any previously used times
+                    long lastTime = PreferenceManager.getDefaultSharedPreferences(getBaseContext())
+                            .getLong(PREF_LAST_TIMER_TIME, 0L);
+                    if (lastTime > 0) {
+                        setTimerUIAdded(lastTime);
+                        timerActive = true;
+                    }
+                    else {
+                        timerTextView.setTime(0);
+                        timerActive = false;
+                        setTimerUIUnsetState();
+                    }
                 }
 
             }
         }
     };
 
+    private float calculateVolumePercent(int progress, SeekBar seekBar) {
+        return (float) progress / seekBar.getMax();
+    }
 
     private SeekBar.OnSeekBarChangeListener volumeChangeListener =
             new SeekBar.OnSeekBarChangeListener() {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            float percentScrolled = (float) progress / seekBar.getMax();
+            float percentScrolled = calculateVolumePercent(progress, seekBar);
             if (audioPlayerService != null)
                 audioPlayerService.setMaxVolume(percentScrolled);
+            PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit()
+                    .putFloat(PREF_LAST_VOLUME, percentScrolled).apply();
         }
 
         @Override
@@ -261,12 +301,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        setUIBasedOnPrefs(sharedPref);
+
         Intent serviceIntent = new Intent(MainActivity.this, AudioPlayerService.class);
         startService(serviceIntent);
         bindService(serviceIntent, playerConnection, Context.BIND_AUTO_CREATE);
         isPlayerConnectionBound = true;
 
-        volumeBar.setProgress(volumeBar.getMax());
         volumeBar.setOnSeekBarChangeListener(volumeChangeListener);
         noiseTypes.setOnCheckedChangeListener(noiseChangeListener);
 
@@ -282,6 +323,40 @@ public class MainActivity extends AppCompatActivity {
                 timerActive = timerCreatedAndNotStarted;
                 setTimerUIAdded(currTime);
             }
+        }
+
+
+    }
+
+    /**
+     * Look at shared prefs and update UI to the last saved state
+     * @param sharedPref shared preference to work from
+     */
+    private void setUIBasedOnPrefs(SharedPreferences sharedPref) {
+        String lastColor = sharedPref.getString(PREF_LAST_USED_COLOR, PREF_COLOR_WHITE);
+        switch (lastColor) {
+            case PREF_COLOR_BROWN:
+                noiseTypeBrown.setChecked(true);
+                break;
+            case PREF_COLOR_PINK:
+                noiseTypePink.setChecked(true);
+                break;
+            default:
+                noiseTypeWhite.setChecked(true);
+                break;
+        }
+
+        float lastVolume = sharedPref.getFloat(PREF_LAST_VOLUME, .5f);
+        volumeBar.setProgress((int)(volumeBar.getMax() * lastVolume));
+
+        fadeButton.setChecked(sharedPref.getBoolean(PREF_LAST_USED_FADE, false));
+
+        oscillateButton.setChecked(sharedPref.getBoolean(PREF_LAST_USED_WAVY, false));
+
+        long lastTime = sharedPref.getLong(PREF_LAST_TIMER_TIME, 0L);
+        if (lastTime > 0) {
+            setTimerUIAdded(lastTime);
+            timerActive = true;
         }
     }
 
@@ -299,6 +374,8 @@ public class MainActivity extends AppCompatActivity {
             editor.putBoolean(PREF_OSCILLATE_NEVER_ON, false);
             editor.apply();
         }
+        PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit()
+                .putBoolean(PREF_LAST_USED_WAVY, isChecked).apply();
     }
 
     @OnCheckedChanged(R.id.decreaseVolumeToggle)
@@ -315,6 +392,8 @@ public class MainActivity extends AppCompatActivity {
             editor.putBoolean(PREF_FADE_NEVER_ON, false);
             editor.apply();
         }
+        PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit()
+                .putBoolean(PREF_LAST_USED_FADE, isChecked).apply();
     }
 
     @OnClick(R.id.timerButton)
@@ -327,6 +406,8 @@ public class MainActivity extends AppCompatActivity {
             stopTimer();
             //if playing audio, set button to play
             setPlayButtonPlay();
+            PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit()
+                    .putLong(PREF_LAST_TIMER_TIME, 0L).apply();
         }
     }
 
@@ -351,7 +432,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
 
     /**
      * Create and show a timer picker
@@ -483,10 +563,10 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFinish() {
-                timerTextView.setTime(0);
+                long lastTime = PreferenceManager.getDefaultSharedPreferences(getBaseContext())
+                        .getLong(PREF_LAST_TIMER_TIME, 0L);
+                timerTextView.setTime(lastTime);
                 setPlayButtonPlay();
-                setTimerUIUnsetState();
-                timerActive = false;
             }
         };
         audioPlayerService.setTimer(time);

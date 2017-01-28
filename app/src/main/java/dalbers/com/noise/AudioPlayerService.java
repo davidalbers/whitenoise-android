@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
@@ -227,24 +228,36 @@ public class AudioPlayerService extends Service {
 
     public void play() {
         mp.play();
-        //every time we start playing, we have to request audio focus and listen for other
-        //apps also listening for focus with the focusChangeListener
-        AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-        audioManager.requestAudioFocus(focusChangeListener, AudioManager.STREAM_MUSIC,
-                AudioManager.AUDIOFOCUS_GAIN);
+        if (!getDefaultSharedPreferences(getBaseContext())
+                .getBoolean(MainActivity.PREF_PLAY_OVER, false)) {
+            //every time we start playing, we have to request audio focus and listen for other
+            //apps also listening for focus with the focusChangeListener
+            Log.d(LOG_TAG, "Getting audio focus");
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            audioManager.requestAudioFocus(focusChangeListener, AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN);
+        }
     }
 
     public void stop() {
         if (mp != null)
             mp.stop();
+        abandonAudioFocus();
         //reset volumes to initial values
         leftVolume = initialVolume;
         rightVolume = initialVolume;
     }
 
+
     public void pause() {
         if (mp != null)
             mp.pause();
+        abandonAudioFocus();
+    }
+
+    private void abandonAudioFocus() {
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        audioManager.abandonAudioFocus(focusChangeListener);
     }
 
     public boolean isPlaying() {

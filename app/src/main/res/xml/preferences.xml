@@ -8,6 +8,11 @@
             android:key="pref_use_dark_mode"
             android:summary="@string/dark_theme_summary"
             android:title="@string/dark_theme_toggle" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_play_over"
+            android:summary="@string/play_over_summary"
+            android:title="@string/play_over_toggle" />
         <ListPreference
             android:defaultValue="@string/wave_interval_choice_default_value"
             android:dialogTitle="@string/wave_interval_choice_dialog"

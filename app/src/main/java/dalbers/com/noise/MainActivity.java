@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String PREF_FADE_NEVER_ON = "first_fade";
     public static final String PREF_USE_DARK_MODE_KEY = "pref_use_dark_mode";
     public static final String PREF_OSCILLATE_INTERVAL_KEY = "pref_oscillate_interval";
+    public static final String PREF_PLAY_OVER = "pref_play_over";
     public static final String SAVE_STATE_TIMER_CREATED = "save_state_timer_active";
     public static final String SAVE_STATE_TIMER_TIME = "save_state_timer_time";
     public static final String PREF_LAST_USED_COLOR = "last_used_color";

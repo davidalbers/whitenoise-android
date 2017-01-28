@@ -15,6 +15,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.support.annotation.RawRes;
 import android.support.annotation.StringRes;
 import android.support.v7.app.NotificationCompat;
@@ -22,6 +23,8 @@ import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 
 /**
  * A service to play audio on a loop.
@@ -181,11 +184,13 @@ public class AudioPlayerService extends Service {
         new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {
+            boolean playOverOtherSound = getDefaultSharedPreferences(getBaseContext())
+                    .getBoolean(MainActivity.PREF_PLAY_OVER, false);
             if (focusChange > 0 && startPlayingWhenFocusRegained) {
                 play();
                 startPlayingWhenFocusRegained = false;
             }
-            else if (focusChange < 0 && isPlaying()) {
+            else if (!playOverOtherSound && focusChange < 0 && isPlaying()) {
                 //we lost audio focus, stop playing
                 pause();
                 if(focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT

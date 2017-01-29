@@ -14,7 +14,7 @@ I've finished the main features of the app. It's available on the [Play Store](h
 
 ---
 Some wishlist features are:
-* Save app state (noise type, volume, etc.) and load it each time app is started
+* Chromecast support
 
 ---
 <img src="/screenshots/noiseScreenshot.png" width="250">

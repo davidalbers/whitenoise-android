@@ -7,7 +7,6 @@
     <string name="blank" />
     <string name="volume_label">Volume</string>
     <string name="timer_label">Timer</string>
-    <string name="hms_initial_value">00h00m00s</string>
     <string name="dark_theme_toggle">Use Dark Theme</string>
     <string name="play_over_toggle">Play Over Other Sounds</string>
     <string name="wave_interval_choice_title">Wave Interval</string>

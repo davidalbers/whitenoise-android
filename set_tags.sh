@@ -1,6 +1,6 @@
 BRANCH="master"
 
-# Are we on the right branch?
+# Are we on the right branch? 
 if [ "$TRAVIS_BRANCH" = "$BRANCH" ]; then
   
   # Is this not a Pull Request?

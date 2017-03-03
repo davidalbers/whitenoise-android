@@ -6,4 +6,8 @@ android:
     - tools
     - build-tools-25.0.1
     - platform-tools
+    - android-25
+    - extra-android-m2repository
+    - extra-google-m2repository
+    - extra-android-support
 

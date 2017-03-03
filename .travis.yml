@@ -19,3 +19,5 @@ deploy:
   skip_cleanup: true
   on:
     repo: davidalbers/whitenoise
+after_success:
+- sh set_tags.sh

@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'android-apt'
 
 android {
     compileSdkVersion 25
@@ -26,5 +25,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.0.1'
     compile 'com.dalbers.timerpicker:timerpicker:1.0.0'
     compile 'com.jakewharton:butterknife:8.4.0'
-    apt 'com.jakewharton:butterknife-compiler:8.4.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
 }

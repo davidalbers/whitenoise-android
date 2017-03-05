@@ -24,6 +24,7 @@ import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A service to play audio on a loop.
@@ -33,9 +34,9 @@ import java.util.TimerTask;
 public class AudioPlayerService extends Service {
 
     /**
-     * Use this instead of decreaseLength if no timer exists (equal to 1 hour in milliseconds).
+     * Use this instead of decreaseLength if no timer exists.
      */
-    public static final long DEFAULT_DECREASE_LENGTH = 3600000;
+    public static final long DEFAULT_DECREASE_LENGTH = TimeUnit.HOURS.toMillis(1);
     private static final String LOG_TAG = AudioPlayerService.class.getSimpleName();
     /**
      * Used when showing the notification.

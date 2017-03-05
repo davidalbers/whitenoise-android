@@ -8,11 +8,13 @@ public class SettingsActivity extends PreferenceActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        boolean useDarkMode = getIntent().getBooleanExtra(MainActivity.PREF_USE_DARK_MODE_KEY, false);
-        if (useDarkMode)
+        boolean useDarkMode = getIntent()
+                .getBooleanExtra(MainActivity.PREF_USE_DARK_MODE_KEY, false);
+        if (useDarkMode) {
             setTheme(R.style.Dark);
-        else
+        } else {
             setTheme(R.style.AppTheme);
+        }
         super.onCreate(savedInstanceState);
         // Display the fragment as the main content.
         getFragmentManager().beginTransaction()

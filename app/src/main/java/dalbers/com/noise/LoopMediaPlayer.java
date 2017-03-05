@@ -14,16 +14,17 @@ class LoopMediaPlayer {
 
     private static final String TAG = LoopMediaPlayer.class.getSimpleName();
 
-    private Context mContext = null;
-    @RawRes private int mResId = NO_SOUND_FILE;
-    private int mCounter = 1;
+    private Context context = null;
+    @RawRes private int soundFile = NO_SOUND_FILE;
+    private int counter = 1;
     static final int NO_SOUND_FILE = -1;
 
-    private MediaPlayer mCurrentPlayer = null;
-    private MediaPlayer mNextPlayer = null;
+    private MediaPlayer currentPlayer = null;
+    private MediaPlayer nextPlayer = null;
     private float leftVolume = 1.0f;
     private float rightVolume = 1.0f;
-    private MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener() {
+    private MediaPlayer.OnCompletionListener onCompletionListener =
+            new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
             //Release the completed player
@@ -33,17 +34,18 @@ class LoopMediaPlayer {
             //before this is called.
             mediaPlayer.release();
 
-            mCurrentPlayer = mNextPlayer;
+            currentPlayer = nextPlayer;
 
-            mCurrentPlayer.setVolume(leftVolume, rightVolume);
+            currentPlayer.setVolume(leftVolume, rightVolume);
 
             createNextMediaPlayer();
 
-            Log.d(TAG, String.format("Loop #%d", ++mCounter));
+            Log.d(TAG, String.format("Loop #%d", ++counter));
         }
     };
+
     private LoopMediaPlayer(Context context) {
-        mContext = context;
+        this.context = context;
     }
 
     static LoopMediaPlayer create(Context context) {
@@ -52,70 +54,75 @@ class LoopMediaPlayer {
 
     private void createNextMediaPlayer() {
         //default to playing white noise if none selected
-        if(mResId == NO_SOUND_FILE)
-            mResId = R.raw.white;
-        mNextPlayer = MediaPlayer.create(mContext, mResId);
-        mNextPlayer.setVolume(leftVolume, rightVolume);
-        mCurrentPlayer.setNextMediaPlayer(mNextPlayer);
-        mCurrentPlayer.setOnCompletionListener(onCompletionListener);
-        mCurrentPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mNextPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        if (soundFile == NO_SOUND_FILE) {
+            soundFile = R.raw.white;
+        }
+        nextPlayer = MediaPlayer.create(context, soundFile);
+        nextPlayer.setVolume(leftVolume, rightVolume);
+        currentPlayer.setNextMediaPlayer(nextPlayer);
+        currentPlayer.setOnCompletionListener(onCompletionListener);
+        currentPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        nextPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
     }
 
     void stop() {
-        if (mCurrentPlayer != null)
-            mCurrentPlayer.stop();
+        if (currentPlayer != null) {
+            currentPlayer.stop();
+        }
     }
 
     void pause() {
-        if (mCurrentPlayer != null)
-            mCurrentPlayer.pause();
+        if (currentPlayer != null) {
+            currentPlayer.pause();
+        }
     }
 
     public void play() {
         //default to playing white noise if none selected
-        if(mResId == NO_SOUND_FILE)
-            mResId = R.raw.white;
-        mCurrentPlayer = MediaPlayer.create(mContext, mResId);
-        mCurrentPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        if (soundFile == NO_SOUND_FILE) {
+            soundFile = R.raw.white;
+        }
+        currentPlayer = MediaPlayer.create(context, soundFile);
+        currentPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
-                mCurrentPlayer.setVolume(leftVolume, rightVolume);
-                mCurrentPlayer.start();
+                currentPlayer.setVolume(leftVolume, rightVolume);
+                currentPlayer.start();
             }
         });
-        mCurrentPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        currentPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         createNextMediaPlayer();
     }
 
     @RawRes int getSoundFile() {
-        return mResId;
+        return soundFile;
     }
 
     void setSoundFile(@RawRes int resId) {
         //reset if a different file
-        if (resId != mResId) {
+        if (resId != soundFile) {
             boolean wasPlaying = false;
-            if (mCurrentPlayer != null) {
-                wasPlaying = mCurrentPlayer.isPlaying();
+            if (currentPlayer != null) {
+                wasPlaying = currentPlayer.isPlaying();
                 stop();
             }
-            mResId = resId;
-            if ((mCurrentPlayer != null) && wasPlaying)
+            soundFile = resId;
+            if ((currentPlayer != null) && wasPlaying) {
                 play();
+            }
         }
     }
 
     boolean isPlaying() {
-        return mCurrentPlayer != null && mCurrentPlayer.isPlaying();
+        return currentPlayer != null && currentPlayer.isPlaying();
     }
 
     void setVolume(float leftVolume, float rightVolume) {
-        if (mCurrentPlayer != null) {
-            mCurrentPlayer.setVolume(leftVolume, rightVolume);
+        if (currentPlayer != null) {
+            currentPlayer.setVolume(leftVolume, rightVolume);
             //set the next media players volume also so it will be in sync
-            mNextPlayer.setVolume(leftVolume, rightVolume);
+            nextPlayer.setVolume(leftVolume, rightVolume);
         }
         this.leftVolume = leftVolume;
         this.rightVolume = rightVolume;

@@ -1,13 +1,13 @@
 package dalbers.com.noise;
 
+import static dalbers.com.noise.LoopMediaPlayer.NO_SOUND_FILE;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -15,14 +15,12 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.RawRes;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -38,9 +36,6 @@ import butterknife.OnClick;
 import dalbers.com.timerpicker.TimerPickerDialogFragment;
 import dalbers.com.timerpicker.TimerPickerDialogListener;
 import dalbers.com.timerpicker.TimerTextView;
-
-import static dalbers.com.noise.LoopMediaPlayer.NO_SOUND_FILE;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -94,28 +89,30 @@ public class MainActivity extends AppCompatActivity {
     private AudioPlayerService audioPlayerService;
     private CountDownTimer editTextCountDownTimer;
     /**
-     * true if the user has never ever ever turned on oscillate option
+     * If the user has never turned on oscillate option, this is true.
      */
     private boolean oscillateNeverOn = false;
     /**
-     * true if the user has never ever ever turned on fade option
+     * If the user has never turned on fade option, this is true.
      */
     private boolean fadeNeverOn = false;
     private boolean useDarkMode = false;
     private boolean usingDarkMode = false;
     private long oscillateInterval = 8000;
-    SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener
-            = new SharedPreferences.OnSharedPreferenceChangeListener() {
 
+    SharedPreferences.OnSharedPreferenceChangeListener sharedPrefListener =
+            new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
             loadPreferences(prefs);
         }
     };
+
     private boolean isPlayerConnectionBound = false;
     private boolean timerCreatedAndNotStarted = false;
+
     /**
-     * Do stuff when timer is set in dialog
+     * Do stuff when timer is set in dialog.
      */
     private TimerPickerDialogListener dialogListener = new TimerPickerDialogListener() {
         @Override
@@ -123,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
             //ignore zero
             if (timeInMillis != 0) {
                 timerActive = true;
-                setTimerUIAdded(timeInMillis);
+                setTimerUiAdded(timeInMillis);
                 if (audioPlayerService.isPlaying()) {
                     startTimer(timeInMillis);
                 }
@@ -173,13 +170,14 @@ public class MainActivity extends AppCompatActivity {
                     (AudioPlayerService.AudioPlayerBinder) binder;
             audioPlayerService = audioPlayerBinder.getService();
 
-            if(audioPlayerService.getSoundFile() == NO_SOUND_FILE) {
-                if(noiseTypePink.isChecked())
+            if (audioPlayerService.getSoundFile() == NO_SOUND_FILE) {
+                if (noiseTypePink.isChecked()) {
                     audioPlayerService.setSoundFile(R.raw.pink);
-                else if (noiseTypeBrown.isChecked())
+                } else if (noiseTypeBrown.isChecked()) {
                     audioPlayerService.setSoundFile(R.raw.brown);
-                else
+                } else {
                     audioPlayerService.setSoundFile(R.raw.white);
+                }
             }
             if (audioPlayerService.isPlaying()) {
                 setPlayButtonPause();
@@ -194,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
                     calculateVolumePercent(volumeBar.getProgress(), volumeBar));
 
             //sync UI with service's chosen sound file
-            setUIBasedOnServiceState();
+            setUiBasedOnServiceState();
         }
 
         @Override
@@ -203,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         /**
-         * Set the checked sound file in the UI
+         * Set the checked sound file in the UI.
          * @param soundFile file which is currently playing
          */
         private void setCheckedNoiseType(@RawRes int soundFile) {
@@ -220,35 +218,42 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        private void setUIBasedOnServiceState() {
+        /**
+         * When the service is bound, get relevant information from the service and set the UI based
+         * on it. This is useful if the activity has been killed but the service was running in the
+         * background.
+         */
+        private void setUiBasedOnServiceState() {
             if (audioPlayerService != null) {
                 //sync up play state
-                if (audioPlayerService.isPlaying())
+                if (audioPlayerService.isPlaying()) {
                     setPlayButtonPause();
-                else
+                } else {
                     setPlayButtonPlay();
+                }
                 //sync up timer
                 long timeLeft = audioPlayerService.getTimeLeft();
                 //still time left
                 if (timeLeft > 0) {
                     //match the visual timer to the service timer
                     if (audioPlayerService.isPlaying()) {
-                        setTimerUIAdded(timeLeft);
+                        setTimerUiAdded(timeLeft);
                         startTimer(timeLeft);
-                    } else //cancel the visual timer since the service timer is also
+                    } else {
+                        //cancel the visual timer since the service timer is also
                         pauseTimer();
+                    }
                 } else if (!timerCreatedAndNotStarted) {
                     //service says timer is unset, check shared pref for any previously used times
                     long lastTime = PreferenceManager.getDefaultSharedPreferences(getBaseContext())
                             .getLong(PREF_LAST_TIMER_TIME, 0L);
                     if (lastTime > 0) {
-                        setTimerUIAdded(lastTime);
+                        setTimerUiAdded(lastTime);
                         timerActive = true;
-                    }
-                    else {
+                    } else {
                         timerTextView.setTime(0);
                         timerActive = false;
-                        setTimerUIUnsetState();
+                        setTimerUiUnsetState();
                     }
                 }
 
@@ -256,6 +261,12 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * Map the seekbar's progress to a [0.0, 1.0] scale for volume.
+     * @param progress Seekbar's progress
+     * @param seekBar Seekbar to check
+     * @return a float in range [0.0, 1.0] where 0.0 is min volume and 1.0 is max
+     */
     private float calculateVolumePercent(int progress, SeekBar seekBar) {
         return (float) progress / seekBar.getMax();
     }
@@ -265,8 +276,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             float percentScrolled = calculateVolumePercent(progress, seekBar);
-            if (audioPlayerService != null)
+            if (audioPlayerService != null) {
                 audioPlayerService.setMaxVolume(percentScrolled);
+            }
             PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit()
                     .putFloat(PREF_LAST_VOLUME, percentScrolled).apply();
         }
@@ -302,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        setUIBasedOnPrefs(sharedPref);
+        setUiBasedOnPrefs(sharedPref);
 
         Intent serviceIntent = new Intent(MainActivity.this, AudioPlayerService.class);
         startService(serviceIntent);
@@ -322,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
             // ignore zero times because the user did not create those.
             if (timerCreatedAndNotStarted) {
                 timerActive = timerCreatedAndNotStarted;
-                setTimerUIAdded(currTime);
+                setTimerUiAdded(currTime);
             }
         }
 
@@ -330,10 +342,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Look at shared prefs and update UI to the last saved state
+     * Look at shared prefs and update UI to the last saved state.
      * @param sharedPref shared preference to work from
      */
-    private void setUIBasedOnPrefs(SharedPreferences sharedPref) {
+    private void setUiBasedOnPrefs(SharedPreferences sharedPref) {
         String lastColor = sharedPref.getString(PREF_LAST_USED_COLOR, PREF_COLOR_WHITE);
         switch (lastColor) {
             case PREF_COLOR_BROWN:
@@ -356,17 +368,27 @@ public class MainActivity extends AppCompatActivity {
 
         long lastTime = sharedPref.getLong(PREF_LAST_TIMER_TIME, 0L);
         if (lastTime > 0) {
-            setTimerUIAdded(lastTime);
+            setTimerUiAdded(lastTime);
             timerActive = true;
         }
     }
 
+    /**
+     * Handle the oscillate button being checked by setting the oscillate option and possibly
+     * explaining what it does if the user has never used it.
+     * @param isChecked is checked button checked
+     */
     @OnCheckedChanged(R.id.waveVolumeToggle)
-    public void oscillateChecked(CompoundButton buttonView, boolean isChecked) {
-        if (audioPlayerService != null)
+    public void oscillateChecked(boolean isChecked) {
+        if (audioPlayerService != null) {
             audioPlayerService.setOscillateVolume(isChecked);
+        }
         if (oscillateNeverOn) {
-            Toast.makeText(MainActivity.this, getString(R.string.wave_volume_toast), Toast.LENGTH_LONG).show();
+            Toast.makeText(
+                    MainActivity.this,
+                    getString(R.string.wave_volume_toast),
+                    Toast.LENGTH_LONG)
+                    .show();
             //update oscillateNeverOn to false in locally and in settings
             oscillateNeverOn = false;
             SharedPreferences sharedPref =
@@ -379,12 +401,22 @@ public class MainActivity extends AppCompatActivity {
                 .putBoolean(PREF_LAST_USED_WAVY, isChecked).apply();
     }
 
+    /**
+     * Handle the fade button being checked by setting the fade option and possibly
+     * explaining what it does if the user has never used it.
+     * @param isChecked is checked button checked
+     */
     @OnCheckedChanged(R.id.decreaseVolumeToggle)
-    public void fadeChecked(CompoundButton buttonView, boolean isChecked) {
-        if (audioPlayerService != null)
+    public void fadeChecked(boolean isChecked) {
+        if (audioPlayerService != null) {
             audioPlayerService.setDecreaseVolume(isChecked);
+        }
         if (fadeNeverOn) {
-            Toast.makeText(MainActivity.this, getString(R.string.fade_volume_toast), Toast.LENGTH_LONG).show();
+            Toast.makeText(
+                    MainActivity.this,
+                    getString(R.string.fade_volume_toast),
+                    Toast.LENGTH_LONG)
+                    .show();
             //update fadeNeverOn to false in locally and in settings
             fadeNeverOn = false;
             SharedPreferences sharedPref =
@@ -397,13 +429,18 @@ public class MainActivity extends AppCompatActivity {
                 .putBoolean(PREF_LAST_USED_FADE, isChecked).apply();
     }
 
+    /**
+     * Handle the timer button being clicked by either showing the timer picker dialog or clearing
+     * the timer.
+     * @param v view of button
+     */
     @OnClick(R.id.timerButton)
-    public void onClick(View v) {
+    public void onTimerClick(View v) {
         if (!timerActive) {
             showPickerDialog();
         } else {
             timerActive = false;
-            setTimerUIUnsetState();
+            setTimerUiUnsetState();
             stopTimer();
             //if playing audio, set button to play
             setPlayButtonPlay();
@@ -413,7 +450,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
+    /**
+     * Handle the play button being clicked by either playing or pausing audio.
+     */
     @OnClick(R.id.btnPlay)
     public void playButtonClick() {
         if (audioPlayerService != null) {
@@ -435,7 +474,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Create and show a timer picker
+     * Create and show a timer picker.
      */
     private void showPickerDialog() {
         TimerPickerDialogFragment timerDialog = new TimerPickerDialogFragment();
@@ -446,8 +485,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (audioPlayerService != null && audioPlayerService.isPlaying())
+        if (audioPlayerService != null && audioPlayerService.isPlaying()) {
             audioPlayerService.showNotification(true);
+        }
     }
 
     @Override
@@ -456,9 +496,10 @@ public class MainActivity extends AppCompatActivity {
         //we only need to save timer state if it was created but not started
         //if it wasn't created - who cares
         //if it was started - the service will tell us its state
-        if (audioPlayerService != null &&
-                !audioPlayerService.isPlaying() && timerTextView.getTime() != 0)
+        if (audioPlayerService != null
+                && !audioPlayerService.isPlaying() && timerTextView.getTime() != 0) {
             timerSetAndNotStarted = true;
+        }
         savedInstanceState.putBoolean(SAVE_STATE_TIMER_CREATED, timerSetAndNotStarted);
         savedInstanceState.putLong(SAVE_STATE_TIMER_TIME, timerTextView.getTime());
         // Always call the superclass so it can save the view hierarchy state
@@ -480,10 +521,11 @@ public class MainActivity extends AppCompatActivity {
         }
         if (audioPlayerService != null) {
             audioPlayerService.dismissNotification();
-            if(audioPlayerService.isPlaying())
+            if (audioPlayerService.isPlaying()) {
                 setPlayButtonPause();
-            else
+            } else {
                 setPlayButtonPlay();
+            }
 
         }
     }
@@ -493,8 +535,9 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         if (isPlayerConnectionBound) {
             //dismiss any notification
-            if (audioPlayerService != null)
+            if (audioPlayerService != null) {
                 audioPlayerService.dismissNotification();
+            }
             //unbind the service, it will still be running
             unbindService(playerConnection);
             isPlayerConnectionBound = false;
@@ -511,21 +554,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        if(item.getItemId() == R.id.settings) {
+        if (item.getItemId() == R.id.settings) {
             Intent settingsIntent = new Intent(this, SettingsActivity.class);
             settingsIntent.putExtra(PREF_USE_DARK_MODE_KEY, usingDarkMode);
             startActivity(settingsIntent);
             return true;
-        }
-        else
+        } else {
             return super.onOptionsItemSelected(item);
+        }
     }
 
     /**
      * Visually show that there is no timer by hiding the timertextview
-     * and changing the  timer button back to having a "+"
+     * and changing the  timer button back to having a "+".
      */
-    private void setTimerUIUnsetState() {
+    private void setTimerUiUnsetState() {
         //set button image
         timerButton.setImageDrawable(addPic);
         timerTextView.setVisibility(View.GONE);
@@ -533,29 +576,38 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Visually show there is a new timer by showing timer text view with time and changing
-     * the timer button to having an "x"
+     * the timer button to having an "x".
      */
-    private void setTimerUIAdded(long currTime) {
+    private void setTimerUiAdded(long currTime) {
         //change button to "clear"
         timerButton.setImageDrawable(stopPic);
         timerTextView.setTime(currTime);
         timerTextView.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Load and set relevant saved values about the UI.
+     * @param prefs SharedPreferences to read from
+     */
     private void loadPreferences(SharedPreferences prefs) {
         oscillateNeverOn = prefs.getBoolean(PREF_OSCILLATE_NEVER_ON, true);
         fadeNeverOn = prefs.getBoolean(PREF_FADE_NEVER_ON, true);
         useDarkMode = prefs.getBoolean(PREF_USE_DARK_MODE_KEY, false);
         oscillateInterval =
                 Integer.parseInt(prefs.getString(PREF_OSCILLATE_INTERVAL_KEY, "4")) * 1000;
-        if (audioPlayerService != null)
+        if (audioPlayerService != null) {
             audioPlayerService.setOscillatePeriod(oscillateInterval);
+        }
     }
 
-
+    /**
+     * Start a countdown timer.
+     * @param time time to countdown from in milliseconds
+     */
     private void startTimer(long time) {
-        if (editTextCountDownTimer != null)
+        if (editTextCountDownTimer != null) {
             editTextCountDownTimer.cancel();
+        }
         editTextCountDownTimer = new CountDownTimer(time, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -574,24 +626,32 @@ public class MainActivity extends AppCompatActivity {
         editTextCountDownTimer.start();
     }
 
+    /**
+     * Pause the timer but retain time left.
+     */
     private void pauseTimer() {
-        if (editTextCountDownTimer != null)
+        if (editTextCountDownTimer != null) {
             editTextCountDownTimer.cancel();
+        }
         audioPlayerService.cancelTimer();
     }
 
     /**
-     * pause the timer and set the time to zero
+     * Pause the timer and set the time to zero.
      */
     private void stopTimer() {
         pauseTimer();
-        if (audioPlayerService != null)
+        if (audioPlayerService != null) {
             audioPlayerService.stop();
+        }
         timerTextView.setTime(0);
         timerActive = false;
-        setTimerUIUnsetState();
+        setTimerUiUnsetState();
     }
 
+    /**
+     * Show the play button as paused.
+     */
     private void setPlayButtonPause() {
         //convert from 120dp to pixels
         int picSizeInPixels = (int) TypedValue.applyDimension(
@@ -601,6 +661,9 @@ public class MainActivity extends AppCompatActivity {
         playButton.setText(getString(R.string.audio_pause));
     }
 
+    /**
+     * Show the play button as playing.
+     */
     private void setPlayButtonPlay() {
         //convert from 120dp to pixels
         int picSizeInPixels = (int) TypedValue.applyDimension(

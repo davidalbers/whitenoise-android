@@ -13,7 +13,6 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.annotation.RawRes;
 import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -198,24 +197,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName className) {
             audioPlayerService = null;
-        }
-
-        /**
-         * Set the checked sound file in the UI.
-         * @param soundFile file which is currently playing
-         */
-        private void setCheckedNoiseType(@RawRes int soundFile) {
-            switch (soundFile) {
-                case R.raw.brown:
-                    noiseTypeBrown.setChecked(true);
-                    break;
-                case R.raw.pink:
-                    noiseTypePink.setChecked(true);
-                    break;
-                default:
-                    noiseTypeWhite.setChecked(true);
-                    break;
-            }
         }
 
         /**

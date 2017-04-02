@@ -13,6 +13,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.annotation.IdRes;
 import android.support.v7.app.AppCompatActivity;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -21,7 +22,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Toast;
@@ -47,9 +47,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String SAVE_STATE_TIMER_CREATED = "save_state_timer_active";
     public static final String SAVE_STATE_TIMER_TIME = "save_state_timer_time";
     public static final String PREF_LAST_USED_COLOR = "last_used_color";
-    public static final String PREF_COLOR_WHITE = "last_color_was_white";
-    public static final String PREF_COLOR_PINK = "last_color_was_pink";
-    public static final String PREF_COLOR_BROWN = "last_color_was_brown";
     public static final String PREF_LAST_VOLUME = "last_volume";
     public static final String PREF_LAST_USED_WAVY = "last_used_wavy";
     public static final String PREF_LAST_USED_FADE = "last_used_fade";
@@ -65,12 +62,6 @@ public class MainActivity extends AppCompatActivity {
     TimerTextView timerTextView;
     @BindView(R.id.noiseTypes)
     RadioGroup noiseTypes;
-    @BindView(R.id.noiseTypeWhite)
-    RadioButton noiseTypeWhite;
-    @BindView(R.id.noiseTypePink)
-    RadioButton noiseTypePink;
-    @BindView(R.id.noiseTypeBrown)
-    RadioButton noiseTypeBrown;
     @BindView(R.id.waveVolumeToggle)
     ToggleButton oscillateButton;
     @BindView(R.id.decreaseVolumeToggle)
@@ -141,20 +132,9 @@ public class MainActivity extends AppCompatActivity {
                     if (audioPlayerService != null) {
                         SharedPreferences.Editor editor = PreferenceManager
                                 .getDefaultSharedPreferences(getBaseContext()).edit();
-                        switch (checkedId) {
-                            case R.id.noiseTypePink:
-                                audioPlayerService.setSoundFile(R.raw.pink);
-                                editor.putString(PREF_LAST_USED_COLOR, PREF_COLOR_PINK);
-                                break;
-                            case R.id.noiseTypeBrown:
-                                audioPlayerService.setSoundFile(R.raw.brown);
-                                editor.putString(PREF_LAST_USED_COLOR, PREF_COLOR_BROWN);
-                                break;
-                            default:
-                                audioPlayerService.setSoundFile(R.raw.white);
-                                editor.putString(PREF_LAST_USED_COLOR, PREF_COLOR_WHITE);
-                                break;
-                        }
+                        NoiseType noiseType = NoiseType.fromId(checkedId);
+                        audioPlayerService.setSoundFile(noiseType.getSoundFile());
+                        editor.putString(PREF_LAST_USED_COLOR, noiseType.getPrefValue());
                         editor.apply();
                     }
                 }
@@ -170,13 +150,9 @@ public class MainActivity extends AppCompatActivity {
             audioPlayerService = audioPlayerBinder.getService();
 
             if (audioPlayerService.getSoundFile() == NO_SOUND_FILE) {
-                if (noiseTypePink.isChecked()) {
-                    audioPlayerService.setSoundFile(R.raw.pink);
-                } else if (noiseTypeBrown.isChecked()) {
-                    audioPlayerService.setSoundFile(R.raw.brown);
-                } else {
-                    audioPlayerService.setSoundFile(R.raw.white);
-                }
+                @IdRes int checkedId = noiseTypes.getCheckedRadioButtonId();
+                NoiseType noiseType = NoiseType.fromId(checkedId);
+                audioPlayerService.setSoundFile(noiseType.getSoundFile());
             }
             if (audioPlayerService.isPlaying()) {
                 setPlayButtonPause();
@@ -327,18 +303,10 @@ public class MainActivity extends AppCompatActivity {
      * @param sharedPref shared preference to work from
      */
     private void setUiBasedOnPrefs(SharedPreferences sharedPref) {
-        String lastColor = sharedPref.getString(PREF_LAST_USED_COLOR, PREF_COLOR_WHITE);
-        switch (lastColor) {
-            case PREF_COLOR_BROWN:
-                noiseTypeBrown.setChecked(true);
-                break;
-            case PREF_COLOR_PINK:
-                noiseTypePink.setChecked(true);
-                break;
-            default:
-                noiseTypeWhite.setChecked(true);
-                break;
-        }
+        String defaultColor = NoiseType.WHITE.getPrefValue();
+        String lastColor = sharedPref.getString(PREF_LAST_USED_COLOR, defaultColor);
+        NoiseType noiseType = NoiseType.fromPrefValue(lastColor);
+        noiseTypes.check(noiseType.getId());
 
         float lastVolume = sharedPref.getFloat(PREF_LAST_VOLUME, .5f);
         volumeBar.setProgress((int)(volumeBar.getMax() * lastVolume));

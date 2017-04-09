@@ -515,19 +515,7 @@ public class AudioPlayerService extends Service {
      * and a pause button which will callback to this service.
      */
     public void showNotification(boolean playing) {
-        @StringRes int titleRes;
-        //which noise is playing?
-        switch (mp.getSoundFile()) {
-            case R.raw.brown:
-                titleRes = R.string.notification_brown_type;
-                break;
-            case R.raw.pink:
-                titleRes = R.string.notification_pink_type;
-                break;
-            default:
-                titleRes = R.string.notification_white_type;
-                break;
-        }
+        @StringRes int titleRes = NoiseType.fromSoundFile(mp.getSoundFile()).getNotificationTitle();
         String title = getString(titleRes);
         Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
                 R.mipmap.ic_launcher);

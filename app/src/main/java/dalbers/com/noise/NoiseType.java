@@ -7,8 +7,11 @@ import android.support.annotation.StringRes;
 enum NoiseType {
 
     PINK(R.id.noiseTypePink, R.raw.pink, R.string.notification_pink_type, "last_color_was_pink"),
-    BROWN(R.id.noiseTypeBrown, R.raw.brown, R.string.notification_brown_type, "last_color_was_brown"),
-    WHITE(R.id.noiseTypeWhite, R.raw.white, R.string.notification_white_type, "last_color_was_white");
+    BROWN(R.id.noiseTypeBrown, R.raw.brown, R.string.notification_brown_type,
+            "last_color_was_brown"),
+    WHITE(R.id.noiseTypeWhite, R.raw.white, R.string.notification_white_type,
+            "last_color_was_white"),
+    NONE(0, 0, 0, "");
 
     @IdRes private final int id;
     @RawRes private final int soundFile;
@@ -49,15 +52,6 @@ enum NoiseType {
             }
         }
         throw new IllegalStateException("Unknown id: " + id);
-    }
-
-    public static NoiseType fromSoundFile(@RawRes int soundFile) {
-        for (NoiseType noiseType : NoiseType.values()) {
-            if (noiseType.soundFile == soundFile) {
-                return noiseType;
-            }
-        }
-        throw new IllegalStateException("Unknown soundFile: " + soundFile);
     }
 
     public static NoiseType fromPrefValue(String prefValue) {

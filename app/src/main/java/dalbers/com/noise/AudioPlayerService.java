@@ -17,7 +17,6 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.annotation.RawRes;
 import android.support.annotation.StringRes;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
@@ -388,11 +387,10 @@ public class AudioPlayerService extends Service {
 
 
     /**
-     * Set the sound file to play.
-     * @param resId Resource id for sound file
+     * Set the noise to play.
      */
-    public void setSoundFile(@RawRes int resId) {
-        mp.setSoundFile(resId);
+    public void setNoiseType(NoiseType noiseType) {
+        mp.setNoiseType(noiseType);
         mp.setVolume(maxVolume, maxVolume);
     }
 
@@ -476,11 +474,10 @@ public class AudioPlayerService extends Service {
     }
 
     /**
-     * Get the sound file being used by the media player.
-     * @return a raw resource file or NO_SOUND_FILE if none is specified.
+     * Get the noise type being used by the media player.
      */
-    @RawRes public int getSoundFile() {
-        return mp.getSoundFile();
+    public NoiseType getNoiseType() {
+        return mp.getNoiseType();
     }
 
     /**
@@ -515,7 +512,7 @@ public class AudioPlayerService extends Service {
      * and a pause button which will callback to this service.
      */
     public void showNotification(boolean playing) {
-        @StringRes int titleRes = NoiseType.fromSoundFile(mp.getSoundFile()).getNotificationTitle();
+        @StringRes int titleRes = mp.getNoiseType().getNotificationTitle();
         String title = getString(titleRes);
         Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
                 R.mipmap.ic_launcher);

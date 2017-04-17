@@ -2,20 +2,27 @@ package dalbers.com.noise;
 
 import android.support.annotation.IdRes;
 import android.support.annotation.RawRes;
+import android.support.annotation.StringRes;
 
 enum NoiseType {
 
-    PINK(R.id.noiseTypePink, R.raw.pink, "last_color_was_pink"),
-    BROWN(R.id.noiseTypeBrown, R.raw.brown, "last_color_was_brown"),
-    WHITE(R.id.noiseTypeWhite, R.raw.white, "last_color_was_white");
+    PINK(R.id.noiseTypePink, R.raw.pink, R.string.notification_pink_type, "last_color_was_pink"),
+    BROWN(R.id.noiseTypeBrown, R.raw.brown, R.string.notification_brown_type,
+            "last_color_was_brown"),
+    WHITE(R.id.noiseTypeWhite, R.raw.white, R.string.notification_white_type,
+            "last_color_was_white"),
+    NONE(0, 0, 0, "");
 
     @IdRes private final int id;
     @RawRes private final int soundFile;
+    @StringRes private final int notificationTitle;
     private final String prefValue;
 
-    NoiseType(@IdRes int id, @RawRes int soundFile, String prefValue) {
+    NoiseType(@IdRes int id, @RawRes int soundFile, @StringRes int notificationTitle,
+              String prefValue) {
         this.id = id;
         this.soundFile = soundFile;
+        this.notificationTitle = notificationTitle;
         this.prefValue = prefValue;
     }
 
@@ -27,6 +34,11 @@ enum NoiseType {
     @RawRes
     public int getSoundFile() {
         return soundFile;
+    }
+
+    @StringRes
+    public int getNotificationTitle() {
+        return notificationTitle;
     }
 
     public String getPrefValue() {

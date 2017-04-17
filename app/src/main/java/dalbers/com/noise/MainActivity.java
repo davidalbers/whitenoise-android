@@ -1,7 +1,5 @@
 package dalbers.com.noise;
 
-import static dalbers.com.noise.LoopMediaPlayer.NO_SOUND_FILE;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -133,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferences.Editor editor = PreferenceManager
                                 .getDefaultSharedPreferences(getBaseContext()).edit();
                         NoiseType noiseType = NoiseType.fromId(checkedId);
-                        audioPlayerService.setSoundFile(noiseType.getSoundFile());
+                        audioPlayerService.setNoiseType(noiseType);
                         editor.putString(PREF_LAST_USED_COLOR, noiseType.getPrefValue());
                         editor.apply();
                     }
@@ -149,10 +147,10 @@ public class MainActivity extends AppCompatActivity {
                     (AudioPlayerService.AudioPlayerBinder) binder;
             audioPlayerService = audioPlayerBinder.getService();
 
-            if (audioPlayerService.getSoundFile() == NO_SOUND_FILE) {
+            if (audioPlayerService.getNoiseType() == NoiseType.NONE) {
                 @IdRes int checkedId = noiseTypes.getCheckedRadioButtonId();
                 NoiseType noiseType = NoiseType.fromId(checkedId);
-                audioPlayerService.setSoundFile(noiseType.getSoundFile());
+                audioPlayerService.setNoiseType(noiseType);
             }
             if (audioPlayerService.isPlaying()) {
                 setPlayButtonPause();

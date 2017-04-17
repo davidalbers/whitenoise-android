@@ -3,7 +3,6 @@ package dalbers.com.noise;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.support.annotation.RawRes;
 import android.util.Log;
 
 /**
@@ -15,7 +14,7 @@ class LoopMediaPlayer {
     private static final String TAG = LoopMediaPlayer.class.getSimpleName();
 
     private Context context = null;
-    @RawRes private int soundFile = NO_SOUND_FILE;
+    private NoiseType noiseType = NoiseType.NONE;
     private int counter = 1;
     static final int NO_SOUND_FILE = -1;
 
@@ -54,10 +53,10 @@ class LoopMediaPlayer {
 
     private void createNextMediaPlayer() {
         //default to playing white noise if none selected
-        if (soundFile == NO_SOUND_FILE) {
-            soundFile = R.raw.white;
+        if (noiseType == NoiseType.NONE) {
+            noiseType = NoiseType.WHITE;
         }
-        nextPlayer = MediaPlayer.create(context, soundFile);
+        nextPlayer = MediaPlayer.create(context, noiseType.getSoundFile());
         nextPlayer.setVolume(leftVolume, rightVolume);
         currentPlayer.setNextMediaPlayer(nextPlayer);
         currentPlayer.setOnCompletionListener(onCompletionListener);
@@ -79,10 +78,10 @@ class LoopMediaPlayer {
 
     public void play() {
         //default to playing white noise if none selected
-        if (soundFile == NO_SOUND_FILE) {
-            soundFile = R.raw.white;
+        if (noiseType == NoiseType.NONE) {
+            noiseType = NoiseType.WHITE;
         }
-        currentPlayer = MediaPlayer.create(context, soundFile);
+        currentPlayer = MediaPlayer.create(context, noiseType.getSoundFile());
         currentPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
@@ -95,19 +94,19 @@ class LoopMediaPlayer {
         createNextMediaPlayer();
     }
 
-    @RawRes int getSoundFile() {
-        return soundFile;
+    NoiseType getNoiseType() {
+        return noiseType;
     }
 
-    void setSoundFile(@RawRes int resId) {
+    void setNoiseType(NoiseType noiseType) {
         //reset if a different file
-        if (resId != soundFile) {
+        if (this.noiseType != noiseType) {
             boolean wasPlaying = false;
             if (currentPlayer != null) {
                 wasPlaying = currentPlayer.isPlaying();
                 stop();
             }
-            soundFile = resId;
+            this.noiseType = noiseType;
             if ((currentPlayer != null) && wasPlaying) {
                 play();
             }

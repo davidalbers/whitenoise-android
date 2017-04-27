@@ -16,7 +16,6 @@ class LoopMediaPlayer {
     private Context context = null;
     private NoiseType noiseType = NoiseType.NONE;
     private int counter = 1;
-    static final int NO_SOUND_FILE = -1;
 
     private MediaPlayer currentPlayer = null;
     private MediaPlayer nextPlayer = null;

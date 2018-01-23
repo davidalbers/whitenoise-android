@@ -86,6 +86,9 @@ gen-external-apklibs
 # JIRA plugin
 atlassian-ide-plugin.xml
 
+# Sonarqube
+.idea/sonarlint/
+
 # Crashlytics plugin (for Android Studio and IntelliJ)
 com_crashlytics_export_strings.xml
 crashlytics.properties
@@ -148,3 +151,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/android,intellij,macos,windows
+
+# etc
+.idea/encodings.xml
+.idea/encodings.xml

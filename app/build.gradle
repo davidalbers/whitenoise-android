@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 apply from: 'quality.gradle'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.1"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
 
     defaultConfig {
         applicationId "dalbers.com.noise"
         minSdkVersion 19
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 12
         versionName "1.11"
     }
@@ -23,8 +23,11 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:25.0.1'
-    compile 'com.dalbers.timerpicker:timerpicker:1.0.0'
-    compile 'com.jakewharton:butterknife:8.4.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile ('com.dalbers.timerpicker:timerpicker:1.0.0') {
+        exclude group: 'com.android.support'
+    }
+    compile 'com.jakewharton:butterknife:8.8.1'
+
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 }

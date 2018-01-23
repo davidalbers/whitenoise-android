@@ -10,6 +10,8 @@ android:
   - extra-android-m2repository
   - extra-google-m2repository
   - extra-android-support
+  licenses:
+  - 'android-sdk-license-.+'
 deploy:
   provider: releases
   api_key:

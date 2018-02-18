@@ -43,4 +43,5 @@
     <string name="notification_white_type">White Noise</string>
     <string name="notification_brown_type">Brown Noise</string>
     <string name="notification_pink_type">Pink Noise</string>
+    <string name="title_activity_main_kotlin">MainActivityKotlin</string>
 </resources>

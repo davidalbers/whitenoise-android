@@ -3,6 +3,7 @@ package dalbers.com.noise;
 import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -17,6 +18,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.support.annotation.StringRes;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
@@ -43,8 +45,8 @@ public class AudioPlayerService extends Service {
      * If multiple notify()s are called with the same id,
      * new one will replace the old ones.
      */
-    private static final int NOTIFICATION_ID = 0;
-    private LoopMediaPlayer mp;
+    private static final int NOTIFICATION_ID = 1;
+    private ExoPlayerWrapper player;
     private IBinder binder = new AudioPlayerBinder();
     private long millisLeft = 0;
     private CountDownTimer countDownTimer;
@@ -92,7 +94,7 @@ public class AudioPlayerService extends Service {
     Runnable volumeRunnable = new Runnable() {
         @Override
         public void run() {
-            if (mp != null && mp.isPlaying()) {
+            if (player != null && player.isPlaying()) {
                 if (oscillateVolume) {
                     if (decreaseVolume) {
                         decreaseForTick();
@@ -120,15 +122,21 @@ public class AudioPlayerService extends Service {
          * @param rightVolume a value 0.0 to 1.0 where 1.0 is max of the device
          */
         private void setVolume(float leftVolume, float rightVolume) {
-
-            mp.setVolume(leftVolume, rightVolume);
+            player.setVolume(leftVolume, rightVolume);
         }
     };
+
+    private String notificationChannel = "com.dalbers.whitenoise.Notifications";
+
+    private NoiseType noiseType = NoiseType.NONE;
 
     private static final String PAUSE_ACTION = "pause";
     private static final String CLOSE_ACTION = "close";
     private static final String PLAY_ACTION = "play";
     private static final String DO_ACTION = "do";
+
+    private PowerManager.WakeLock wakeLock;
+    private static final String WAKE_LOCK_TAG = "dalbers.noise.wakelock";
 
     /**
      * If the player loses focus and it was playing, then set this true.
@@ -138,8 +146,8 @@ public class AudioPlayerService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        if (mp == null) {
-            mp = LoopMediaPlayer.create(this);
+        if (player == null) {
+            player = new ExoPlayerWrapper(this);
         }
         return binder;
     }
@@ -152,14 +160,21 @@ public class AudioPlayerService extends Service {
 
     @Override
     public void onDestroy() {
-        mp.stop();
+        player.pause();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (mp == null) {
-            mp = LoopMediaPlayer.create(this);
+        if (player == null) {
+            player = new ExoPlayerWrapper(this);
         }
+
+        PowerManager pm = (PowerManager)getBaseContext().getSystemService(
+                Context.POWER_SERVICE);
+        if (pm != null) {
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG);
+        }
+
 
         //if a button is pressed in the notification,
         //the service will be started with this extra
@@ -181,6 +196,7 @@ public class AudioPlayerService extends Service {
                 }
             }
         }
+        createNotificationChannel();
 
         return START_STICKY;
     }
@@ -253,7 +269,7 @@ public class AudioPlayerService extends Service {
      * paused.
      */
     public void play() {
-        mp.play();
+        player.play();
         if (!getDefaultSharedPreferences(getBaseContext())
                 .getBoolean(MainActivity.PREF_PLAY_OVER, false)) {
             //every time we start playing, we have to request audio focus and listen for other
@@ -270,8 +286,8 @@ public class AudioPlayerService extends Service {
      * Abandons audio focus so other services can play.
      */
     public void stop() {
-        if (mp != null) {
-            mp.stop();
+        if (player != null) {
+            player.pause();
         }
         abandonAudioFocus();
         //reset volumes to initial values
@@ -285,8 +301,8 @@ public class AudioPlayerService extends Service {
      * Abandons audio focus so other services can play.
      */
     public void pause() {
-        if (mp != null) {
-            mp.pause();
+        if (player != null) {
+            player.pause();
         }
         abandonAudioFocus();
     }
@@ -305,14 +321,18 @@ public class AudioPlayerService extends Service {
      * @return true if player is playing. False if not.
      */
     public boolean isPlaying() {
-        return mp != null && mp.isPlaying();
+        return player != null && player.isPlaying();
     }
 
     /**
      * Dismiss all notifications created by our app.
      */
     public void dismissNotification() {
-        ((NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
+        // takes the service out of the foreground and removes the notification
+        stopForeground(true);
+        if (wakeLock.isHeld()) {
+            wakeLock.release();
+        }
     }
 
     /**
@@ -329,7 +349,7 @@ public class AudioPlayerService extends Service {
         rightVolume = maxVolume;
         oscillatingDown = true;
         initialVolume = maxVolume;
-        mp.setVolume(maxVolume, maxVolume);
+        player.setVolume(maxVolume, maxVolume);
         Log.d(LOG_TAG, Float.toString(maxVolume));
     }
 
@@ -354,7 +374,7 @@ public class AudioPlayerService extends Service {
             public void onFinish() {
                 dismissNotification();
                 millisLeft = 0;
-                mp.stop();
+                player.pause();
             }
         }.start();
     }
@@ -385,13 +405,13 @@ public class AudioPlayerService extends Service {
         return millisLeft;
     }
 
-
     /**
      * Set the noise to play.
      */
     public void setNoiseType(NoiseType noiseType) {
-        mp.setNoiseType(noiseType);
-        mp.setVolume(maxVolume, maxVolume);
+        this.noiseType = noiseType;
+        player.setFile(noiseType.getSoundFile());
+        player.setVolume(maxVolume, maxVolume);
     }
 
     /**
@@ -477,7 +497,7 @@ public class AudioPlayerService extends Service {
      * Get the noise type being used by the media player.
      */
     public NoiseType getNoiseType() {
-        return mp.getNoiseType();
+        return noiseType;
     }
 
     /**
@@ -512,7 +532,7 @@ public class AudioPlayerService extends Service {
      * and a pause button which will callback to this service.
      */
     public void showNotification(boolean playing) {
-        @StringRes int titleRes = mp.getNoiseType().getNotificationTitle();
+        @StringRes int titleRes = noiseType.getNotificationTitle();
         String title = getString(titleRes);
         Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
                 R.mipmap.ic_launcher);
@@ -562,6 +582,7 @@ public class AudioPlayerService extends Service {
                             getString(R.string.notification_close),
                             closePendingIntent)
                     .setContentIntent(openAppPendingIntent)
+                    .setChannelId(notificationChannel)
                     .setPriority(Notification.PRIORITY_MAX);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -612,6 +633,7 @@ public class AudioPlayerService extends Service {
                             getString(R.string.notification_close),
                             closePendingIntent)
                     .setContentIntent(openAppPendingIntent)
+                    .setChannelId(notificationChannel)
                     .setPriority(Notification.PRIORITY_MAX);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -620,10 +642,21 @@ public class AudioPlayerService extends Service {
             notification = builder.build();
 
         }
-        //show the notification
-        NotificationManager notificationManager =
-                (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(NOTIFICATION_ID, notification);
+        //show the notification and bring service to foreground
+        startForeground(NOTIFICATION_ID, notification);
+        wakeLock.acquire();
+    }
+
+    /**
+     * Add a notification channel to for this app.
+     */
+    private void createNotificationChannel() {
+        NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || manager == null) {
+                return;
+        }
+        manager.createNotificationChannel(new NotificationChannel(notificationChannel,
+                        "Noise Playing", NotificationManager.IMPORTANCE_LOW));
     }
 
     /**

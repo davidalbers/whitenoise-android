@@ -481,10 +481,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (isPlayerConnectionBound) {
-            //dismiss any notification
-            if (audioPlayerService != null) {
-                audioPlayerService.dismissNotification();
-            }
             //unbind the service, it will still be running
             unbindService(playerConnection);
             isPlayerConnectionBound = false;

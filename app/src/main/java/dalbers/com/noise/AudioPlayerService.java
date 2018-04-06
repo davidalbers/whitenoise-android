@@ -160,7 +160,9 @@ public class AudioPlayerService extends Service {
 
     @Override
     public void onDestroy() {
-        player.pause();
+        if (player != null) {
+            player.pause();
+        }
     }
 
     @Override

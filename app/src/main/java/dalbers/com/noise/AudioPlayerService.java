@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
+import android.media.session.MediaSession;
 import android.os.Binder;
 import android.os.Build;
 import android.os.CountDownTimer;
@@ -20,7 +21,8 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.support.annotation.StringRes;
-import android.support.v7.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 
 import java.util.Timer;
@@ -538,7 +540,7 @@ public class AudioPlayerService extends Service {
         String title = getString(titleRes);
         Bitmap icon = BitmapFactory.decodeResource(this.getResources(),
                 R.mipmap.ic_launcher);
-        //make an intent to callback this service when the pause button is pressed
+        MediaSessionCompat mediaSession = new MediaSessionCompat(getApplicationContext(), "dalbers.media.session");
 
         //create the notification
         Notification notification;
@@ -568,12 +570,13 @@ public class AudioPlayerService extends Service {
                     PendingIntent.FLAG_ONE_SHOT);
 
             NotificationCompat.Builder builder =
-                    (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+                    new NotificationCompat.Builder(this, notificationChannel)
                     .setSmallIcon(R.drawable.ic_statusbar2)
                     .setContentTitle(title)
                     .setContentText(getString(R.string.notification_playing))
                     .setLargeIcon(icon)
-                    .setStyle(new NotificationCompat.MediaStyle())
+                    .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
+                            .setMediaSession(mediaSession.getSessionToken()))
                     .setOngoing(true)
                     .addAction(
                             R.drawable.ic_action_playback_pause_black,
@@ -584,7 +587,6 @@ public class AudioPlayerService extends Service {
                             getString(R.string.notification_close),
                             closePendingIntent)
                     .setContentIntent(openAppPendingIntent)
-                    .setChannelId(notificationChannel)
                     .setPriority(Notification.PRIORITY_MAX);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -618,13 +620,13 @@ public class AudioPlayerService extends Service {
                     openAppIntent,
                     PendingIntent.FLAG_ONE_SHOT);
 
-            NotificationCompat.Builder builder =
-                    (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, notificationChannel)
                     .setSmallIcon(R.drawable.ic_statusbar2)
                     .setContentTitle(title)
                     .setContentText(getString(R.string.notification_paused))
                     .setLargeIcon(icon)
-                    .setStyle(new NotificationCompat.MediaStyle())
+                    .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
+                            .setMediaSession(mediaSession.getSessionToken()))
                     .setOngoing(true)
                     .addAction(
                             R.drawable.ic_action_playback_play_black,
@@ -635,7 +637,6 @@ public class AudioPlayerService extends Service {
                             getString(R.string.notification_close),
                             closePendingIntent)
                     .setContentIntent(openAppPendingIntent)
-                    .setChannelId(notificationChannel)
                     .setPriority(Notification.PRIORITY_MAX);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

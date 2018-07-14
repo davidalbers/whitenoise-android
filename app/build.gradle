@@ -19,7 +19,25 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    // Create an instant app apk
+    // from https://github.com/JakeWharton/SdkSearch/commit/419cfc7f14f18e3ff2ca8082e91209eb4e12515c
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (output.outputFile.name.endsWith('.apk')) {
+                def zipInstant = tasks.create("zipInstant${variant.name.capitalize()}", Zip) {
+                    from(output.outputFile)
+
+                    archiveName = "instant-${output.name}.zip"
+                    destinationDir = output.outputFile.parentFile
+                }
+                zipInstant.dependsOn(output.assemble)
+                tasks.getByName('assemble').dependsOn(zipInstant)
+            }
+        }
+    }
 }
+
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -35,6 +53,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     implementation 'com.android.support:design:27.1.1'
 }
+
 repositories {
     mavenCentral()
 }

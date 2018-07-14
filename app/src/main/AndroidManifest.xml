@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="dalbers.com.noise">
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="dalbers.com.noise"
+    android:targetSandboxVersion="2"
+    tools:targetApi="26">
 
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
 

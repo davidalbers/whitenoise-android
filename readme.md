@@ -20,4 +20,3 @@ Some wishlist features are:
 <img src="/screenshots/noiseScreenshot.png" width="250"> <img src="/screenshots/noiseScreenshotDark.png" width="250"> <img src="/screenshots/noiseNotification.png" width="250">
 
 ---
-The source code for this app is licensed under the MIT license. This means you can do what ever you want with the code as long as you include the [LICENSE.txt](https://github.com/davidalbers/whitenoise/blob/master/LICENSE.txt "License Link").

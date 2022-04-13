@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="dalbers.com.noise"
     android:targetSandboxVersion="2"
     tools:targetApi="26">
 
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -15,27 +15,18 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity">
-
-            <!--
-            android:screenOrientation="portrait"
-                 ^ Force portrait orientation
-                 this isn't great but using the keyboard
-                 in landscape doesn't show the pretty timer text
-            -->
+            android:name=".shared.MainActivity"
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <service
-            android:name=".AudioPlayerService"
+            android:name=".service.AudioPlayerService"
             android:enabled="true"
             android:exported="true" />
-
-        <activity android:name=".SettingsActivity"></activity>
     </application>
 
 </manifest>

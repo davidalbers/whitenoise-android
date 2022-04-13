@@ -1,15 +1,14 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply from: 'quality.gradle'
+// apply from: 'quality.gradle'
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion "27.0.3"
+    compileSdk 31
 
     defaultConfig {
         applicationId "dalbers.com.noise"
-        minSdkVersion 19
-        targetSdkVersion 27
+        minSdk 26
+        targetSdk 31
         versionCode 15
         versionName "1.14"
     }
@@ -19,41 +18,48 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
-    // Create an instant app apk
-    // from https://github.com/JakeWharton/SdkSearch/commit/419cfc7f14f18e3ff2ca8082e91209eb4e12515c
-    applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            if (output.outputFile.name.endsWith('.apk')) {
-                def zipInstant = tasks.create("zipInstant${variant.name.capitalize()}", Zip) {
-                    from(output.outputFile)
-
-                    archiveName = "instant-${output.name}.zip"
-                    destinationDir = output.outputFile.parentFile
-                }
-                zipInstant.dependsOn(output.assemble)
-                tasks.getByName('assemble').dependsOn(zipInstant)
-            }
-        }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = composeVersion
     }
 }
 
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    testImplementation 'junit:junit:4.12'
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation ('com.dalbers.timerpicker:timerpicker:1.0.0') {
-        exclude group: 'com.android.support'
-    }
-    implementation 'com.jakewharton:butterknife:8.8.1'
+    implementation fileTree(dir: 'libs', include: ['*.aar'])
+    // This is an older version of exoplayer that isn't available on Maven anymore.
+    // An issue in new versions (https://github.com/google/ExoPlayer/issues/8594) causes gaps in the
+    // audio on certain very popular devices. Until that's fixed we're forced to use this.
+    implementation files('../libs/exoplayer-release.aar')
 
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
-    implementation 'com.google.android.exoplayer:exoplayer:2.7.2'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    implementation 'com.android.support:design:27.1.1'
-}
+    implementation "androidx.lifecycle:lifecycle-service:$lifecycleServiceVersion"
+    implementation "androidx.core:core-ktx:$coreKtxVersion"
+    implementation "androidx.appcompat:appcompat:$appcompatVersion"
+    implementation "com.google.android.material:material:$materialVersion"
+    implementation "androidx.compose.ui:ui:$composeVersion"
+    implementation "androidx.compose.ui:ui-tooling:$composeVersion"
+    implementation "androidx.compose.foundation:foundation:$composeVersion"
+    implementation "androidx.compose.material:material:$composeVersion"
+    implementation "androidx.compose.material:material-icons-core:$composeVersion"
+    implementation "androidx.compose.material:material-icons-extended:$composeVersion"
+    implementation "androidx.activity:activity-compose:$activityComposeVersion"
+    implementation "androidx.preference:preference-ktx:$preferenceKtxVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$viewModelCompose"
+    implementation "androidx.compose.runtime:runtime-livedata:$composeVersion"
+    implementation "androidx.navigation:navigation-compose:$navigationKtx"
+    implementation "com.google.accompanist:accompanist-navigation-animation:$navigationAnimation"
+    implementation "com.github.alorma:compose-settings-ui:$composeSettings"
+    implementation "com.github.alorma:compose-settings-storage-preferences:$composeSettings"
+    implementation "androidx.media:media:$androidxMediaVersion"
 
-repositories {
-    mavenCentral()
+    testImplementation "junit:junit:$junitVersion"
 }

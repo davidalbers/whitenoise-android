@@ -7,12 +7,10 @@ import androidx.lifecycle.viewModelScope
 import dalbers.com.noise.audiocontrol.AudioController
 import dalbers.com.noise.audiocontrol.SoundState
 import dalbers.com.noise.playerscreen.model.PlayerScreenState
-import dalbers.com.noise.playerscreen.view.TimerState
-import dalbers.com.noise.playerscreen.view.TimerTimeState
+import dalbers.com.noise.playerscreen.view.TimerPickerState
+import dalbers.com.noise.playerscreen.view.TimerToggleState
 import dalbers.com.noise.shared.NoiseType
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.util.*
 
 class PlayerScreenViewModel : ViewModel() {
     private var _playerScreenState = MutableLiveData<PlayerScreenState>()
@@ -31,10 +29,10 @@ class PlayerScreenViewModel : ViewModel() {
     }
 
     private fun mapSoundStateToPlayerScreenState(soundState: SoundState): PlayerScreenState {
-        val previousTimerState = _playerScreenState.value?.timerState ?: TimerState.Disabled
-        val timerState = if (previousTimerState is TimerState.Saved) {
+        val previousTimerState = _playerScreenState.value?.timerToggleState ?: TimerToggleState.Disabled
+        val timerState = if (previousTimerState is TimerToggleState.Saved) {
             if (soundState.millisLeft == 0L) {
-                TimerState.Disabled
+                TimerToggleState.Disabled
             } else {
                 previousTimerState.copy(displayedTime = soundState.millisLeft.millisToTimerState())
             }
@@ -46,7 +44,9 @@ class PlayerScreenViewModel : ViewModel() {
             fadeEnabled = soundState.fadeEnabled,
             playing = soundState.playing,
             wavesEnabled = soundState.wavesEnabled,
-            timerState = timerState,
+            timerToggleState = timerState,
+            showTimerPicker = false,
+            timerPickerState = TimerPickerState.zero,
             volume = soundState.volume,
         )
     }
@@ -71,33 +71,52 @@ class PlayerScreenViewModel : ViewModel() {
         audioController?.setVolume(newVolume)
     }
 
-    fun setTimer(timerChange: Int) {
-        val timerTimeState = (_playerScreenState.value?.timerState as? TimerState.Setting)?.timerTimeState ?: return
-        val oldTimerMinutes = (timerTimeState.minutes) +
+    fun updateTimer(timerChange: Int) {
+        val timerTimeState = _playerScreenState.value?.timerPickerState ?: return
+        val oldTimerMinutes = timerTimeState.minutes +
                 timerTimeState.minutesTens * 10 +
                 timerTimeState.hours * 60
         val newTimerMinutes = oldTimerMinutes + timerChange
         if (newTimerMinutes < 0) return
-        _playerScreenState.value = _playerScreenState.value?.copy(timerState = TimerState.Setting(newTimerMinutes.minutesToTimerState()))
+        _playerScreenState.value = _playerScreenState.value?.copy(
+            timerPickerState = newTimerMinutes.minutesToTimerPickerState()
+        )
+    }
+
+    fun setTimer() {
+        if (_playerScreenState.value?.showTimerPicker != true) return
+        val timeState = _playerScreenState.value?.timerPickerState ?: return
+
+        val newTimerToggleState = if (timeState != TimerPickerState.zero) {
+            audioController?.setTimer(timeState.toMillis())
+            TimerToggleState.Saved(timeState.toFormattedString())
+        } else {
+            TimerToggleState.Disabled
+        }
+        _playerScreenState.value = _playerScreenState.value?.copy(
+            timerToggleState = newTimerToggleState,
+            showTimerPicker = false,
+        )
+    }
+
+    fun cancelTimer() {
+        _playerScreenState.value = _playerScreenState.value?.copy(
+            timerToggleState = TimerToggleState.Disabled,
+            showTimerPicker = false,
+        )
     }
 
     fun toggleTimer() {
-        val currentTimerState = _playerScreenState.value?.timerState
-        val newState = when {
-            currentTimerState is TimerState.Setting && currentTimerState.timerTimeState != TimerTimeState.zero -> {
-                audioController?.setTimer(currentTimerState.timerTimeState.toMillis())
-                TimerState.Saved(currentTimerState.timerTimeState.toFormattedString())
-            }
-            currentTimerState is TimerState.Setting -> TimerState.Disabled
-            currentTimerState is TimerState.Disabled -> TimerState.Setting(TimerTimeState.zero)
-            currentTimerState is TimerState.Saved -> {
-                audioController?.setTimer(0)
-                TimerState.Disabled
-            }
-            else -> error("Unexpected state")
+        val currentTimerToggleState = _playerScreenState.value?.timerToggleState
+        if (currentTimerToggleState is TimerToggleState.Disabled) {
+            _playerScreenState.value = _playerScreenState.value?.copy(
+                showTimerPicker = true,
+                timerPickerState = TimerPickerState.zero,
+            )
+        } else {
+            audioController?.setTimer(0)
+            _playerScreenState.value = _playerScreenState.value?.copy(timerToggleState = TimerToggleState.Disabled)
         }
-
-        _playerScreenState.value = _playerScreenState.value?.copy(timerState = newState)
     }
 
     fun togglePlay(playing: Boolean) {
@@ -114,22 +133,22 @@ private fun Long.millisToTimerState(): String {
     return seconds.secondsToString()
 }
 
-private fun Int.minutesToTimerState(): TimerTimeState {
-    return TimerTimeState(
+private fun Int.minutesToTimerPickerState(): TimerPickerState {
+    return TimerPickerState(
         hours = this / 60,
         minutesTens = this % 60 / 10,
         minutes = this % 60 % 10,
     )
 }
 
-private fun TimerTimeState.toMillis(): Long {
+private fun TimerPickerState.toMillis(): Long {
     return (hours * 60 * 60L +
             minutesTens * 10 * 60L +
             minutes * 60L) * 1000
 }
 
-private fun TimerTimeState.toFormattedString(): String {
-    return "$hours:${(minutesTens + minutes).withTensPadding()}:00"
+private fun TimerPickerState.toFormattedString(): String {
+    return "$hours:${(minutesTens * 10 + minutes).withTensPadding()}:00"
 }
 
 private fun Int.secondsToString(): String {

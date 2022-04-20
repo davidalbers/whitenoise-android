@@ -51,4 +51,7 @@
     <string name="notification_brown_type">Brown Noise</string>
     <string name="notification_pink_type">Pink Noise</string>
     <string name="time_divider">:</string>
+    <string name="time_set">Set</string>
+    <string name="time_cancel">Cancel</string>
+
 </resources>

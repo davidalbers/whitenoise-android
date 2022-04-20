@@ -63,3 +63,10 @@ dependencies {
 
     testImplementation "junit:junit:$junitVersion"
 }
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        // Use experimental APIs
+        freeCompilerArgs += '-Xopt-in=kotlin.RequiresOptIn'
+    }
+}

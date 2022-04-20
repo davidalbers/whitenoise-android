@@ -20,7 +20,6 @@ fun Player(
     fadeChanged: (Boolean) -> Unit,
     wavesChanged: (Boolean) -> Unit,
     volumeChanged: (Float) -> Unit,
-    onTimeSet: (Int) -> Unit,
     onTimerToggled: () -> Unit,
 ) {
     Column(
@@ -44,9 +43,8 @@ fun Player(
         VolumeControl(value = state.volume) {
             volumeChanged(it)
         }
-        TimerSetter(
+        TimerToggle(
             timeState = state.timerState,
-            onChange = { onTimeSet(it) },
             onToggle = { onTimerToggled() },
         )
     }

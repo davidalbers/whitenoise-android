@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import dalbers.com.noise.audiocontrol.AudioController
 import dalbers.com.noise.audiocontrol.SoundState
 import dalbers.com.noise.playerscreen.model.PlayerScreenState
-import dalbers.com.noise.playerscreen.view.TimerTimeState
+import dalbers.com.noise.playerscreen.view.TimerPickerState
 import dalbers.com.noise.playerscreen.view.TimerToggleState
 import dalbers.com.noise.shared.NoiseType
 import kotlinx.coroutines.launch
@@ -29,7 +29,7 @@ class PlayerScreenViewModel : ViewModel() {
     }
 
     private fun mapSoundStateToPlayerScreenState(soundState: SoundState): PlayerScreenState {
-        val previousTimerState = _playerScreenState.value?.timerState ?: TimerToggleState.Disabled
+        val previousTimerState = _playerScreenState.value?.timerToggleState ?: TimerToggleState.Disabled
         val timerState = if (previousTimerState is TimerToggleState.Saved) {
             if (soundState.millisLeft == 0L) {
                 TimerToggleState.Disabled
@@ -44,9 +44,9 @@ class PlayerScreenViewModel : ViewModel() {
             fadeEnabled = soundState.fadeEnabled,
             playing = soundState.playing,
             wavesEnabled = soundState.wavesEnabled,
-            timerState = timerState,
+            timerToggleState = timerState,
             showTimerPicker = false,
-            timerPickerState = TimerTimeState.zero,
+            timerPickerState = TimerPickerState.zero,
             volume = soundState.volume,
         )
     }
@@ -79,7 +79,7 @@ class PlayerScreenViewModel : ViewModel() {
         val newTimerMinutes = oldTimerMinutes + timerChange
         if (newTimerMinutes < 0) return
         _playerScreenState.value = _playerScreenState.value?.copy(
-            timerPickerState = newTimerMinutes.minutesToTimerState()
+            timerPickerState = newTimerMinutes.minutesToTimerPickerState()
         )
     }
 
@@ -87,35 +87,35 @@ class PlayerScreenViewModel : ViewModel() {
         if (_playerScreenState.value?.showTimerPicker != true) return
         val timeState = _playerScreenState.value?.timerPickerState ?: return
 
-        val newTimerToggleState = if (timeState != TimerTimeState.zero) {
+        val newTimerToggleState = if (timeState != TimerPickerState.zero) {
             audioController?.setTimer(timeState.toMillis())
             TimerToggleState.Saved(timeState.toFormattedString())
         } else {
             TimerToggleState.Disabled
         }
         _playerScreenState.value = _playerScreenState.value?.copy(
-            timerState = newTimerToggleState,
+            timerToggleState = newTimerToggleState,
             showTimerPicker = false,
         )
     }
 
     fun cancelTimer() {
         _playerScreenState.value = _playerScreenState.value?.copy(
-            timerState = TimerToggleState.Disabled,
+            timerToggleState = TimerToggleState.Disabled,
             showTimerPicker = false,
         )
     }
 
     fun toggleTimer() {
-        val currentTimerToggleState = _playerScreenState.value?.timerState
+        val currentTimerToggleState = _playerScreenState.value?.timerToggleState
         if (currentTimerToggleState is TimerToggleState.Disabled) {
             _playerScreenState.value = _playerScreenState.value?.copy(
                 showTimerPicker = true,
-                timerPickerState = TimerTimeState.zero,
+                timerPickerState = TimerPickerState.zero,
             )
         } else {
             audioController?.setTimer(0)
-            _playerScreenState.value = _playerScreenState.value?.copy(timerState = TimerToggleState.Disabled)
+            _playerScreenState.value = _playerScreenState.value?.copy(timerToggleState = TimerToggleState.Disabled)
         }
     }
 
@@ -133,21 +133,21 @@ private fun Long.millisToTimerState(): String {
     return seconds.secondsToString()
 }
 
-private fun Int.minutesToTimerState(): TimerTimeState {
-    return TimerTimeState(
+private fun Int.minutesToTimerPickerState(): TimerPickerState {
+    return TimerPickerState(
         hours = this / 60,
         minutesTens = this % 60 / 10,
         minutes = this % 60 % 10,
     )
 }
 
-private fun TimerTimeState.toMillis(): Long {
+private fun TimerPickerState.toMillis(): Long {
     return (hours * 60 * 60L +
             minutesTens * 10 * 60L +
             minutes * 60L) * 1000
 }
 
-private fun TimerTimeState.toFormattedString(): String {
+private fun TimerPickerState.toFormattedString(): String {
     return "$hours:${(minutesTens * 10 + minutes).withTensPadding()}:00"
 }
 

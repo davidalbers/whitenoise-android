@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import dalbers.com.noise.R
 import dalbers.com.noise.playerscreen.model.PlayerScreenState
 import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -39,7 +37,7 @@ fun PlayerScreen(
     ModalBottomSheetLayout(
         sheetContent = {
             TimerPicker(
-                timeState = state.value.timerPickerState,
+                pickerState = state.value.timerPickerState,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(16.dp),

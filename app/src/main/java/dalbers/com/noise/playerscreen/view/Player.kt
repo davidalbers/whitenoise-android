@@ -44,7 +44,7 @@ fun Player(
             volumeChanged(it)
         }
         TimerToggle(
-            timeState = state.timerState,
+            timeState = state.timerToggleState,
             onToggle = { onTimerToggled() },
         )
     }

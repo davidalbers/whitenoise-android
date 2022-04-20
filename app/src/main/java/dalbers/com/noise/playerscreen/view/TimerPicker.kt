@@ -17,20 +17,13 @@ import androidx.compose.ui.unit.dp
 import dalbers.com.noise.R
 import dalbers.com.noise.shared.WhiteNoiseTypography
 
-//sealed class TimerPickerState {
-//    object Hidden: TimerPickerState()
-//    data class Shown (
-//        val timeState: TimerTimeState,
-//    ): TimerPickerState()
-//}
-
-data class TimerTimeState(
+data class TimerPickerState(
     val hours: Int,
     val minutesTens: Int,
     val minutes: Int,
 ) {
     companion object {
-        val zero = TimerTimeState(0, 0, 0)
+        val zero = TimerPickerState(0, 0, 0)
     }
 }
 
@@ -38,7 +31,7 @@ data class TimerTimeState(
 @Composable
 fun TimerPickerPreview() {
     TimerPicker(
-        timeState = TimerTimeState.zero,
+        pickerState = TimerPickerState.zero,
         onChange = {},
         onSet = {},
         onCancel = {},
@@ -47,7 +40,7 @@ fun TimerPickerPreview() {
 
 @Composable
 fun TimerPicker(
-    timeState: TimerTimeState,
+    pickerState: TimerPickerState,
     modifier: Modifier = Modifier,
     onChange: (Int) -> Unit,
     onSet: () -> Unit,
@@ -60,7 +53,7 @@ fun TimerPicker(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TimeUnitPicker(
-                value = timeState.hours,
+                value = pickerState.hours,
                 onIncrement = { onChange(60) },
                 onDecrement = { onChange(-60) },
             )
@@ -69,13 +62,13 @@ fun TimerPicker(
                 style = WhiteNoiseTypography.h1,
             )
             TimeUnitPicker(
-                value = timeState.minutesTens,
+                value = pickerState.minutesTens,
                 onIncrement = { onChange(10) },
                 onDecrement = { onChange(-10) },
                 modifier = Modifier.padding(end = 4.dp),
             )
             TimeUnitPicker(
-                value = timeState.minutes,
+                value = pickerState.minutes,
                 onIncrement = { onChange(1) },
                 onDecrement = { onChange(-1) },
             )

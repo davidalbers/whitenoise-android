@@ -18,7 +18,7 @@ import com.alorma.compose.settings.storage.preferences.rememberPreferenceIntSett
 import com.alorma.compose.settings.ui.SettingsCheckbox
 import com.alorma.compose.settings.ui.SettingsList
 import dalbers.com.noise.R
-import dalbers.com.noise.shared.PREF_OSCILLATE_INTERVAL_KEY
+import dalbers.com.noise.shared.PREF_WAVE_INTERVAL_KEY
 import dalbers.com.noise.shared.PREF_PLAY_OVER
 
 @Composable
@@ -36,7 +36,7 @@ fun SettingsScreen(
                 defaultValue = false
             ),
             rememberPreferenceIntSettingState(
-                key = PREF_OSCILLATE_INTERVAL_KEY,
+                key = PREF_WAVE_INTERVAL_KEY,
                 defaultValue = 0
             ),
         )

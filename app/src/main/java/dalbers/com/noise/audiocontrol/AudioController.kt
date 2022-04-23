@@ -85,7 +85,7 @@ class AudioController(
     /**
      * One complete oscillation from left to right will happen in this interval.
      */
-    private var oscillatePeriod: Long = 8000
+    private var oscillatePeriod: Int = 8000
 
     /**
      * Value for how long the sound will be decreasing.
@@ -127,6 +127,7 @@ class AudioController(
     }
 
     fun tick() {
+        oscillatePeriod = userPreferences.waveIntervalMillis()
         val state = _stateFlow.value
         if (player.isPlaying()) {
             when {

@@ -45,8 +45,8 @@ class PlayerScreenViewModel : ViewModel() {
             playing = soundState.playing,
             wavesEnabled = soundState.wavesEnabled,
             timerToggleState = timerState,
-            showTimerPicker = false,
-            timerPickerState = TimerPickerState.zero,
+            showTimerPicker = _playerScreenState.value?.showTimerPicker ?: false,
+            timerPickerState = _playerScreenState.value?.timerPickerState ?: TimerPickerState.zero,
             volume = soundState.volume,
         )
     }

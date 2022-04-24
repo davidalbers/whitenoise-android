@@ -1,11 +1,13 @@
 package dalbers.com.noise.shared
 
 import android.content.SharedPreferences
-import dalbers.com.noise.service.safeValueOf
 
-
-const val PREF_USE_DARK_MODE_KEY = "pref_use_dark_mode"
-const val PREF_WAVE_INTERVAL_KEY = "pref_oscillate_interval"
+@Deprecated("Used in an older version of the app")
+const val PREF_USE_DARK_MODE_KEY_LEGACY = "pref_use_dark_mode"
+const val PREF_USE_DARK_MODE_KEY = "pref_use_dark_mode_v2"
+@Deprecated("Used in an older version of the app")
+const val PREF_WAVE_INTERVAL_KEY_LEGACY = "pref_oscillate_interval"
+const val PREF_WAVE_INTERVAL_KEY = "pref_wave_interval"
 const val PREF_PLAY_OVER = "pref_play_over"
 const val PREF_LAST_USED_COLOR = "last_used_color"
 const val PREF_LAST_VOLUME = "last_volume"
@@ -14,6 +16,12 @@ const val PREF_LAST_USED_FADE = "last_used_fade"
 // todo: use this one
 const val PREF_LAST_TIMER_TIME = "last_timer_time"
 
+enum class DarkModeSetting(val key: Int) {
+    AUTO(0),
+    LIGHT(1),
+    DARK(2),
+}
+
 interface UserPreferences {
     fun playOver(): Boolean
     fun waveIntervalMillis(): Int
@@ -21,6 +29,7 @@ interface UserPreferences {
     var lastUsedVolume: Float
     var lastUsedWavy: Boolean
     var lastUsedFade: Boolean
+    fun migrateLegacyPreferences()
 }
 
 class UserPreferencesImpl(
@@ -69,5 +78,24 @@ class UserPreferencesImpl(
     }
     set(value) {
         sharedPreferences.edit().putBoolean(PREF_LAST_USED_FADE, value).apply()
+    }
+
+    override fun migrateLegacyPreferences() {
+        val legacyWavePrefString = sharedPreferences.getString(PREF_WAVE_INTERVAL_KEY_LEGACY, "") ?: ""
+        if (legacyWavePrefString.isNotEmpty()) {
+            val newWavePref = when (Integer.parseInt(legacyWavePrefString)) {
+                8 -> 0
+                10 -> 1
+                12 -> 2
+                15 -> 3
+                30 -> 4
+                else -> 0
+            }
+            sharedPreferences.edit().putInt(PREF_WAVE_INTERVAL_KEY, newWavePref).apply()
+        }
+        val legacyUsedDarkMode = sharedPreferences.getBoolean(PREF_USE_DARK_MODE_KEY_LEGACY, false)
+        if (legacyUsedDarkMode) {
+            sharedPreferences.edit().putInt(PREF_USE_DARK_MODE_KEY, DarkModeSetting.DARK.key).apply()
+        }
     }
 }

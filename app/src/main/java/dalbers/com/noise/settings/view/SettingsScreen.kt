@@ -18,6 +18,7 @@ import com.alorma.compose.settings.storage.preferences.rememberPreferenceIntSett
 import com.alorma.compose.settings.ui.SettingsCheckbox
 import com.alorma.compose.settings.ui.SettingsList
 import dalbers.com.noise.R
+import dalbers.com.noise.shared.DarkModeSetting
 import dalbers.com.noise.shared.PREF_WAVE_INTERVAL_KEY
 import dalbers.com.noise.shared.PREF_PLAY_OVER
 
@@ -101,9 +102,9 @@ private fun AllSettings(
 @Composable
 fun IntPreferenceSettingValueState.isDarkMode(): Boolean {
     return when (this.value) {
-        0 -> isSystemInDarkTheme()
-        1 -> false
-        2 -> true
+        DarkModeSetting.AUTO.key -> isSystemInDarkTheme()
+        DarkModeSetting.LIGHT.key -> false
+        DarkModeSetting.DARK.key -> true
         else -> error("Unexpected value for Dark Mode setting")
     }
 }

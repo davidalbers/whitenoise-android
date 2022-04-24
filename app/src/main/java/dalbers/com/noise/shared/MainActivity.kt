@@ -24,10 +24,12 @@ import dalbers.com.noise.settings.view.SettingsScreen
 import dalbers.com.noise.settings.view.isDarkMode
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var userPreferences: UserPreferences
+
     private val playerViewModel by viewModels<PlayerScreenViewModel> {
         WhiteNoiseViewModelFactory(
             this,
-            UserPreferencesImpl(PreferenceManager.getDefaultSharedPreferences(applicationContext)),
+            userPreferences,
             intent.extras,
         )
     }
@@ -53,11 +55,13 @@ class MainActivity : AppCompatActivity() {
         val serviceIntent = Intent(this, AudioPlayerService::class.java)
         startService(serviceIntent)
         bindService(serviceIntent, playerConnection, BIND_AUTO_CREATE)
+        userPreferences = UserPreferencesImpl(androidx.preference.PreferenceManager.getDefaultSharedPreferences(this))
+        userPreferences.migrateLegacyPreferences()
 
         setContent {
             val darkState = rememberPreferenceIntSettingState(
                 key = PREF_USE_DARK_MODE_KEY,
-                defaultValue = 0
+                defaultValue = DarkModeSetting.AUTO.key,
             )
 
             val navController = rememberAnimatedNavController()

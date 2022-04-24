@@ -12,6 +12,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.preference.PreferenceManager
 import com.alorma.compose.settings.storage.preferences.rememberPreferenceIntSettingState
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -23,7 +24,14 @@ import dalbers.com.noise.settings.view.SettingsScreen
 import dalbers.com.noise.settings.view.isDarkMode
 
 class MainActivity : AppCompatActivity() {
-    private val playerViewModel by viewModels<PlayerScreenViewModel>()
+    private val playerViewModel by viewModels<PlayerScreenViewModel> {
+        WhiteNoiseViewModelFactory(
+            this,
+            UserPreferencesImpl(PreferenceManager.getDefaultSharedPreferences(applicationContext)),
+            intent.extras,
+        )
+    }
+
     private var service: AudioPlayerService? = null
     private val playerConnection: ServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(

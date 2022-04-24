@@ -10,9 +10,12 @@ import dalbers.com.noise.playerscreen.model.PlayerScreenState
 import dalbers.com.noise.playerscreen.view.TimerPickerState
 import dalbers.com.noise.playerscreen.view.TimerToggleState
 import dalbers.com.noise.shared.NoiseType
+import dalbers.com.noise.shared.UserPreferences
 import kotlinx.coroutines.launch
 
-class PlayerScreenViewModel : ViewModel() {
+class PlayerScreenViewModel(
+    private val userPreferences: UserPreferences,
+) : ViewModel() {
     private var _playerScreenState = MutableLiveData<PlayerScreenState>()
     val playerScreenState: LiveData<PlayerScreenState> = _playerScreenState
     // this is attached to a service so it can play in the background not sure the best way to manage it yet
@@ -20,6 +23,7 @@ class PlayerScreenViewModel : ViewModel() {
 
     fun bindAudioController(audioController: AudioController) {
         this.audioController = audioController
+        loadPastPreferences()
 
         viewModelScope.launch {
             audioController.stateFlow.collect {
@@ -45,10 +49,23 @@ class PlayerScreenViewModel : ViewModel() {
             playing = soundState.playing,
             wavesEnabled = soundState.wavesEnabled,
             timerToggleState = timerState,
-            showTimerPicker = false,
-            timerPickerState = TimerPickerState.zero,
+            showTimerPicker = _playerScreenState.value?.showTimerPicker ?: false,
+            timerPickerState = _playerScreenState.value?.timerPickerState ?: TimerPickerState.zero,
             volume = soundState.volume,
         )
+    }
+
+    private fun loadPastPreferences() {
+        _playerScreenState.value = _playerScreenState.value?.copy(
+            noiseType = userPreferences.lastUsedColor,
+            volume = userPreferences.lastUsedVolume,
+            wavesEnabled = userPreferences.lastUsedWavy,
+            fadeEnabled = userPreferences.lastUsedFade,
+        )
+        audioController?.setNoiseType(userPreferences.lastUsedColor)
+        audioController?.setVolume(userPreferences.lastUsedVolume)
+        audioController?.setWaves(userPreferences.lastUsedWavy)
+        audioController?.setFade(userPreferences.lastUsedFade)
     }
 
     fun clearAudioController() {
@@ -56,18 +73,22 @@ class PlayerScreenViewModel : ViewModel() {
     }
 
     fun changeNoiseType(noiseType: NoiseType) {
+        userPreferences.lastUsedColor = noiseType
         audioController?.setNoiseType(noiseType)
     }
 
     fun toggleFade(enabled: Boolean) {
+        userPreferences.lastUsedFade = enabled
         audioController?.setFade(enabled)
     }
 
     fun toggleWaves(enabled: Boolean) {
+        userPreferences.lastUsedWavy = enabled
         audioController?.setWaves(enabled)
     }
 
     fun changeVolume(newVolume: Float) {
+        userPreferences.lastUsedVolume = newVolume
         audioController?.setVolume(newVolume)
     }
 

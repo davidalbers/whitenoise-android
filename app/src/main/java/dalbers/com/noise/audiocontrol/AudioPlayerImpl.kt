@@ -24,8 +24,11 @@ interface AudioPlayer {
 
 class AudioPlayerImpl(private val context: Context) : AudioPlayer {
     private val player: SimpleExoPlayer = SimpleExoPlayer.Builder(context).build()
+    @RawRes private var lastFile: Int = 0
 
     override fun setFile(@RawRes resource: Int) {
+        if (lastFile == resource) return
+        lastFile = resource
         val rawDataSource = RawResourceDataSource(context)
         // open the /raw resource file
         rawDataSource.open(DataSpec(RawResourceDataSource.buildRawResourceUri(resource)))

@@ -1,5 +1,3 @@
-This is an Android app that plays white, pink, and brown noise.
-
 A white, brown, and pink noise app with:
 * Sleep timer
 * Wavy volume

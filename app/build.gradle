@@ -9,7 +9,7 @@ android {
         applicationId "dalbers.com.noise"
         minSdk 26
         targetSdk 31
-        versionCode 16
+        versionCode 17
         versionName "2.0"
     }
     buildTypes {

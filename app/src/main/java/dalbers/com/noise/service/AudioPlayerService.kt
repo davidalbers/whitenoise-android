@@ -27,7 +27,8 @@ import dalbers.com.noise.shared.UserPreferencesImpl
  */
 class AudioPlayerService : LifecycleService() {
     private val binder: IBinder = AudioPlayerBinder()
-    // todo: use Dagger to inject this. One idea: make this a singleton and bind/unbind the audioplayer to it
+    // TODO: Use DI to inject this https://github.com/davidalbers/whitenoise-android/issues/41
+    //       This could a singleton and bind/unbind the audioplayer to it
     lateinit var audioController: AudioController
     private var wakeLock: WakeLock? = null
     private lateinit var viewModel: AudioPlayerViewModel

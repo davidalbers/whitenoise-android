@@ -23,7 +23,7 @@ class AudioFocusManagerImpl(
     private val _focusState = MutableStateFlow(AudioFocusState.FOCUS_LOST_UNKNOWN)
     override val focusState: StateFlow<AudioFocusState> = _focusState
     override fun abandon() {
-        // todo: move to undeprecated method
+        // TODO: move to undeprecated method https://github.com/davidalbers/whitenoise-android/issues/42
         audioManager.abandonAudioFocus(focusChangeListener)
     }
 

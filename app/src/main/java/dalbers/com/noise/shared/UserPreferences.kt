@@ -13,7 +13,7 @@ const val PREF_LAST_USED_COLOR = "last_used_color"
 const val PREF_LAST_VOLUME = "last_volume"
 const val PREF_LAST_USED_WAVY = "last_used_wavy"
 const val PREF_LAST_USED_FADE = "last_used_fade"
-// todo: use this one
+// TODO: use this https://github.com/davidalbers/whitenoise-android/issues/43
 const val PREF_LAST_TIMER_TIME = "last_timer_time"
 
 enum class DarkModeSetting(val key: Int) {

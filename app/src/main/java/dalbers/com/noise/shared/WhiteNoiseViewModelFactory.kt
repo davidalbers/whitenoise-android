@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
 import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
 
-// todo: Use dagger instead of this
+// TODO: Use DI instead of this https://github.com/davidalbers/whitenoise-android/issues/41
 class WhiteNoiseViewModelFactory(
     owner: SavedStateRegistryOwner,
     private val userPreferences: UserPreferences,

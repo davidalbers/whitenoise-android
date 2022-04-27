@@ -17,4 +17,4 @@ Some wishlist features are:
 
 ---
 
-Notes on architecture are [here](architecture.md)
+Notes on architecture are [here](https://github.com/davidalbers/whitenoise-android/blob/master/architecture.md)

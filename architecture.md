@@ -10,7 +10,7 @@ A few things influnce this project's architecture:
 
 ### Jetpack Compose
 
-The biggest architectural influence Compose has is the idea of [state-hoisting](https://developer.android.com/jetpack/compose/state#state-hoisting) and stateless Composables. If you look at the `Player` [Composable](https://github.com/davidalbers/whitenoise-android/blob/master/app/src/main/java/dalbers/com/noise/playerscreen/view/Player.kt), it's completely state-less. In other words the state is being managed at higher level, in the [ViewModel](https://github.com/davidalbers/whitenoise-android/blob/d4946b7fbced96cbcd1259154667a4e3982074b2/app/src/main/java/dalbers/com/noise/playerscreen/view/PlayerScreen.kt#L35).
+The biggest architectural influence Compose has is the idea of [state-hoisting](https://developer.android.com/jetpack/compose/state#state-hoisting) and stateless Composables. If you look at the ``Player Composable`](https://github.com/davidalbers/whitenoise-android/blob/master/app/src/main/java/dalbers/com/noise/playerscreen/view/Player.kt), it's completely state-less. In other words the state is being managed at higher level, in the [`ViewModel`](https://github.com/davidalbers/whitenoise-android/blob/d4946b7fbced96cbcd1259154667a4e3982074b2/app/src/main/java/dalbers/com/noise/playerscreen/view/PlayerScreen.kt#L35).
 
 ### Service
 

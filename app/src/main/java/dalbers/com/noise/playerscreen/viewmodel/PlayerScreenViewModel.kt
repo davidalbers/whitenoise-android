@@ -66,6 +66,16 @@ class PlayerScreenViewModel(
         audioController?.setVolume(userPreferences.lastUsedVolume)
         audioController?.setWaves(userPreferences.lastUsedWavy)
         audioController?.setFade(userPreferences.lastUsedFade)
+        val audioControllerState = audioController?.stateFlow?.value
+        if (audioControllerState?.playing == false
+            && audioControllerState.millisLeft == 0L
+            && userPreferences.lastTimerTimeMillis != 0L
+            && userPreferences.timerEnabled) {
+            _playerScreenState.value = _playerScreenState.value?.copy(
+                timerToggleState = TimerToggleState.Saved(userPreferences.lastTimerTimeMillis.millisToTimerState())
+            )
+            audioController?.setTimer(userPreferences.lastTimerTimeMillis)
+        }
     }
 
     fun clearAudioController() {
@@ -111,8 +121,10 @@ class PlayerScreenViewModel(
         userPreferences.lastTimerTimeMillis = timeState.toMillis()
         val newTimerToggleState = if (timeState != TimerPickerState.zero) {
             audioController?.setTimer(timeState.toMillis())
+            userPreferences.timerEnabled = true
             TimerToggleState.Saved(timeState.toFormattedString())
         } else {
+            userPreferences.timerEnabled = false
             TimerToggleState.Disabled
         }
         _playerScreenState.value = _playerScreenState.value?.copy(
@@ -123,6 +135,7 @@ class PlayerScreenViewModel(
 
     fun cancelTimer() {
         userPreferences.lastTimerTimeMillis = 0L
+        userPreferences.timerEnabled = false
         _playerScreenState.value = _playerScreenState.value?.copy(
             timerToggleState = TimerToggleState.Disabled,
             showTimerPicker = false,
@@ -138,6 +151,7 @@ class PlayerScreenViewModel(
             )
         } else {
             audioController?.setTimer(0)
+            userPreferences.timerEnabled = false
             _playerScreenState.value = _playerScreenState.value?.copy(timerToggleState = TimerToggleState.Disabled)
         }
     }

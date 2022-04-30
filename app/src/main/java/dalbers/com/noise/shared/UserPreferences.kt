@@ -13,8 +13,8 @@ const val PREF_LAST_USED_COLOR = "last_used_color"
 const val PREF_LAST_VOLUME = "last_volume"
 const val PREF_LAST_USED_WAVY = "last_used_wavy"
 const val PREF_LAST_USED_FADE = "last_used_fade"
-// TODO: use this https://github.com/davidalbers/whitenoise-android/issues/43
 const val PREF_LAST_TIMER_TIME = "last_timer_time"
+const val PREF_TIMER_ENABLED = "PREF_TIMER_ENABLED"
 
 enum class DarkModeSetting(val key: Int) {
     AUTO(0),
@@ -30,6 +30,7 @@ interface UserPreferences {
     var lastUsedWavy: Boolean
     var lastUsedFade: Boolean
     var lastTimerTimeMillis: Long
+    var timerEnabled: Boolean
     fun migrateLegacyPreferences()
 }
 
@@ -87,6 +88,14 @@ class UserPreferencesImpl(
     }
     set(value) {
         sharedPreferences.edit().putLong(PREF_LAST_TIMER_TIME, value).apply()
+    }
+
+    override var timerEnabled: Boolean
+    get() {
+        return sharedPreferences.getBoolean(PREF_TIMER_ENABLED, false)
+    }
+    set(value) {
+        sharedPreferences.edit().putBoolean(PREF_TIMER_ENABLED, value).apply()
     }
 
     override fun migrateLegacyPreferences() {

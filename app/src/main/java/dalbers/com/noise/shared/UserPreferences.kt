@@ -29,6 +29,7 @@ interface UserPreferences {
     var lastUsedVolume: Float
     var lastUsedWavy: Boolean
     var lastUsedFade: Boolean
+    var lastTimerTimeMillis: Long
     fun migrateLegacyPreferences()
 }
 
@@ -78,6 +79,14 @@ class UserPreferencesImpl(
     }
     set(value) {
         sharedPreferences.edit().putBoolean(PREF_LAST_USED_FADE, value).apply()
+    }
+
+    override var lastTimerTimeMillis: Long
+    get() {
+        return sharedPreferences.getLong(PREF_LAST_TIMER_TIME, 0)
+    }
+    set(value) {
+        sharedPreferences.edit().putLong(PREF_LAST_TIMER_TIME, value).apply()
     }
 
     override fun migrateLegacyPreferences() {

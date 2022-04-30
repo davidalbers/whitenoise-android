@@ -108,6 +108,7 @@ class PlayerScreenViewModel(
         if (_playerScreenState.value?.showTimerPicker != true) return
         val timeState = _playerScreenState.value?.timerPickerState ?: return
 
+        userPreferences.lastTimerTimeMillis = timeState.toMillis()
         val newTimerToggleState = if (timeState != TimerPickerState.zero) {
             audioController?.setTimer(timeState.toMillis())
             TimerToggleState.Saved(timeState.toFormattedString())
@@ -121,6 +122,7 @@ class PlayerScreenViewModel(
     }
 
     fun cancelTimer() {
+        userPreferences.lastTimerTimeMillis = 0L
         _playerScreenState.value = _playerScreenState.value?.copy(
             timerToggleState = TimerToggleState.Disabled,
             showTimerPicker = false,
@@ -132,7 +134,7 @@ class PlayerScreenViewModel(
         if (currentTimerToggleState is TimerToggleState.Disabled) {
             _playerScreenState.value = _playerScreenState.value?.copy(
                 showTimerPicker = true,
-                timerPickerState = TimerPickerState.zero,
+                timerPickerState = userPreferences.lastTimerTimeMillis.millisToTimerPickerState(),
             )
         } else {
             audioController?.setTimer(0)
@@ -152,6 +154,10 @@ class PlayerScreenViewModel(
 private fun Long.millisToTimerState(): String {
     val seconds = (this / 1000).toInt()
     return seconds.secondsToString()
+}
+
+private fun Long.millisToTimerPickerState(): TimerPickerState {
+    return (this / 60000L).toInt().minutesToTimerPickerState()
 }
 
 private fun Int.minutesToTimerPickerState(): TimerPickerState {

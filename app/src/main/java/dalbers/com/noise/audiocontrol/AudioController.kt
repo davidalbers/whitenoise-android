@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.math.min
 
 /**
  * This is the interval at which the volume timer updates.
@@ -76,10 +77,21 @@ class AudioController(
 
     fun setFade(fadeEnabled: Boolean) {
         _stateFlow.value = _stateFlow.value.copy(fadeEnabled = fadeEnabled)
+        if (!fadeEnabled) {
+            if (!_stateFlow.value.wavesEnabled) {
+                volume = _stateFlow.value.volume
+                player.setVolume(volume)
+            }
+            maxVolume = _stateFlow.value.volume
+        }
     }
 
     fun setWaves(wavesEnabled: Boolean) {
         _stateFlow.value = _stateFlow.value.copy(wavesEnabled = wavesEnabled)
+        if (!wavesEnabled) {
+            volume = min(_stateFlow.value.volume, maxVolume)
+            player.setVolume(volume)
+        }
     }
 
     /**
@@ -103,6 +115,7 @@ class AudioController(
 
     fun setVolume(volume: Float) {
         maxVolume = volume
+        this.volume = volume
         minVolume = volume * minVolumePercent
         oscillatingDown = true
         _stateFlow.value = _stateFlow.value.copy(volume = volume)
@@ -217,6 +230,7 @@ class AudioController(
     private fun fadeMaxVolumeForTick() {
         if (maxVolume > minVolume) {
             val actualDecreaseLength = if (decreaseLength == -1L) DEFAULT_DECREASE_LENGTH else decreaseLength
+            if (actualDecreaseLength == 0L) return
             val delta = -1 * (_stateFlow.value.volume - minVolume) / (actualDecreaseLength / tickPeriod)
             maxVolume += delta
         }

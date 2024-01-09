@@ -47,13 +47,15 @@ fun TimerPicker(
     onCancel: () -> Unit,
 ) {
     Column(
-        modifier = modifier.width(IntrinsicSize.Max),
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TimeUnitPicker(
                 value = pickerState.hours,
+                digitPositions = 2,
                 onIncrement = { onChange(60) },
                 onDecrement = { onChange(-60) },
             )
@@ -63,12 +65,14 @@ fun TimerPicker(
             )
             TimeUnitPicker(
                 value = pickerState.minutesTens,
+                digitPositions = 1,
                 onIncrement = { onChange(10) },
                 onDecrement = { onChange(-10) },
                 modifier = Modifier.padding(end = 4.dp),
             )
             TimeUnitPicker(
                 value = pickerState.minutes,
+                digitPositions = 1,
                 onIncrement = { onChange(1) },
                 onDecrement = { onChange(-1) },
             )
@@ -76,13 +80,13 @@ fun TimerPicker(
 
         Button(
             onClick = { onSet() },
-            modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
+            modifier = Modifier.padding(top = 8.dp).fillMaxWidth(0.5F),
         ) {
             Text(text = stringResource(id = R.string.time_set))
         }
         Button(
             onClick = { onCancel() },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(0.5F),
             colors = ButtonDefaults.outlinedButtonColors()
         ) {
             Text(text = stringResource(id = R.string.time_cancel))
@@ -93,6 +97,7 @@ fun TimerPicker(
 @Composable
 private fun TimeUnitPicker(
     value: Int,
+    digitPositions: Int,
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
     modifier: Modifier = Modifier,
@@ -108,7 +113,7 @@ private fun TimeUnitPicker(
             Icon(Icons.Default.Add, contentDescription = "")
         }
         Text(
-            text = value.toString(),
+            text = String.format("%1$" + digitPositions + "s", value.toString()).replace(' ', '0'),
             style = WhiteNoiseTypography.h1,
         )
         Button(
@@ -123,5 +128,5 @@ private fun TimeUnitPicker(
 @Preview
 @Composable
 private fun TimeUnitPickerPreview() {
-    TimeUnitPicker(0, {}, {})
+    TimeUnitPicker(0, 1,  {}, {})
 }

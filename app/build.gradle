@@ -1,14 +1,17 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin:  'org.jetbrains.kotlin.plugin.compose'
 // apply from: 'quality.gradle'
 
 android {
-    compileSdk 31
+    namespace = "dalbers.com.noise"
+
+    compileSdk 34
 
     defaultConfig {
         applicationId "dalbers.com.noise"
         minSdk 26
-        targetSdk 31
+        targetSdk 34
         versionCode 18
         versionName "2.1"
     }
@@ -19,11 +22,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
     buildFeatures {
         compose = true
@@ -56,7 +59,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$viewModelCompose"
     implementation "androidx.compose.runtime:runtime-livedata:$composeVersion"
     implementation "androidx.navigation:navigation-compose:$navigationKtx"
-    implementation "com.google.accompanist:accompanist-navigation-animation:$navigationAnimation"
+    implementation "androidx.compose.animation:animation:$composeVersion"
     implementation "com.github.alorma:compose-settings-ui:$composeSettings"
     implementation "com.github.alorma:compose-settings-storage-preferences:$composeSettings"
     implementation "androidx.media:media:$androidxMediaVersion"

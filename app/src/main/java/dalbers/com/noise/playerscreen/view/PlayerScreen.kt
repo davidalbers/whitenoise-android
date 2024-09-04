@@ -109,7 +109,17 @@ fun ModalBottomSheetLayout(
         }
     }
 
-    ModalBottomSheetLayout(sheetContent, modifier, modalBottomSheetState, sheetShape, sheetElevation, sheetBackgroundColor, sheetContentColor, scrimColor, content)
+    ModalBottomSheetLayout(
+        sheetContent = sheetContent,
+        modifier = modifier,
+        sheetState = modalBottomSheetState,
+        sheetShape = sheetShape,
+        sheetElevation = sheetElevation,
+        sheetBackgroundColor = sheetBackgroundColor,
+        sheetContentColor = sheetContentColor,
+        scrimColor = scrimColor,
+        content = content
+    )
 }
 
 @Composable

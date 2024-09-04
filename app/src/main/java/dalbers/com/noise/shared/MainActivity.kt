@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalAnimationApi::class)
-
 package dalbers.com.noise.shared
 
 import android.content.ComponentName
@@ -10,13 +8,12 @@ import android.os.IBinder
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import com.alorma.compose.settings.storage.preferences.rememberPreferenceIntSettingState
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import dalbers.com.noise.playerscreen.view.PlayerScreen
 import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
 import dalbers.com.noise.service.AudioPlayerService
@@ -55,7 +52,7 @@ class MainActivity : AppCompatActivity() {
         val serviceIntent = Intent(this, AudioPlayerService::class.java)
         startService(serviceIntent)
         bindService(serviceIntent, playerConnection, BIND_AUTO_CREATE)
-        userPreferences = UserPreferencesImpl(androidx.preference.PreferenceManager.getDefaultSharedPreferences(this))
+        userPreferences = UserPreferencesImpl(PreferenceManager.getDefaultSharedPreferences(this))
         userPreferences.migrateLegacyPreferences()
 
         setContent {
@@ -64,15 +61,15 @@ class MainActivity : AppCompatActivity() {
                 defaultValue = DarkModeSetting.AUTO.key,
             )
 
-            val navController = rememberAnimatedNavController()
+            val navController = rememberNavController()
             WhiteNoiseTheme(darkTheme = darkState.isDarkMode()) {
-                AnimatedNavHost(
+                NavHost(
                     navController = navController,
                     startDestination = NavigationDestination.PLAYER.key,
-                    enterTransition = { slideIntoContainer(AnimatedContentScope.SlideDirection.Left) },
-                    exitTransition = { slideOutOfContainer(AnimatedContentScope.SlideDirection.Left) },
-                    popEnterTransition = { slideIntoContainer(AnimatedContentScope.SlideDirection.Right) },
-                    popExitTransition = { slideOutOfContainer(AnimatedContentScope.SlideDirection.Right) },
+                    enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+                    exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+                    popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
+                    popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
                 ) {
                     composable(
                         NavigationDestination.PLAYER.key,

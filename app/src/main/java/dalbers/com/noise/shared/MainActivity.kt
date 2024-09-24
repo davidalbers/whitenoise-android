@@ -3,12 +3,14 @@ package dalbers.com.noise.shared
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -22,6 +24,7 @@ import dalbers.com.noise.settings.view.isDarkMode
 
 class MainActivity : AppCompatActivity() {
     private lateinit var userPreferences: UserPreferences
+    private val versionProvider = VersionProvider(this)
 
     private val playerViewModel by viewModels<PlayerScreenViewModel> {
         WhiteNoiseViewModelFactory(
@@ -81,9 +84,19 @@ class MainActivity : AppCompatActivity() {
                     composable(
                         NavigationDestination.SETTINGS.key,
                     ) {
-                        SettingsScreen(darkThemeState = darkState) {
-                            navController.popBackStack()
-                        }
+                        SettingsScreen(
+                            version = versionProvider.getVersion(),
+                            darkThemeState = darkState,
+                            onOpenProjectPage = {
+                                startActivity(
+                                    Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("https://github.com/davidalbers/whitenoise-android")
+                                    )
+                                )
+                            },
+                            onBackPressed = { navController.popBackStack() }
+                        )
                     }
                 }
             }

@@ -6,7 +6,6 @@ import androidx.compose.material.Typography
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 
 val WhiteNoiseTypography = Typography()
 
@@ -23,16 +22,16 @@ fun WhiteNoiseTheme(
 }
 
 private val LightColors = lightColors(
-  primary =  Color(0xFF573c27),
-  primaryVariant =  Color(0xFFa98360),
-  secondary = Color(0xFFffadc6),
-  secondaryVariant = Color(0xFFe34989),
-  background = Color(0xFFF1ECE4),
+  primary = md_theme_light_primary,
+  primaryVariant = md_theme_light_primaryVariant,
+  secondary = md_theme_light_secondary,
+  secondaryVariant = md_theme_light_secondaryVariant,
+  background = md_theme_light_background,
 )
 
 private val DarkColors = darkColors(
-  primary =  Color(0xFF856C62),
-  primaryVariant =  Color(0xFF856C62),
-  secondary = Color(0xFFAB788B),
-  secondaryVariant = Color(0xFFE8A2B5),
+  primary = md_theme_dark_primary,
+  primaryVariant = md_theme_dark_primaryVariant,
+  secondary = md_theme_dark_secondary,
+  secondaryVariant = md_theme_dark_secondaryVariant,
 )

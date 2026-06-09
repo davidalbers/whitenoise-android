@@ -17,10 +17,11 @@ import dalbers.com.noise.shared.WhiteNoiseTypography
 @Composable
 fun VolumeControl(
     value: Float,
+    modifier: Modifier = Modifier,
     onValueChange: (Float) -> Unit,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    NoiseStateCard(
+        modifier = modifier,
     ) {
         Text(
             text = stringResource(id = R.string.volume_label),

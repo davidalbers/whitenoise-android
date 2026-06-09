@@ -66,9 +66,8 @@ fun PlayerScreen(
                     fadeChanged = { viewModel.toggleFade(it) },
                     wavesChanged = { viewModel.toggleWaves(it) },
                     volumeChanged = { viewModel.changeVolume(it) },
-                    onTimerToggled = {
-                        viewModel.toggleTimer()
-                    },
+                    onPresetSelected = { viewModel.selectTimerPreset(it) },
+                    onCustomTimerTapped = { viewModel.openCustomTimer() },
                 )
             }
         }

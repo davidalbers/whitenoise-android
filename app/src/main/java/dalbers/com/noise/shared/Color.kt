@@ -15,6 +15,10 @@ val md_theme_dark_primaryVariant = Color(0xFF856C62)
 val md_theme_dark_secondary = Color(0xFFAB788B)
 val md_theme_dark_secondaryVariant = Color(0xFFE8A2B5)
 
+// ── Control cards ────────────────────────────────────────────────────────────
+val card_background_light = Color(0x33000000) // 20% black
+val card_background_dark = Color(0x33FFFFFF)  // 20% white
+
 // ── White noise orb ───────────────────────────────────────────────────────────
 val orb_white_base = Color(0xFFE7E7E7)
 val orb_white_highlight = Color(0xFFF8F8F8)
@@ -31,3 +35,21 @@ val orb_brown_base_light = Color(0xFF967861)
 val orb_brown_highlight_light = Color(0xFFC3A790)
 val orb_brown_base_dark = Color(0xFFA1887F)
 val orb_brown_highlight_dark = Color(0xFFCFBCB6)
+
+// ── Nature noise orb ──────────────────────────────────────────────────────────
+val orb_nature_base_light = Color(0xFF238533)
+val orb_nature_highlight_light = Color(0xFF48BD5A)
+val orb_nature_base_dark = Color(0xFF2E9E3D)
+val orb_nature_highlight_dark = Color(0xFF56D667)
+
+// ── Fire noise orb ────────────────────────────────────────────────────────────
+val orb_fire_base_light = Color(0xFFD9590D)
+val orb_fire_highlight_light = Color(0xFFFF7726)
+val orb_fire_base_dark = Color(0xFFF2731A)
+val orb_fire_highlight_dark = Color(0xFFFF8732)
+
+// ── Rain noise orb ────────────────────────────────────────────────────────────
+val orb_rain_base_light = Color(0xFF2E73D9)
+val orb_rain_highlight_light = Color(0xFF5096FF)
+val orb_rain_base_dark = Color(0xFF408CF2)
+val orb_rain_highlight_dark = Color(0xFF5DA2FF)

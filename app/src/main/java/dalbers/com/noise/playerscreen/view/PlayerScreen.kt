@@ -3,8 +3,10 @@
 package dalbers.com.noise.playerscreen.view
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -58,17 +60,20 @@ fun PlayerScreen(
                 )
             },
         ) {
-            Column {
-                Player(
-                    state = state.value,
-                    modifier = Modifier.padding(16.dp),
-                    noiseTypeChanged = { viewModel.changeNoiseType(it) },
-                    fadeChanged = { viewModel.toggleFade(it) },
-                    wavesChanged = { viewModel.toggleWaves(it) },
-                    volumeChanged = { viewModel.changeVolume(it) },
-                    onPresetSelected = { viewModel.selectTimerPreset(it) },
-                    onCustomTimerTapped = { viewModel.openCustomTimer() },
-                )
+            Box(modifier = Modifier.fillMaxSize()) {
+                NoiseGradient(noiseType = state.value.noiseType)
+                Column {
+                    Player(
+                        state = state.value,
+                        modifier = Modifier.padding(16.dp),
+                        noiseTypeChanged = { viewModel.changeNoiseType(it) },
+                        fadeChanged = { viewModel.toggleFade(it) },
+                        wavesChanged = { viewModel.toggleWaves(it) },
+                        volumeChanged = { viewModel.changeVolume(it) },
+                        onPresetSelected = { viewModel.selectTimerPreset(it) },
+                        onCustomTimerTapped = { viewModel.openCustomTimer() },
+                    )
+                }
             }
         }
     }

@@ -2,6 +2,16 @@ package dalbers.com.noise.shared
 
 import androidx.compose.ui.graphics.Color
 
+fun NoiseType.toGradientColor(isDark: Boolean): Color = when (this) {
+    NoiseType.WHITE -> orb_white_ring
+    NoiseType.PINK -> if (isDark) orb_pink_base_dark else orb_pink_base_light
+    NoiseType.BROWN -> if (isDark) orb_brown_base_dark else orb_brown_base_light
+    NoiseType.NATURE -> if (isDark) orb_nature_base_dark else orb_nature_base_light
+    NoiseType.FIRE -> if (isDark) orb_fire_base_dark else orb_fire_base_light
+    NoiseType.RAIN -> if (isDark) orb_rain_base_dark else orb_rain_base_light
+    NoiseType.NONE -> Color.Transparent
+}
+
 // ── Light theme ──────────────────────────────────────────────────────────────
 val md_theme_light_primary = Color(0xFF573C27)
 val md_theme_light_primaryVariant = Color(0xFFA98360)

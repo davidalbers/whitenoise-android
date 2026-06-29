@@ -13,6 +13,7 @@ data class PlayerScreenState(
     val showTimerPicker: Boolean,
     val timerPickerState: TimerPickerState,
     val playing: Boolean,
+    val millisLeft: Long,
 ) {
     companion object {
         val default = PlayerScreenState(
@@ -25,6 +26,7 @@ data class PlayerScreenState(
             timerPickerState = TimerPickerState.zero,
             volume = 1f,
             playing = false,
+            millisLeft = 0L,
         )
     }
 }

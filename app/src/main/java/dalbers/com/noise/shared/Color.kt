@@ -25,6 +25,10 @@ val md_theme_dark_primaryVariant = Color(0xFF856C62)
 val md_theme_dark_secondary = Color(0xFFAB788B)
 val md_theme_dark_secondaryVariant = Color(0xFFE8A2B5)
 
+// ── Play button ──────────────────────────────────────────────────────────────
+val play_button_dark = Color(0xFF252525)
+val play_button_light = Color(0xFFEEEEEE)
+
 // ── Control cards ────────────────────────────────────────────────────────────
 val card_background_light = Color(0x33000000) // 20% black
 val card_background_dark = Color(0x33FFFFFF)  // 20% white

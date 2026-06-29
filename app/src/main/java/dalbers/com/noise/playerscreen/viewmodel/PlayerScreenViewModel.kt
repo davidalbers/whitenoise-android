@@ -44,6 +44,7 @@ class PlayerScreenViewModel(
             showTimerPicker = previousState?.showTimerPicker == true,
             timerPickerState = previousState?.timerPickerState ?: TimerPickerState.zero,
             volume = soundState.volume,
+            millisLeft = soundState.millisLeft,
         )
     }
 

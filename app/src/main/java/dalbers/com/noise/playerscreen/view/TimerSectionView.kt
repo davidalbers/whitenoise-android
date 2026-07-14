@@ -19,7 +19,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dalbers.com.noise.R
 import dalbers.com.noise.playerscreen.model.TimerPreset
-import dalbers.com.noise.shared.WhiteNoiseTypography
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -34,7 +33,7 @@ fun TimerSectionView(
         Column(modifier = modifier.padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
                 text = stringResource(id = R.string.timer_label),
-                style = WhiteNoiseTypography.h6,
+                style = MaterialTheme.typography.subtitle1,
             )
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -93,7 +92,7 @@ private fun TimerChip(
     ) {
         Text(
             text = label,
-            style = WhiteNoiseTypography.body1,
+            style = MaterialTheme.typography.body2,
             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         )

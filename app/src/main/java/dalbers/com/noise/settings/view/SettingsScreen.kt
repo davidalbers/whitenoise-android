@@ -1,19 +1,22 @@
 package dalbers.com.noise.settings.view
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Waves
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.alorma.compose.settings.storage.base.SettingValueState
 import com.alorma.compose.settings.storage.base.rememberBooleanSettingState
 import com.alorma.compose.settings.storage.base.rememberIntSettingState
@@ -29,51 +32,6 @@ import dalbers.com.noise.shared.PREF_PLAY_OVER
 import dalbers.com.noise.shared.PREF_WAVE_INTERVAL_KEY
 
 
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-@Composable
-fun SettingsScreen(
-    version: String,
-    darkThemeState: SettingValueState<Int>,
-    onBackPressed: () -> Unit,
-    onOpenProjectPage: () -> Unit,
-) {
-    Scaffold(
-        topBar = { TopAppBar { onBackPressed() } },
-    ) {
-        AllSettings(
-            version = version,
-            darkThemeState = darkThemeState,
-            playOverState = rememberPreferenceBooleanSettingState(
-                key = PREF_PLAY_OVER,
-                defaultValue = false
-            ),
-            waveState = rememberPreferenceIntSettingState(
-                key = PREF_WAVE_INTERVAL_KEY,
-                defaultValue = 0
-            ),
-            openProjectPage = onOpenProjectPage
-        )
-    }
-}
-
-@Composable
-private fun TopAppBar(
-    onBackPressed: () -> Unit,
-) {
-    TopAppBar(
-        title = {
-            Text(stringResource(id = R.string.app_name))
-        },
-        navigationIcon = {
-            IconButton({
-                onBackPressed()
-            }) {
-                Icon(Icons.AutoMirrored.Default.ArrowBack, "")
-            }
-        }
-    )
-}
-
 @Preview
 @Composable
 private fun SettingScreenPreview() {
@@ -84,6 +42,28 @@ private fun SettingScreenPreview() {
         waveState = rememberIntSettingState(),
         openProjectPage = {},
     )
+}
+
+@Composable
+internal fun SettingsSheetContent(
+    version: String,
+    darkThemeState: SettingValueState<Int>,
+    onOpenProjectPage: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
+        Text(
+            text = stringResource(id = R.string.settings_menu_title),
+            style = MaterialTheme.typography.h6,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+        AllSettings(
+            version = version,
+            darkThemeState = darkThemeState,
+            playOverState = rememberPreferenceBooleanSettingState(key = PREF_PLAY_OVER, defaultValue = false),
+            waveState = rememberPreferenceIntSettingState(key = PREF_WAVE_INTERVAL_KEY, defaultValue = 0),
+            openProjectPage = onOpenProjectPage,
+        )
+    }
 }
 
 @Composable

@@ -145,7 +145,7 @@ private fun NoiseOrb(
         Spacer(Modifier.height(4.dp))
         Text(
             text = stringResource(id = noiseType.label),
-            style = MaterialTheme.typography.body1.copy(
+            style = MaterialTheme.typography.caption.copy(
                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
             ),
         )

@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dalbers.com.noise.shared.WhiteNoiseTypography
 import dalbers.com.noise.shared.card_background_dark
 import dalbers.com.noise.shared.card_background_light
 
@@ -32,7 +31,7 @@ fun NoiseStateToggle(
     ) {
         Text(
             text = text,
-            style = WhiteNoiseTypography.h6,
+            style = MaterialTheme.typography.subtitle1,
         )
         Switch(
             checked = checked,

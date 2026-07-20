@@ -29,8 +29,10 @@ fun TimerSectionView(
     onCustomTapped: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    NoiseStateCard {
-        Column(modifier = modifier.padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    NoiseStateCard(
+        modifier = modifier
+    ) {
+        Column(modifier = Modifier.padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
                 text = stringResource(id = R.string.timer_label),
                 style = MaterialTheme.typography.subtitle1,

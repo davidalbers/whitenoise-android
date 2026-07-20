@@ -4,28 +4,19 @@
 
 package dalbers.com.noise.playerscreen.view
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dalbers.com.noise.R
 import dalbers.com.noise.playerscreen.model.PlayerScreenState
 import dalbers.com.noise.playerscreen.model.TimerPreset
 import dalbers.com.noise.shared.NoiseType
-import dalbers.com.noise.shared.card_background_dark
-import dalbers.com.noise.shared.card_background_light
-
-private val cardShape = RoundedCornerShape(12.dp)
 
 @Composable
 fun Player(
@@ -48,6 +39,7 @@ fun Player(
         NoiseStateToggle(
             text = stringResource(id = R.string.fade_label),
             checked = state.fadeEnabled,
+            modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             fadeChanged(it)
         }
@@ -55,12 +47,14 @@ fun Player(
         NoiseStateToggle(
             text = stringResource(id = R.string.wave_label),
             checked = state.wavesEnabled,
+            modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             wavesChanged(it)
         }
         Spacer(modifier = Modifier.height(8.dp))
         VolumeControl(
             value = state.volume,
+            modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             volumeChanged(it)
         }
@@ -72,6 +66,7 @@ fun Player(
             onCustomTapped = { onCustomTimerTapped() },
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(horizontal = 16.dp)
         )
     }
 }

@@ -22,16 +22,16 @@ fun WhiteNoiseTheme(
 }
 
 private val LightColors = lightColors(
-  primary = md_theme_light_primary,
-  primaryVariant = md_theme_light_primaryVariant,
-  secondary = md_theme_light_secondary,
-  secondaryVariant = md_theme_light_secondaryVariant,
   background = md_theme_light_background,
+  primary = accent_light_primary,
+  primaryVariant = accent_light_primary,
+  secondary = accent_light_secondary,
+  secondaryVariant = accent_light_secondary,
 )
 
 private val DarkColors = darkColors(
-  primary = md_theme_dark_primary,
-  primaryVariant = md_theme_dark_primaryVariant,
-  secondary = md_theme_dark_secondary,
-  secondaryVariant = md_theme_dark_secondaryVariant,
+  primary = accent_dark_primary,
+  primaryVariant = accent_dark_primary,
+  secondary = accent_dark_secondary,
+  secondaryVariant = accent_dark_secondary,
 )

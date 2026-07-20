@@ -89,7 +89,6 @@ fun PlayerScreen(
                 ) {
                     Player(
                         state = state.value,
-                        modifier = Modifier.padding(16.dp),
                         noiseTypeChanged = { viewModel.changeNoiseType(it) },
                         fadeChanged = { viewModel.toggleFade(it) },
                         wavesChanged = { viewModel.toggleWaves(it) },

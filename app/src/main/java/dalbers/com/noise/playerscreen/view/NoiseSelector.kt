@@ -77,12 +77,12 @@ private fun FadingEdgeBox(
         targetValue = if (atEnd) 0f else 1f,
         animationSpec = tween(200)
     )
-    val background = MaterialTheme.colors.background
+    val background = MaterialTheme.colors.surface
 
     Box(
         modifier = Modifier.drawWithContent {
             drawContent()
-            val fadeWidth = 48.dp.toPx()
+            val fadeWidth = 64.dp.toPx()
             drawRect(
                 brush = Brush.horizontalGradient(
                     colors = listOf(background, Color.Transparent),
@@ -114,29 +114,26 @@ private fun NoiseOrb(
     val orbDp = 80.dp
     val containerDp = 92.dp
     val colors = noiseType.orbColors()
-    val ring = noiseType.ringColor()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clickable(onClick = onClick),
     ) {
         Canvas(modifier = Modifier.size(containerDp)) {
-            val cx = size.width / 2f
-            val cy = size.height / 2f
             val orbRadius = orbDp.toPx() / 2f
 
             val gradient = Brush.radialGradient(
                 colors = listOf(colors.light, colors.base),
                 center = Offset(
-                    cx + (0.38f - 0.5f) * orbDp.toPx(),
-                    cy + (0.32f - 0.5f) * orbDp.toPx(),
+                    size.width / 3f,
+                    size.height / 3f
                 ),
                 radius = orbRadius,
             )
             drawCircle(brush = gradient, radius = orbRadius)
             if (isSelected) {
                 drawCircle(
-                    color = ring,
+                    color = colors.base,
                     radius = orbRadius + 4.dp.toPx(),
                     style = Stroke(width = 2.5.dp.toPx()),
                 )
@@ -181,17 +178,6 @@ private fun NoiseType.orbColors(): OrbColors {
             OrbColors(orb_rain_base_light, orb_rain_highlight_light)
         NoiseType.NONE -> OrbColors(Color.Transparent, Color.Transparent)
     }
-}
-
-@Composable
-private fun NoiseType.ringColor(): Color = when (this) {
-    NoiseType.WHITE -> orb_white_ring
-    NoiseType.PINK -> if (isSystemInDarkTheme()) orb_pink_base_dark else orb_pink_base_light
-    NoiseType.BROWN -> if (isSystemInDarkTheme()) orb_brown_base_dark else orb_brown_base_light
-    NoiseType.NATURE -> if (isSystemInDarkTheme()) orb_nature_base_dark else orb_nature_base_light
-    NoiseType.FIRE -> if (isSystemInDarkTheme()) orb_fire_base_dark else orb_fire_base_light
-    NoiseType.RAIN -> if (isSystemInDarkTheme()) orb_rain_base_dark else orb_rain_base_light
-    NoiseType.NONE -> Color.Transparent
 }
 
 @Preview(showBackground = true)

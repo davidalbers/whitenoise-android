@@ -13,24 +13,21 @@ fun NoiseType.toGradientColor(isDark: Boolean): Color = when (this) {
 }
 
 // ── Light theme ──────────────────────────────────────────────────────────────
-val md_theme_light_primary = Color(0xFF573C27)
-val md_theme_light_primaryVariant = Color(0xFFA98360)
-val md_theme_light_secondary = Color(0xFFFFADC6)
-val md_theme_light_secondaryVariant = Color(0xFFE34989)
 val md_theme_light_background = Color(0xFFF1ECE4)
 
-// ── Dark theme ────────────────────────────────────────────────────────────────
-val md_theme_dark_primary = Color(0xFF856C62)
-val md_theme_dark_primaryVariant = Color(0xFF856C62)
-val md_theme_dark_secondary = Color(0xFFAB788B)
-val md_theme_dark_secondaryVariant = Color(0xFFE8A2B5)
+// ── Accent (Switch / Slider) ──────────────────────────────────────────────────
+val accent_light_primary = Color(0xFFDE799C)
+val accent_light_secondary = Color(0xFFD36C90)
+
+val accent_dark_primary = Color(0xFFFFEDEB)
+val accent_dark_secondary = Color(0xFFFFCFCB)
 
 // ── Play button ──────────────────────────────────────────────────────────────
 val play_button_dark = Color(0xFF252525)
 val play_button_light = Color(0xFFEEEEEE)
 
 // ── Control cards ────────────────────────────────────────────────────────────
-val card_background_light = Color(0x33000000) // 20% black
+val card_background_light = Color(0x1B000000) // 20% black
 val card_background_dark = Color(0x33FFFFFF)  // 20% white
 
 // ── White noise orb ───────────────────────────────────────────────────────────

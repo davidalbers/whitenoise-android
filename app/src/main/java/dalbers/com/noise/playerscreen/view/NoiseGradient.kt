@@ -32,7 +32,7 @@ fun NoiseGradient(noiseType: NoiseType, modifier: Modifier = Modifier) {
         Canvas(modifier = Modifier.fillMaxWidth().height(340.dp)) {
             drawRect(
                 brush = Brush.radialGradient(
-                    colors = listOf(accentColor.copy(alpha = 0.75f), Color.Transparent),
+                    colors = listOf(accentColor, Color.Transparent),
                     center = Offset(size.width / 2f, size.height * 1.25f),
                     radius = size.height,
                 )

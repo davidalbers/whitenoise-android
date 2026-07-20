@@ -2,11 +2,8 @@
 
 package dalbers.com.noise.playerscreen.view
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -31,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -97,28 +93,15 @@ fun PlayerScreen(
                         onCustomTimerTapped = { viewModel.openCustomTimer() },
                     )
                 }
-                Column(
+                PlayButtonWithTimer(
+                    millisLeft = state.value.millisLeft,
+                    playing = state.value.playing,
+                    onToggle = { viewModel.togglePlay(!state.value.playing) },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .navigationBarsPadding()
-                        .padding(bottom = 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    PlayPauseButton(
-                        playing = state.value.playing,
-                        onToggle = { viewModel.togglePlay(!state.value.playing) },
-                    )
-                    val timerAlpha by animateFloatAsState(
-                        targetValue = if (state.value.millisLeft > 0L) 1f else 0f,
-                        animationSpec = tween(400),
-                        label = "timer-alpha",
-                    )
-                    TimerCountdown(
-                        millisLeft = state.value.millisLeft,
-                        modifier = Modifier.graphicsLayer { alpha = timerAlpha },
-                    )
-                }
+                        .padding(bottom = 32.dp)
+                )
                 val settingsBg = if (MaterialTheme.colors.isLight) card_background_light else card_background_dark
                 Box(
                     modifier = Modifier

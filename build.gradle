@@ -12,6 +12,8 @@ buildscript {
     ext.coreKtxVersion = "1.13.1"
     ext.appcompatVersion = "1.7.0"
     ext.materialVersion = "1.12.0"
+    ext.hiltVersion = "2.53.1"
+    ext.kspVersion = "2.0.20-1.0.25"
 
     repositories {
         mavenCentral()
@@ -21,6 +23,8 @@ buildscript {
         classpath 'com.android.tools.build:gradle:8.5.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.0.20"
+        classpath "com.google.dagger:hilt-android-gradle-plugin:$hiltVersion"
+        classpath "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:$kspVersion"
     }
 }
 

@@ -12,6 +12,7 @@ import dalbers.com.noise.service.NotificationAction
 import dalbers.com.noise.service.model.AudioPlayerScreenState
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class AudioPlayerButton(
     val action: NotificationAction,
@@ -37,7 +38,7 @@ data class AudioPlayerButton(
     }
 }
 
-class AudioPlayerViewModel(
+class AudioPlayerViewModel @Inject constructor(
     private val audioController: AudioController,
 ): ViewModel() {
     private var _stateLiveData = MutableLiveData<AudioPlayerScreenState>(AudioPlayerScreenState.Hidden)

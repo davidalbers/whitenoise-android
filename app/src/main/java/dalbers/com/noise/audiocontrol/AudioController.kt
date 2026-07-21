@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.min
 
 /**
@@ -51,12 +53,13 @@ data class SoundState(
     }
 }
 
-class AudioController(
+@Singleton
+class AudioController @Inject constructor(
     private val player: AudioPlayer,
     private val audioFocusManager: AudioFocusManager,
     private val looper: Looper,
     private val userPreferences: UserPreferences,
-    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    private val coroutineScope: CoroutineScope,
 ) {
     private var _stateFlow = MutableStateFlow(SoundState.default)
     var stateFlow: StateFlow<SoundState> = _stateFlow

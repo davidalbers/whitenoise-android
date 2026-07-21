@@ -4,6 +4,7 @@ import android.media.AudioManager
 import android.media.AudioManager.AUDIOFOCUS_LOSS
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 enum class AudioFocusState {
     FOCUS_GAINED,
@@ -17,7 +18,7 @@ interface AudioFocusManager {
     fun request()
 }
 
-class AudioFocusManagerImpl(
+class AudioFocusManagerImpl @Inject constructor(
     private val audioManager: AudioManager,
 ) : AudioFocusManager {
     private val _focusState = MutableStateFlow(AudioFocusState.FOCUS_LOST_UNKNOWN)

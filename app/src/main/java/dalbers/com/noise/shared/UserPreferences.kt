@@ -1,6 +1,7 @@
 package dalbers.com.noise.shared
 
 import android.content.SharedPreferences
+import javax.inject.Inject
 
 @Deprecated("Used in an older version of the app")
 const val PREF_USE_DARK_MODE_KEY_LEGACY = "pref_use_dark_mode"
@@ -34,7 +35,7 @@ interface UserPreferences {
     fun migrateLegacyPreferences()
 }
 
-class UserPreferencesImpl(
+class UserPreferencesImpl @Inject constructor(
     private val sharedPreferences: SharedPreferences,
 ) : UserPreferences {
     override fun playOver(): Boolean = sharedPreferences.getBoolean(PREF_PLAY_OVER, false)

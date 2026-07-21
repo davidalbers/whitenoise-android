@@ -12,6 +12,8 @@ import com.google.android.exoplayer2.upstream.DataSpec
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.RawResourceDataSource
 import com.google.android.exoplayer2.util.Util
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
 
 interface AudioPlayer {
@@ -22,7 +24,9 @@ interface AudioPlayer {
     fun setVolume(volume: Float)
 }
 
-class AudioPlayerImpl(private val context: Context) : AudioPlayer {
+class AudioPlayerImpl @Inject constructor(
+    @ApplicationContext private val context: Context,
+) : AudioPlayer {
     private val player: SimpleExoPlayer = SimpleExoPlayer.Builder(context).build()
     @RawRes private var lastFile: Int = 0
 

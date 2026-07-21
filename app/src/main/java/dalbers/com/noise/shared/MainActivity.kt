@@ -13,24 +13,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
-import androidx.preference.PreferenceManager
 import com.alorma.compose.settings.storage.preferences.rememberPreferenceIntSettingState
+import dagger.hilt.android.AndroidEntryPoint
 import dalbers.com.noise.playerscreen.view.PlayerScreen
 import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
 import dalbers.com.noise.service.AudioPlayerService
 import dalbers.com.noise.settings.view.isDarkMode
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    private lateinit var userPreferences: UserPreferences
+    @Inject
+    lateinit var userPreferences: UserPreferences
     private val versionProvider = VersionProvider(this)
 
-    private val playerViewModel by viewModels<PlayerScreenViewModel> {
-        WhiteNoiseViewModelFactory(
-            this,
-            userPreferences,
-            intent.extras,
-        )
-    }
+    private val playerViewModel by viewModels<PlayerScreenViewModel>()
 
     private var service: AudioPlayerService? = null
     private val playerConnection: ServiceConnection = object : ServiceConnection {
@@ -40,11 +37,10 @@ class MainActivity : AppCompatActivity() {
         ) {
             val audioPlayerBinder = binder as AudioPlayerService.AudioPlayerBinder
             service = audioPlayerBinder.service
-            playerViewModel.bindAudioController(audioPlayerBinder.service.audioController)
         }
 
         override fun onServiceDisconnected(className: ComponentName) {
-            playerViewModel.clearAudioController()
+            service = null
         }
     }
 
@@ -54,7 +50,6 @@ class MainActivity : AppCompatActivity() {
         val serviceIntent = Intent(this, AudioPlayerService::class.java)
         startService(serviceIntent)
         bindService(serviceIntent, playerConnection, BIND_AUTO_CREATE)
-        userPreferences = UserPreferencesImpl(PreferenceManager.getDefaultSharedPreferences(this))
         userPreferences.migrateLegacyPreferences()
 
         setContent {
@@ -90,10 +85,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        service?.run {
-            dismissNotification()
-            playerViewModel.bindAudioController(audioController)
-        }
+        service?.dismissNotification()
     }
 
     override fun onDestroy() {

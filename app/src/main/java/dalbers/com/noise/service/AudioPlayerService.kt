@@ -3,35 +3,33 @@ package dalbers.com.noise.service
 import android.app.*
 import android.os.PowerManager.WakeLock
 import android.content.Intent
-import android.media.AudioManager
 import android.graphics.BitmapFactory
 import android.os.*
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
-import androidx.preference.PreferenceManager
+import dagger.hilt.android.AndroidEntryPoint
 import dalbers.com.noise.AudioPlayerButton
 import dalbers.com.noise.AudioPlayerViewModel
 import dalbers.com.noise.R
 import dalbers.com.noise.audiocontrol.AudioController
-import dalbers.com.noise.audiocontrol.AudioFocusManagerImpl
-import dalbers.com.noise.audiocontrol.AudioPlayerImpl
 import dalbers.com.noise.service.model.AudioPlayerScreenState
 import dalbers.com.noise.shared.MainActivity
-import dalbers.com.noise.shared.UserPreferencesImpl
+import javax.inject.Inject
 
 /**
  * A service to play audio on a loop.
  * Features oscillating and decreasing volume.
  * Uses LoopMediaPlayer for looping audio.
  */
+@AndroidEntryPoint
 class AudioPlayerService : LifecycleService() {
     private val binder: IBinder = AudioPlayerBinder()
-    // TODO: Use DI to inject this https://github.com/davidalbers/whitenoise-android/issues/41
-    //       This could a singleton and bind/unbind the audioplayer to it
+    @Inject
     lateinit var audioController: AudioController
+    @Inject
+    lateinit var viewModel: AudioPlayerViewModel
     private var wakeLock: WakeLock? = null
-    private lateinit var viewModel: AudioPlayerViewModel
 
     override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
@@ -41,13 +39,6 @@ class AudioPlayerService : LifecycleService() {
     override fun onCreate() {
         super.onCreate()
 
-        audioController = AudioController(
-            AudioPlayerImpl(this),
-            AudioFocusManagerImpl(getSystemService(AUDIO_SERVICE) as AudioManager),
-            mainLooper,
-            UserPreferencesImpl(PreferenceManager.getDefaultSharedPreferences(baseContext)),
-        )
-        viewModel = AudioPlayerViewModel(audioController)
         viewModel.stateLiveData.observe(this) {
             if (it is AudioPlayerScreenState.Shown) {
                 showNotification(it)

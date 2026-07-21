@@ -50,6 +50,12 @@
     <string name="notification_white_type">White Noise</string>
     <string name="notification_brown_type">Brown Noise</string>
     <string name="notification_pink_type">Pink Noise</string>
+    <string name="notification_nature_type">Nature Sounds</string>
+    <string name="notification_fire_type">Fireplace</string>
+    <string name="notification_rain_type">Rain Sounds</string>
+    <string name="nature_label">Nature</string>
+    <string name="fire_label">Fire</string>
+    <string name="rain_label">Rain</string>
     <string name="time_divider">:</string>
     <string name="time_set">Set</string>
     <string name="time_cancel">Cancel</string>

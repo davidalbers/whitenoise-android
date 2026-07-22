@@ -30,19 +30,20 @@ class MainActivity : AppCompatActivity() {
     private val playerViewModel by viewModels<PlayerScreenViewModel>()
 
     private var service: AudioPlayerService? = null
-    private val playerConnection: ServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(
-            className: ComponentName,
-            binder: IBinder
-        ) {
-            val audioPlayerBinder = binder as AudioPlayerService.AudioPlayerBinder
-            service = audioPlayerBinder.service
-        }
+    private val playerConnection: ServiceConnection =
+        object : ServiceConnection {
+            override fun onServiceConnected(
+                className: ComponentName,
+                binder: IBinder,
+            ) {
+                val audioPlayerBinder = binder as AudioPlayerService.AudioPlayerBinder
+                service = audioPlayerBinder.service
+            }
 
-        override fun onServiceDisconnected(className: ComponentName) {
-            service = null
+            override fun onServiceDisconnected(className: ComponentName) {
+                service = null
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,10 +54,11 @@ class MainActivity : AppCompatActivity() {
         userPreferences.migrateLegacyPreferences()
 
         setContent {
-            val darkState = rememberPreferenceIntSettingState(
-                key = PREF_USE_DARK_MODE_KEY,
-                defaultValue = DarkModeSetting.AUTO.key,
-            )
+            val darkState =
+                rememberPreferenceIntSettingState(
+                    key = PREF_USE_DARK_MODE_KEY,
+                    defaultValue = DarkModeSetting.AUTO.key,
+                )
 
             WhiteNoiseTheme(darkTheme = darkState.isDarkMode()) {
                 Surface(modifier = Modifier.fillMaxSize()) {
@@ -68,8 +70,8 @@ class MainActivity : AppCompatActivity() {
                             startActivity(
                                 Intent(
                                     Intent.ACTION_VIEW,
-                                    Uri.parse("https://github.com/davidalbers/whitenoise-android")
-                                )
+                                    Uri.parse("https://github.com/davidalbers/whitenoise-android"),
+                                ),
                             )
                         },
                     )

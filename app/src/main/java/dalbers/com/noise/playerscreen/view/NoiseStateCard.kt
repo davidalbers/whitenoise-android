@@ -8,29 +8,46 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import dalbers.com.noise.shared.ThemePreviews
+import dalbers.com.noise.shared.WhiteNoiseTheme
 import dalbers.com.noise.shared.card_background_dark
 import dalbers.com.noise.shared.card_background_light
 
 @Composable
 fun NoiseStateCard(
     modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.() -> Unit,
 ) {
     val cardBackground = if (MaterialTheme.colors.isLight) card_background_light else card_background_dark
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(cardBackground)
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(12.dp))
+                .background(cardBackground)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        content = content
+        content = content,
     )
+}
+
+@ThemePreviews
+@Composable
+private fun NoiseStateCardPreview() {
+    WhiteNoiseTheme {
+        Surface {
+            NoiseStateCard {
+                Text(text = "Content")
+            }
+        }
+    }
 }

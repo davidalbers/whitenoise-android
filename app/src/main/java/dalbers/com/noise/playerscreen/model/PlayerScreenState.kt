@@ -16,17 +16,18 @@ data class PlayerScreenState(
     val millisLeft: Long,
 ) {
     companion object {
-        val default = PlayerScreenState(
-            noiseType = NoiseType.WHITE,
-            fadeEnabled = false,
-            wavesEnabled = false,
-            selectedTimerPreset = null,
-            customTimerMillis = 0L,
-            showTimerPicker = false,
-            timerPickerState = TimerPickerState.zero,
-            volume = 1f,
-            playing = false,
-            millisLeft = 0L,
-        )
+        val default =
+            PlayerScreenState(
+                noiseType = NoiseType.WHITE,
+                fadeEnabled = false,
+                wavesEnabled = false,
+                selectedTimerPreset = null,
+                customTimerMillis = 0L,
+                showTimerPicker = false,
+                timerPickerState = TimerPickerState.zero,
+                volume = 1f,
+                playing = false,
+                millisLeft = 0L,
+            )
     }
 }

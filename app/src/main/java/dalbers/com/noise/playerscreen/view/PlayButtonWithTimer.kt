@@ -4,14 +4,15 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import dalbers.com.noise.shared.ThemePreviews
+import dalbers.com.noise.shared.WhiteNoiseTheme
 
 @Composable
 fun PlayButtonWithTimer(
@@ -27,7 +28,7 @@ fun PlayButtonWithTimer(
     ) {
         PlayPauseButton(
             playing = playing,
-            onToggle = onToggle
+            onToggle = onToggle,
         )
         val timerAlpha by animateFloatAsState(
             targetValue = if (millisLeft > 0L) 1f else 0f,
@@ -38,5 +39,15 @@ fun PlayButtonWithTimer(
             millisLeft = millisLeft,
             modifier = Modifier.graphicsLayer { alpha = timerAlpha },
         )
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun PlayButtonWithTimerPreview() {
+    WhiteNoiseTheme {
+        Surface {
+            PlayButtonWithTimer(millisLeft = 65_000L, playing = true) {}
+        }
     }
 }

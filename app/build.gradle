@@ -1,9 +1,13 @@
+plugins {
+    id 'io.github.takahirom.roborazzi'
+    id 'org.jlleitschuh.gradle.ktlint'
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin:  'org.jetbrains.kotlin.plugin.compose'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 apply plugin: 'com.google.devtools.ksp'
 apply plugin: 'dagger.hilt.android.plugin'
-// apply from: 'quality.gradle'
 
 android {
     namespace = "dalbers.com.noise"
@@ -69,6 +73,18 @@ dependencies {
     ksp "com.google.dagger:hilt-android-compiler:$hiltVersion"
 
     testImplementation "junit:junit:$junitVersion"
+    testImplementation "io.mockk:mockk:$mockkVersion"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesTestVersion"
+    testImplementation "androidx.arch.core:core-testing:$archCoreTestingVersion"
+
+    testImplementation "org.robolectric:robolectric:$robolectricVersion"
+    testImplementation "io.github.takahirom.roborazzi:roborazzi:$roborazziVersion"
+    testImplementation "io.github.takahirom.roborazzi:roborazzi-compose:$roborazziVersion"
+    testImplementation "io.github.takahirom.roborazzi:roborazzi-junit-rule:$roborazziVersion"
+    testImplementation "io.github.takahirom.roborazzi:roborazzi-compose-preview-scanner-support:$roborazziVersion"
+    testImplementation "io.github.sergio-sastre.ComposablePreviewScanner:android:$composablePreviewScannerVersion"
+    testImplementation "androidx.compose.ui:ui-test-junit4:$composeVersion"
+    debugImplementation "androidx.compose.ui:ui-test-manifest:$composeVersion"
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
@@ -76,4 +92,28 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         // Use experimental APIs
         freeCompilerArgs += '-Xopt-in=kotlin.RequiresOptIn'
     }
+}
+
+android {
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            all {
+                systemProperty 'robolectric.pixelCopyRenderMode', 'hardware'
+            }
+        }
+    }
+}
+
+roborazzi {
+    outputDir.set(file("src/test/screenshots"))
+    generateComposePreviewRobolectricTests.enable.set(true)
+    generateComposePreviewRobolectricTests.packages.set(["dalbers.com.noise"])
+    generateComposePreviewRobolectricTests.includePrivatePreviews.set(true)
+}
+
+ktlint {
+    android = true
+    ignoreFailures = false
+    outputToConsole = true
 }

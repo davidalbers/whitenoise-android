@@ -1,0 +1,38 @@
+name: Screenshot tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  verify-screenshots:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Verify screenshots against committed baselines
+        run: ./gradlew verifyRoborazziDebug --stacktrace
+
+      # If a preview's rendering changed on purpose, download this artifact,
+      # inspect the *_compare.png images, then run recordRoborazziDebug locally
+      # and commit the updated baselines under app/src/test/screenshots.
+      - name: Upload screenshot diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-diffs
+          path: |
+            app/build/outputs/roborazzi
+            app/build/reports/roborazzi
+          retention-days: 14

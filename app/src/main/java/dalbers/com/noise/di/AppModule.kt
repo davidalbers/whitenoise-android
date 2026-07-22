@@ -19,13 +19,15 @@ import javax.inject.Singleton
 object AppModule {
     @Provides
     @Singleton
-    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences =
-        PreferenceManager.getDefaultSharedPreferences(context)
+    fun provideSharedPreferences(
+        @ApplicationContext context: Context,
+    ): SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     @Provides
     @Singleton
-    fun provideAudioManager(@ApplicationContext context: Context): AudioManager =
-        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    fun provideAudioManager(
+        @ApplicationContext context: Context,
+    ): AudioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
     @Provides
     fun provideMainLooper(): Looper = Looper.getMainLooper()

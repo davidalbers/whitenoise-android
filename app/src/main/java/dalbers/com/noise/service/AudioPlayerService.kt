@@ -1,10 +1,15 @@
 package dalbers.com.noise.service
 
-import android.app.*
-import android.os.PowerManager.WakeLock
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.os.*
+import android.os.Binder
+import android.os.IBinder
+import android.os.PowerManager
+import android.os.PowerManager.WakeLock
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
@@ -25,8 +30,10 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class AudioPlayerService : LifecycleService() {
     private val binder: IBinder = AudioPlayerBinder()
+
     @Inject
     lateinit var audioController: AudioController
+
     @Inject
     lateinit var viewModel: AudioPlayerViewModel
     private var wakeLock: WakeLock? = null
@@ -53,20 +60,26 @@ class AudioPlayerService : LifecycleService() {
         audioController.pause()
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         super.onStartCommand(intent, flags, startId)
-        val pm = baseContext.getSystemService(
-            POWER_SERVICE
-        ) as? PowerManager
+        val pm =
+            baseContext.getSystemService(
+                POWER_SERVICE,
+            ) as? PowerManager
         if (pm != null) {
-            wakeLock = pm.newWakeLock(
-                PowerManager.PARTIAL_WAKE_LOCK,
-                "$WAKE_LOCK_TAG:AudioPlayerService"
-            )
+            wakeLock =
+                pm.newWakeLock(
+                    PowerManager.PARTIAL_WAKE_LOCK,
+                    "$WAKE_LOCK_TAG:AudioPlayerService",
+                )
         }
 
-        //if a button is pressed in the notification,
-        //the service will be started with this extra
+        // if a button is pressed in the notification,
+        // the service will be started with this extra
         safeValueOf<NotificationAction>(intent?.extras?.getString(DO_ACTION).orEmpty())?.let {
             viewModel.handleNotificationAction(it)
         }
@@ -94,61 +107,66 @@ class AudioPlayerService : LifecycleService() {
      * Show a notification with information about the sound being played/paused
      * and a pause button which will callback to this service.
      */
-     private fun showNotification(screenState: AudioPlayerScreenState.Shown) {
-        val icon = BitmapFactory.decodeResource(
-            this.resources,
-            R.mipmap.ic_launcher
-        )
-        val mediaSession = MediaSessionCompat(applicationContext, mediaSessionTag)
+    private fun showNotification(screenState: AudioPlayerScreenState.Shown) {
+        val icon =
+            BitmapFactory.decodeResource(
+                this.resources,
+                R.mipmap.ic_launcher,
+            )
+        val mediaSession = MediaSessionCompat(applicationContext, MEDIA_SESSION_TAG)
 
         val notification: Notification
         val openAppIntent = Intent(applicationContext, MainActivity::class.java)
-        openAppIntent.flags = (Intent.FLAG_ACTIVITY_CLEAR_TOP
-                or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        openAppIntent.putExtra("startedFromNotification", true)
-        val openAppPendingIntent = PendingIntent.getActivity(
-            applicationContext,
-            screenState.titleResource,
-            openAppIntent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+        openAppIntent.flags = (
+            Intent.FLAG_ACTIVITY_CLEAR_TOP
+                or Intent.FLAG_ACTIVITY_SINGLE_TOP
         )
-        val builder = NotificationCompat.Builder(this, notificationChannel)
-            .setSmallIcon(R.drawable.ic_statusbar2)
-            .setContentTitle(getString(screenState.titleResource))
-            .setContentText(getString(screenState.subtitleResource))
-            .setLargeIcon(icon)
-            .setStyle(
-                androidx.media.app.NotificationCompat.MediaStyle()
-                    .setMediaSession(mediaSession.sessionToken)
+        openAppIntent.putExtra("startedFromNotification", true)
+        val openAppPendingIntent =
+            PendingIntent.getActivity(
+                applicationContext,
+                screenState.titleResource,
+                openAppIntent,
+                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE,
             )
-            .setOngoing(true)
-            .addAudioPlayerButton(screenState.firstButton)
-            .addAudioPlayerButton(screenState.secondButton)
-            .setContentIntent(openAppPendingIntent)
-            .setPriority(Notification.PRIORITY_MAX)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+        val builder =
+            NotificationCompat
+                .Builder(this, NOTIFICATION_CHANNEL)
+                .setSmallIcon(R.drawable.ic_statusbar2)
+                .setContentTitle(getString(screenState.titleResource))
+                .setContentText(getString(screenState.subtitleResource))
+                .setLargeIcon(icon)
+                .setStyle(
+                    androidx.media.app.NotificationCompat
+                        .MediaStyle()
+                        .setMediaSession(mediaSession.sessionToken),
+                ).setOngoing(true)
+                .addAudioPlayerButton(screenState.firstButton)
+                .addAudioPlayerButton(screenState.secondButton)
+                .setContentIntent(openAppPendingIntent)
+                .setPriority(Notification.PRIORITY_MAX)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
         notification = builder.build()
 
-        //show the notification and bring service to foreground
+        // show the notification and bring service to foreground
         startForeground(NOTIFICATION_ID, notification)
         wakeLock!!.acquire()
     }
 
-    private fun NotificationCompat.Builder.addAudioPlayerButton(
-        button: AudioPlayerButton
-    ): NotificationCompat.Builder {
+    private fun NotificationCompat.Builder.addAudioPlayerButton(button: AudioPlayerButton): NotificationCompat.Builder {
         val pausePlayIntent = Intent(this@AudioPlayerService, AudioPlayerService::class.java)
         pausePlayIntent.putExtra(DO_ACTION, button.action.name)
-        val pausePlayPendingIntent = PendingIntent.getService(
-            this@AudioPlayerService,
-            button.textResource,
-            pausePlayIntent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val pausePlayPendingIntent =
+            PendingIntent.getService(
+                this@AudioPlayerService,
+                button.textResource,
+                pausePlayIntent,
+                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE,
+            )
         return addAction(
             button.iconResource,
             getString(button.textResource),
-            pausePlayPendingIntent
+            pausePlayPendingIntent,
         )
     }
 
@@ -159,9 +177,10 @@ class AudioPlayerService : LifecycleService() {
         (getSystemService(NOTIFICATION_SERVICE) as NotificationManager?)?.apply {
             createNotificationChannel(
                 NotificationChannel(
-                    notificationChannel,
-                    "Noise Playing", NotificationManager.IMPORTANCE_LOW
-                )
+                    NOTIFICATION_CHANNEL,
+                    "Noise Playing",
+                    NotificationManager.IMPORTANCE_LOW,
+                ),
             )
         }
     }
@@ -184,8 +203,8 @@ class AudioPlayerService : LifecycleService() {
         private const val NOTIFICATION_ID = 1
         private const val DO_ACTION = "do"
         private const val WAKE_LOCK_TAG = "dalbers.noise.wakelock"
-        private const val notificationChannel = "com.dalbers.whitenoise.Notifications"
-        private const val mediaSessionTag = "dalbers.media.session"
+        private const val NOTIFICATION_CHANNEL = "com.dalbers.whitenoise.Notifications"
+        private const val MEDIA_SESSION_TAG = "dalbers.media.session"
     }
 }
 
@@ -195,10 +214,9 @@ enum class NotificationAction {
     PLAY_ACTION,
 }
 
-inline fun <reified T : Enum<T>> safeValueOf(type: String): T? {
-    return try {
+inline fun <reified T : Enum<T>> safeValueOf(type: String): T? =
+    try {
         java.lang.Enum.valueOf(T::class.java, type)
     } catch (e: IllegalArgumentException) {
         null
     }
-}

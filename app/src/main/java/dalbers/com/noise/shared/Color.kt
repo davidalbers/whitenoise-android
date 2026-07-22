@@ -2,15 +2,16 @@ package dalbers.com.noise.shared
 
 import androidx.compose.ui.graphics.Color
 
-fun NoiseType.toGradientColor(isDark: Boolean): Color = when (this) {
-    NoiseType.WHITE -> orb_white_ring
-    NoiseType.PINK -> if (isDark) orb_pink_base_dark else orb_pink_base_light
-    NoiseType.BROWN -> if (isDark) orb_brown_base_dark else orb_brown_base_light
-    NoiseType.NATURE -> if (isDark) orb_nature_base_dark else orb_nature_base_light
-    NoiseType.FIRE -> if (isDark) orb_fire_base_dark else orb_fire_base_light
-    NoiseType.RAIN -> if (isDark) orb_rain_base_dark else orb_rain_base_light
-    NoiseType.NONE -> Color.Transparent
-}
+fun NoiseType.toGradientColor(isDark: Boolean): Color =
+    when (this) {
+        NoiseType.WHITE -> orb_white_ring
+        NoiseType.PINK -> if (isDark) orb_pink_base_dark else orb_pink_base_light
+        NoiseType.BROWN -> if (isDark) orb_brown_base_dark else orb_brown_base_light
+        NoiseType.NATURE -> if (isDark) orb_nature_base_dark else orb_nature_base_light
+        NoiseType.FIRE -> if (isDark) orb_fire_base_dark else orb_fire_base_light
+        NoiseType.RAIN -> if (isDark) orb_rain_base_dark else orb_rain_base_light
+        NoiseType.NONE -> Color.Transparent
+    }
 
 // ── Light theme ──────────────────────────────────────────────────────────────
 val md_theme_light_background = Color(0xFFF1ECE4)
@@ -28,7 +29,7 @@ val play_button_light = Color(0xFFEEEEEE)
 
 // ── Control cards ────────────────────────────────────────────────────────────
 val card_background_light = Color(0x1B000000) // 20% black
-val card_background_dark = Color(0x33FFFFFF)  // 20% white
+val card_background_dark = Color(0x33FFFFFF) // 20% white
 
 // ── White noise orb ───────────────────────────────────────────────────────────
 val orb_white_base = Color(0xFFE7E7E7)

@@ -1,6 +1,6 @@
 buildscript {
     ext.kotlin_version = '2.0.20'
-    ext.composeVersion = "1.6.8"
+    ext.composeVersion = "1.7.8"
     ext.activityComposeVersion = "1.9.1"
     ext.preferenceKtxVersion = "1.2.1"
     ext.viewModelCompose = "2.8.4"
@@ -14,6 +14,14 @@ buildscript {
     ext.materialVersion = "1.12.0"
     ext.hiltVersion = "2.53.1"
     ext.kspVersion = "2.0.20-1.0.25"
+    ext.mockkVersion = "1.14.3"
+    ext.coroutinesTestVersion = "1.10.2"
+    ext.archCoreTestingVersion = "2.2.0"
+    ext.robolectricVersion = "4.15.1"
+    // Bump this once the project's Kotlin version is upgraded past 2.0.x.
+    ext.roborazziVersion = "1.60.0"
+    ext.composablePreviewScannerVersion = "0.9.1"
+    ext.ktlintGradleVersion = "14.2.0"
 
     repositories {
         mavenCentral()
@@ -26,6 +34,11 @@ buildscript {
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hiltVersion"
         classpath "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:$kspVersion"
     }
+}
+
+plugins {
+    id "io.github.takahirom.roborazzi" version "1.60.0" apply false
+    id "org.jlleitschuh.gradle.ktlint" version "14.2.0" apply false
 }
 
 task clean(type: Delete) {

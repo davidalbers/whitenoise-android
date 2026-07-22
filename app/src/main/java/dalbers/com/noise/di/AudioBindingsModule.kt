@@ -1,15 +1,15 @@
 package dalbers.com.noise.di
 
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import dalbers.com.noise.audiocontrol.AudioFocusManager
 import dalbers.com.noise.audiocontrol.AudioFocusManagerImpl
 import dalbers.com.noise.audiocontrol.AudioPlayer
 import dalbers.com.noise.audiocontrol.AudioPlayerImpl
 import dalbers.com.noise.shared.UserPreferences
 import dalbers.com.noise.shared.UserPreferencesImpl
-import dagger.Binds
-import dagger.Module
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
 
 @Module
 @InstallIn(SingletonComponent::class)

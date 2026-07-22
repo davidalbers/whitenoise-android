@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -23,11 +24,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
+import dalbers.com.noise.shared.ThemePreviews
+import dalbers.com.noise.shared.WhiteNoiseTheme
 import dalbers.com.noise.shared.play_button_dark
 import dalbers.com.noise.shared.play_button_light
 
 @Composable
-internal fun PlayPauseButton(playing: Boolean, onToggle: () -> Unit) {
+internal fun PlayPauseButton(
+    playing: Boolean,
+    onToggle: () -> Unit,
+) {
     val isLight = MaterialTheme.colors.isLight
     val circleColor = if (isLight) play_button_dark else play_button_light
     val iconColor = if (isLight) play_button_light else play_button_dark
@@ -37,20 +43,22 @@ internal fun PlayPauseButton(playing: Boolean, onToggle: () -> Unit) {
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = if (playing) 1.08f else 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(900, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(900, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse,
+            ),
         label = "pulse-scale",
     )
 
     Box(
-        modifier = Modifier
-            .size(88.dp)
-            .scale(scale)
-            .clip(CircleShape)
-            .background(circleColor)
-            .clickable { onToggle() },
+        modifier =
+            Modifier
+                .size(88.dp)
+                .scale(scale)
+                .clip(CircleShape)
+                .background(circleColor)
+                .clickable { onToggle() },
         contentAlignment = Alignment.Center,
     ) {
         Icon(
@@ -59,5 +67,25 @@ internal fun PlayPauseButton(playing: Boolean, onToggle: () -> Unit) {
             tint = iconColor,
             modifier = Modifier.size(44.dp),
         )
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun PlayPauseButtonPreview() {
+    WhiteNoiseTheme {
+        Surface {
+            PlayPauseButton(playing = true) {}
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun PlayPauseButton_PausedPreview() {
+    WhiteNoiseTheme {
+        Surface {
+            PlayPauseButton(playing = false) {}
+        }
     }
 }

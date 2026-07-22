@@ -13,9 +13,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetDefaults
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -65,23 +72,25 @@ fun PlayerScreen(
             sheetContent = {
                 TimerPicker(
                     pickerState = state.value.timerPickerState,
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(16.dp),
+                    modifier =
+                        Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(16.dp),
                     onChange = { viewModel.updateTimer(it) },
                     onSet = { viewModel.setTimer() },
                     onCancel = { viewModel.cancelTimer() },
                 )
             },
             showSheet = state.value.showTimerPicker,
-            onSheetDismissed = { viewModel.cancelTimer() }
+            onSheetDismissed = { viewModel.cancelTimer() },
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 NoiseGradient(noiseType = state.value.noiseType)
                 Column(
-                    modifier = Modifier
-                        .statusBarsPadding()
-                        .padding(top = 56.dp, bottom = 160.dp),
+                    modifier =
+                        Modifier
+                            .statusBarsPadding()
+                            .padding(top = 56.dp, bottom = 160.dp),
                 ) {
                     Player(
                         state = state.value,
@@ -97,21 +106,23 @@ fun PlayerScreen(
                     millisLeft = state.value.millisLeft,
                     playing = state.value.playing,
                     onToggle = { viewModel.togglePlay(!state.value.playing) },
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .navigationBarsPadding()
-                        .padding(bottom = 32.dp)
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .navigationBarsPadding()
+                            .padding(bottom = 32.dp),
                 )
                 val settingsBg = if (MaterialTheme.colors.isLight) card_background_light else card_background_dark
                 Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .statusBarsPadding()
-                        .padding(8.dp)
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(settingsBg)
-                        .clickable { showSettings = true },
+                    modifier =
+                        Modifier
+                            .align(Alignment.TopEnd)
+                            .statusBarsPadding()
+                            .padding(8.dp)
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(settingsBg)
+                            .clickable { showSettings = true },
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
@@ -141,7 +152,7 @@ fun ModalBottomSheetLayout(
     sheetBackgroundColor: Color = MaterialTheme.colors.surface,
     sheetContentColor: Color = contentColorFor(sheetBackgroundColor),
     scrimColor: Color = ModalBottomSheetDefaults.scrimColor,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
@@ -168,6 +179,6 @@ fun ModalBottomSheetLayout(
         sheetBackgroundColor = sheetBackgroundColor,
         sheetContentColor = sheetContentColor,
         scrimColor = scrimColor,
-        content = content
+        content = content,
     )
 }

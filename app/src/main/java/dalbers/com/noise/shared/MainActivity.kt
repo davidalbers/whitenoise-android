@@ -13,40 +13,37 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
-import androidx.preference.PreferenceManager
 import com.alorma.compose.settings.storage.preferences.rememberPreferenceIntSettingState
+import dagger.hilt.android.AndroidEntryPoint
 import dalbers.com.noise.playerscreen.view.PlayerScreen
 import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
 import dalbers.com.noise.service.AudioPlayerService
 import dalbers.com.noise.settings.view.isDarkMode
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    private lateinit var userPreferences: UserPreferences
+    @Inject
+    lateinit var userPreferences: UserPreferences
     private val versionProvider = VersionProvider(this)
 
-    private val playerViewModel by viewModels<PlayerScreenViewModel> {
-        WhiteNoiseViewModelFactory(
-            this,
-            userPreferences,
-            intent.extras,
-        )
-    }
+    private val playerViewModel by viewModels<PlayerScreenViewModel>()
 
     private var service: AudioPlayerService? = null
-    private val playerConnection: ServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(
-            className: ComponentName,
-            binder: IBinder
-        ) {
-            val audioPlayerBinder = binder as AudioPlayerService.AudioPlayerBinder
-            service = audioPlayerBinder.service
-            playerViewModel.bindAudioController(audioPlayerBinder.service.audioController)
-        }
+    private val playerConnection: ServiceConnection =
+        object : ServiceConnection {
+            override fun onServiceConnected(
+                className: ComponentName,
+                binder: IBinder,
+            ) {
+                val audioPlayerBinder = binder as AudioPlayerService.AudioPlayerBinder
+                service = audioPlayerBinder.service
+            }
 
-        override fun onServiceDisconnected(className: ComponentName) {
-            playerViewModel.clearAudioController()
+            override fun onServiceDisconnected(className: ComponentName) {
+                service = null
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,14 +51,14 @@ class MainActivity : AppCompatActivity() {
         val serviceIntent = Intent(this, AudioPlayerService::class.java)
         startService(serviceIntent)
         bindService(serviceIntent, playerConnection, BIND_AUTO_CREATE)
-        userPreferences = UserPreferencesImpl(PreferenceManager.getDefaultSharedPreferences(this))
         userPreferences.migrateLegacyPreferences()
 
         setContent {
-            val darkState = rememberPreferenceIntSettingState(
-                key = PREF_USE_DARK_MODE_KEY,
-                defaultValue = DarkModeSetting.AUTO.key,
-            )
+            val darkState =
+                rememberPreferenceIntSettingState(
+                    key = PREF_USE_DARK_MODE_KEY,
+                    defaultValue = DarkModeSetting.AUTO.key,
+                )
 
             WhiteNoiseTheme(darkTheme = darkState.isDarkMode()) {
                 Surface(modifier = Modifier.fillMaxSize()) {
@@ -73,8 +70,8 @@ class MainActivity : AppCompatActivity() {
                             startActivity(
                                 Intent(
                                     Intent.ACTION_VIEW,
-                                    Uri.parse("https://github.com/davidalbers/whitenoise-android")
-                                )
+                                    Uri.parse("https://github.com/davidalbers/whitenoise-android"),
+                                ),
                             )
                         },
                     )
@@ -90,10 +87,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        service?.run {
-            dismissNotification()
-            playerViewModel.bindAudioController(audioController)
-        }
+        service?.dismissNotification()
     }
 
     override fun onDestroy() {

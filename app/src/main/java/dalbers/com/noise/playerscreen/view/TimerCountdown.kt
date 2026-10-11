@@ -1,10 +1,11 @@
 package dalbers.com.noise.playerscreen.view
 
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import dalbers.com.noise.shared.LocalIsLightTheme
 import dalbers.com.noise.shared.ThemePreviews
 import dalbers.com.noise.shared.WhiteNoiseTheme
 import dalbers.com.noise.shared.play_button_dark
@@ -27,8 +28,8 @@ internal fun TimerCountdown(
         }
     Text(
         text = text,
-        style = MaterialTheme.typography.h6,
-        color = if (MaterialTheme.colors.isLight) play_button_dark else play_button_light,
+        style = MaterialTheme.typography.titleLarge,
+        color = if (LocalIsLightTheme.current) play_button_dark else play_button_light,
         modifier = modifier,
     )
 }

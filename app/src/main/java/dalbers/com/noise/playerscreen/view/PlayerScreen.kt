@@ -13,18 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ModalBottomSheetDefaults
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -33,25 +29,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.alorma.compose.settings.storage.base.SettingValueState
 import dalbers.com.noise.R
 import dalbers.com.noise.playerscreen.model.PlayerScreenState
 import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
 import dalbers.com.noise.settings.view.SettingsSheetContent
+import dalbers.com.noise.shared.LocalIsLightTheme
 import dalbers.com.noise.shared.card_background_dark
 import dalbers.com.noise.shared.card_background_light
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PlayerScreen(
     viewModel: PlayerScreenViewModel,
     version: String,
-    darkThemeState: SettingValueState<Int>,
+    darkThemeState: MutableState<Int>,
     onOpenProjectPage: () -> Unit,
 ) {
     val state = viewModel.playerScreenState.observeAsState(initial = PlayerScreenState.default)
@@ -112,7 +104,7 @@ fun PlayerScreen(
                             .navigationBarsPadding()
                             .padding(bottom = 32.dp),
                 )
-                val settingsBg = if (MaterialTheme.colors.isLight) card_background_light else card_background_dark
+                val settingsBg = if (LocalIsLightTheme.current) card_background_light else card_background_dark
                 Box(
                     modifier =
                         Modifier
@@ -128,7 +120,7 @@ fun PlayerScreen(
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = stringResource(id = R.string.settings_menu_title),
-                        tint = MaterialTheme.colors.onSurface,
+                        tint = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
@@ -137,48 +129,25 @@ fun PlayerScreen(
 }
 
 /**
- * Wrapper around default ModalBottomSheetLayout to avoid having to use ModalBottomSheetState directly.
+ * Wrapper around default ModalBottomSheet to avoid having to use SheetState directly.
  * This allows passing in a Boolean to show/hide the sheet and exposes a lambda for handling dismiss.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@ExperimentalMaterialApi
 fun ModalBottomSheetLayout(
     sheetContent: @Composable ColumnScope.() -> Unit,
     modifier: Modifier = Modifier,
     showSheet: Boolean = false,
     onSheetDismissed: () -> Unit = {},
-    sheetShape: Shape = MaterialTheme.shapes.large,
-    sheetElevation: Dp = ModalBottomSheetDefaults.Elevation,
-    sheetBackgroundColor: Color = MaterialTheme.colors.surface,
-    sheetContentColor: Color = contentColorFor(sheetBackgroundColor),
-    scrimColor: Color = ModalBottomSheetDefaults.scrimColor,
     content: @Composable () -> Unit,
 ) {
-    val modalBottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    content()
 
-    LaunchedEffect(modalBottomSheetState.currentValue) {
-        if (!modalBottomSheetState.isVisible && showSheet) {
-            onSheetDismissed()
-        }
+    if (showSheet) {
+        ModalBottomSheet(
+            onDismissRequest = onSheetDismissed,
+            modifier = modifier,
+            content = sheetContent,
+        )
     }
-
-    LaunchedEffect(showSheet) {
-        if (showSheet) {
-            modalBottomSheetState.show()
-        } else {
-            modalBottomSheetState.hide()
-        }
-    }
-
-    ModalBottomSheetLayout(
-        sheetContent = sheetContent,
-        modifier = modifier,
-        sheetState = modalBottomSheetState,
-        sheetShape = sheetShape,
-        sheetElevation = sheetElevation,
-        sheetBackgroundColor = sheetBackgroundColor,
-        sheetContentColor = sheetContentColor,
-        scrimColor = scrimColor,
-        content = content,
-    )
 }

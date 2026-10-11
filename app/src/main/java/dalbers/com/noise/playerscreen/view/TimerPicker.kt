@@ -5,15 +5,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,7 +71,7 @@ fun TimerPicker(
             )
             Text(
                 text = stringResource(id = R.string.time_divider),
-                style = MaterialTheme.typography.h1,
+                style = MaterialTheme.typography.displayLarge,
             )
             TimeUnitPicker(
                 value = pickerState.minutesTens,
@@ -124,7 +124,7 @@ private fun TimeUnitPicker(
         }
         Text(
             text = String.format("%1$" + digitPositions + "s", value.toString()).replace(' ', '0'),
-            style = MaterialTheme.typography.h1,
+            style = MaterialTheme.typography.displayLarge,
         )
         Button(
             onClick = { onDecrement() },

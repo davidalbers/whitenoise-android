@@ -1,18 +1,16 @@
 plugins {
-    id 'io.github.takahirom.roborazzi'
-    id 'org.jlleitschuh.gradle.ktlint'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose.compiler)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.roborazzi)
+    alias(libs.plugins.ktlint)
 }
-
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'org.jetbrains.kotlin.plugin.compose'
-apply plugin: 'com.google.devtools.ksp'
-apply plugin: 'dagger.hilt.android.plugin'
 
 android {
     namespace = "dalbers.com.noise"
 
-    compileSdk 34
+    compileSdk 37
 
     defaultConfig {
         applicationId "dalbers.com.noise"
@@ -24,24 +22,17 @@ android {
     buildTypes {
         release {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = '17'
-    }
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = composeVersion
-    }
 }
-
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.aar'])
@@ -50,48 +41,39 @@ dependencies {
     // audio on certain very popular devices. Until that's fixed we're forced to use this.
     implementation files('../libs/exoplayer-release.aar')
 
-    implementation "androidx.lifecycle:lifecycle-service:$lifecycleServiceVersion"
-    implementation "androidx.core:core-ktx:$coreKtxVersion"
-    implementation "androidx.appcompat:appcompat:$appcompatVersion"
-    implementation "com.google.android.material:material:$materialVersion"
-    implementation "androidx.compose.ui:ui:$composeVersion"
-    implementation "androidx.compose.ui:ui-tooling:$composeVersion"
-    implementation "androidx.compose.foundation:foundation:$composeVersion"
-    implementation "androidx.compose.material:material:$composeVersion"
-    implementation "androidx.compose.material:material-icons-core:$composeVersion"
-    implementation "androidx.compose.material:material-icons-extended:$composeVersion"
-    implementation "androidx.activity:activity-compose:$activityComposeVersion"
-    implementation "androidx.preference:preference-ktx:$preferenceKtxVersion"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$viewModelCompose"
-    implementation "androidx.compose.runtime:runtime-livedata:$composeVersion"
-    implementation "androidx.navigation:navigation-compose:$navigationKtx"
-    implementation "androidx.compose.animation:animation:$composeVersion"
-    implementation "com.github.alorma:compose-settings-ui:$composeSettings"
-    implementation "com.github.alorma:compose-settings-storage-preferences:$composeSettings"
-    implementation "androidx.media:media:$androidxMediaVersion"
-    implementation "com.google.dagger:hilt-android:$hiltVersion"
-    ksp "com.google.dagger:hilt-android-compiler:$hiltVersion"
+    implementation libs.androidx.lifecycle.service
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    implementation platform(libs.androidx.compose.bom)
+    implementation libs.androidx.compose.ui
+    implementation libs.androidx.compose.ui.tooling
+    implementation libs.androidx.compose.foundation
+    implementation libs.androidx.compose.material3
+    implementation libs.androidx.compose.material.icons.core
+    implementation libs.androidx.compose.material.icons.extended
+    implementation libs.androidx.activity.compose
+    implementation libs.androidx.preference.ktx
+    implementation libs.androidx.lifecycle.viewmodel.compose
+    implementation libs.androidx.compose.runtime.livedata
+    implementation libs.androidx.navigation.compose
+    implementation libs.androidx.compose.animation
+    implementation libs.compose.settings.ui.tiles
+    implementation libs.androidx.media
+    implementation libs.hilt.android
+    ksp libs.hilt.android.compiler
 
-    testImplementation "junit:junit:$junitVersion"
-    testImplementation "io.mockk:mockk:$mockkVersion"
-    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesTestVersion"
-    testImplementation "androidx.arch.core:core-testing:$archCoreTestingVersion"
+    testImplementation libs.junit
+    testImplementation libs.mockk
+    testImplementation libs.kotlinx.coroutines.test
+    testImplementation libs.androidx.arch.core.testing
 
-    testImplementation "org.robolectric:robolectric:$robolectricVersion"
-    testImplementation "io.github.takahirom.roborazzi:roborazzi:$roborazziVersion"
-    testImplementation "io.github.takahirom.roborazzi:roborazzi-compose:$roborazziVersion"
-    testImplementation "io.github.takahirom.roborazzi:roborazzi-junit-rule:$roborazziVersion"
-    testImplementation "io.github.takahirom.roborazzi:roborazzi-compose-preview-scanner-support:$roborazziVersion"
-    testImplementation "io.github.sergio-sastre.ComposablePreviewScanner:android:$composablePreviewScannerVersion"
-    testImplementation "androidx.compose.ui:ui-test-junit4:$composeVersion"
-    debugImplementation "androidx.compose.ui:ui-test-manifest:$composeVersion"
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        // Use experimental APIs
-        freeCompilerArgs += '-Xopt-in=kotlin.RequiresOptIn'
-    }
+    testImplementation libs.robolectric
+    testImplementation libs.bundles.roborazzi
+    testImplementation libs.composable.preview.scanner
+    testImplementation platform(libs.androidx.compose.bom)
+    testImplementation libs.androidx.compose.ui.test.junit4
+    debugImplementation libs.androidx.compose.ui.test.manifest
 }
 
 android {

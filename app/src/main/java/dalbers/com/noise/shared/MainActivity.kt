@@ -11,9 +11,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Surface
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.alorma.compose.settings.storage.preferences.rememberPreferenceIntSettingState
 import dagger.hilt.android.AndroidEntryPoint
 import dalbers.com.noise.playerscreen.view.PlayerScreen
 import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
@@ -55,12 +54,12 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             val darkState =
-                rememberPreferenceIntSettingState(
+                rememberPreferenceIntState(
                     key = PREF_USE_DARK_MODE_KEY,
                     defaultValue = DarkModeSetting.AUTO.key,
                 )
 
-            WhiteNoiseTheme(darkTheme = darkState.isDarkMode()) {
+            WhiteNoiseTheme(darkTheme = darkState.value.isDarkMode()) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     PlayerScreen(
                         viewModel = playerViewModel,

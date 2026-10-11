@@ -7,8 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -17,6 +16,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import dalbers.com.noise.shared.LocalIsLightTheme
 import dalbers.com.noise.shared.NoiseType
 import dalbers.com.noise.shared.ThemePreviews
 import dalbers.com.noise.shared.WhiteNoiseTheme
@@ -27,7 +27,7 @@ fun NoiseGradient(
     noiseType: NoiseType,
     modifier: Modifier = Modifier,
 ) {
-    val isDark = !MaterialTheme.colors.isLight
+    val isDark = !LocalIsLightTheme.current
     val accentColor by animateColorAsState(
         targetValue = noiseType.toGradientColor(isDark),
         animationSpec = tween(durationMillis = 600),

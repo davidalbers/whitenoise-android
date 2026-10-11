@@ -11,12 +11,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -24,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
+import dalbers.com.noise.shared.LocalIsLightTheme
 import dalbers.com.noise.shared.ThemePreviews
 import dalbers.com.noise.shared.WhiteNoiseTheme
 import dalbers.com.noise.shared.play_button_dark
@@ -34,7 +34,7 @@ internal fun PlayPauseButton(
     playing: Boolean,
     onToggle: () -> Unit,
 ) {
-    val isLight = MaterialTheme.colors.isLight
+    val isLight = LocalIsLightTheme.current
     val circleColor = if (isLight) play_button_dark else play_button_light
     val iconColor = if (isLight) play_button_light else play_button_dark
     val icon = if (playing) Icons.Default.Pause else Icons.Default.PlayArrow

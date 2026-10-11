@@ -1,9 +1,9 @@
 package dalbers.com.noise.playerscreen.view
 
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Switch
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dalbers.com.noise.shared.ThemePreviews
@@ -21,7 +21,7 @@ fun NoiseStateToggle(
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.subtitle1,
+            style = MaterialTheme.typography.titleMedium,
         )
         Switch(
             checked = checked,

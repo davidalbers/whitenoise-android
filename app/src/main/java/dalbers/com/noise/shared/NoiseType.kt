@@ -5,15 +5,11 @@ import androidx.annotation.StringRes
 import dalbers.com.noise.R
 import java.lang.IllegalStateException
 
-val defaultNoiseTypes =
-    listOf(
-        NoiseType.WHITE,
-        NoiseType.PINK,
-        NoiseType.BROWN,
-        NoiseType.NATURE,
-        NoiseType.FIRE,
-        NoiseType.RAIN,
-    )
+val defaultNoiseTypes = listOf(
+    NoiseType.WHITE,
+    NoiseType.PINK,
+    NoiseType.BROWN,
+)
 
 enum class NoiseType(
     @RawRes val soundFile: Int,
@@ -39,26 +35,7 @@ enum class NoiseType(
         prefValue = "last_color_was_brown",
         label = R.string.brown_label,
     ),
-    NATURE(
-        soundFile = R.raw.nature,
-        notificationTitle = R.string.notification_nature_type,
-        prefValue = "last_color_was_nature",
-        label = R.string.nature_label,
-    ),
-    FIRE(
-        soundFile = R.raw.fire,
-        notificationTitle = R.string.notification_fire_type,
-        prefValue = "last_color_was_fire",
-        label = R.string.fire_label,
-    ),
-    RAIN(
-        soundFile = R.raw.rain,
-        notificationTitle = R.string.notification_rain_type,
-        prefValue = "last_color_was_rain",
-        label = R.string.rain_label,
-    ),
-    NONE(0, 0, "", 0),
-    ;
+    NONE(0, 0, "", 0);
 
     companion object {
         @JvmStatic

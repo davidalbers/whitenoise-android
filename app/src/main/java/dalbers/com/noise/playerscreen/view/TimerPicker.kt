@@ -1,15 +1,9 @@
 package dalbers.com.noise.playerscreen.view
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -18,10 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dalbers.com.noise.R
-import dalbers.com.noise.shared.ThemePreviews
-import dalbers.com.noise.shared.WhiteNoiseTheme
+import dalbers.com.noise.shared.WhiteNoiseTypography
 
 data class TimerPickerState(
     val hours: Int,
@@ -33,19 +27,15 @@ data class TimerPickerState(
     }
 }
 
-@ThemePreviews
+@Preview
 @Composable
 fun TimerPickerPreview() {
-    WhiteNoiseTheme {
-        Surface {
-            TimerPicker(
-                pickerState = TimerPickerState.zero,
-                onChange = {},
-                onSet = {},
-                onCancel = {},
-            )
-        }
-    }
+    TimerPicker(
+        pickerState = TimerPickerState.zero,
+        onChange = {},
+        onSet = {},
+        onCancel = {},
+    )
 }
 
 @Composable
@@ -71,7 +61,7 @@ fun TimerPicker(
             )
             Text(
                 text = stringResource(id = R.string.time_divider),
-                style = MaterialTheme.typography.h1,
+                style = WhiteNoiseTypography.h1,
             )
             TimeUnitPicker(
                 value = pickerState.minutesTens,
@@ -97,7 +87,7 @@ fun TimerPicker(
         Button(
             onClick = { onCancel() },
             modifier = Modifier.fillMaxWidth(0.5F),
-            colors = ButtonDefaults.outlinedButtonColors(),
+            colors = ButtonDefaults.outlinedButtonColors()
         ) {
             Text(text = stringResource(id = R.string.time_cancel))
         }
@@ -124,7 +114,7 @@ private fun TimeUnitPicker(
         }
         Text(
             text = String.format("%1$" + digitPositions + "s", value.toString()).replace(' ', '0'),
-            style = MaterialTheme.typography.h1,
+            style = WhiteNoiseTypography.h1,
         )
         Button(
             onClick = { onDecrement() },
@@ -135,12 +125,8 @@ private fun TimeUnitPicker(
     }
 }
 
-@ThemePreviews
+@Preview
 @Composable
 private fun TimeUnitPickerPreview() {
-    WhiteNoiseTheme {
-        Surface {
-            TimeUnitPicker(0, 1, {}, {})
-        }
-    }
+    TimeUnitPicker(0, 1,  {}, {})
 }

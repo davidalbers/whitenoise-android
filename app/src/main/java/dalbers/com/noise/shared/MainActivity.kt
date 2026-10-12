@@ -7,17 +7,19 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Surface
-import androidx.compose.ui.Modifier
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.core.content.ContextCompat
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import com.alorma.compose.settings.storage.preferences.rememberPreferenceIntSettingState
 import dalbers.com.noise.playerscreen.view.PlayerScreen
 import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
 import dalbers.com.noise.service.AudioPlayerService
+import dalbers.com.noise.settings.view.SettingsScreen
 import dalbers.com.noise.settings.view.isDarkMode
 
 class MainActivity : AppCompatActivity() {
@@ -50,7 +52,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         val serviceIntent = Intent(this, AudioPlayerService::class.java)
         startService(serviceIntent)
         bindService(serviceIntent, playerConnection, BIND_AUTO_CREATE)
@@ -63,21 +64,40 @@ class MainActivity : AppCompatActivity() {
                 defaultValue = DarkModeSetting.AUTO.key,
             )
 
+            val navController = rememberNavController()
             WhiteNoiseTheme(darkTheme = darkState.isDarkMode()) {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    PlayerScreen(
-                        viewModel = playerViewModel,
-                        version = versionProvider.getVersion(),
-                        darkThemeState = darkState,
-                        onOpenProjectPage = {
-                            startActivity(
-                                Intent(
-                                    Intent.ACTION_VIEW,
-                                    Uri.parse("https://github.com/davidalbers/whitenoise-android")
+                NavHost(
+                    navController = navController,
+                    startDestination = NavigationDestination.PLAYER.key,
+                    enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+                    exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
+                    popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
+                    popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) },
+                ) {
+                    composable(
+                        NavigationDestination.PLAYER.key,
+                    ) {
+                        PlayerScreen(playerViewModel) {
+                            navController.navigate(NavigationDestination.SETTINGS.key)
+                        }
+                    }
+                    composable(
+                        NavigationDestination.SETTINGS.key,
+                    ) {
+                        SettingsScreen(
+                            version = versionProvider.getVersion(),
+                            darkThemeState = darkState,
+                            onOpenProjectPage = {
+                                startActivity(
+                                    Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("https://github.com/davidalbers/whitenoise-android")
+                                    )
                                 )
-                            )
-                        },
-                    )
+                            },
+                            onBackPressed = { navController.popBackStack() }
+                        )
+                    }
                 }
             }
         }
@@ -99,6 +119,15 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         service = null
+        //unbind the service, it will still be running
         unbindService(playerConnection)
     }
 }
+
+
+
+
+
+
+
+

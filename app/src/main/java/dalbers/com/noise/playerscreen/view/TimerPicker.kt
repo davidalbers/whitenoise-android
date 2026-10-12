@@ -15,7 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dalbers.com.noise.R
-import androidx.compose.material.MaterialTheme
+import dalbers.com.noise.shared.WhiteNoiseTypography
 
 data class TimerPickerState(
     val hours: Int,
@@ -61,7 +61,7 @@ fun TimerPicker(
             )
             Text(
                 text = stringResource(id = R.string.time_divider),
-                style = MaterialTheme.typography.h1,
+                style = WhiteNoiseTypography.h1,
             )
             TimeUnitPicker(
                 value = pickerState.minutesTens,
@@ -114,7 +114,7 @@ private fun TimeUnitPicker(
         }
         Text(
             text = String.format("%1$" + digitPositions + "s", value.toString()).replace(' ', '0'),
-            style = MaterialTheme.typography.h1,
+            style = WhiteNoiseTypography.h1,
         )
         Button(
             onClick = { onDecrement() },

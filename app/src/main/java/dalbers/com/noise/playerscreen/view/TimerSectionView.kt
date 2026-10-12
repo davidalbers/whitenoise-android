@@ -15,11 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dalbers.com.noise.R
 import dalbers.com.noise.playerscreen.model.TimerPreset
-import dalbers.com.noise.shared.ThemePreviews
-import dalbers.com.noise.shared.WhiteNoiseTheme
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -31,7 +30,7 @@ fun TimerSectionView(
     modifier: Modifier = Modifier,
 ) {
     NoiseStateCard(
-        modifier = modifier,
+        modifier = modifier
     ) {
         Column(modifier = Modifier.padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
@@ -54,7 +53,7 @@ fun TimerSectionView(
                 if (customPreset != null && customPreset.isCustom) {
                     TimerChip(
                         label = customPreset.label,
-                        isSelected = selectedPreset == customPreset,
+                        isSelected = selectedPreset == customPreset
                     ) {
                         onSelectPreset(customPreset)
                     }
@@ -74,18 +73,16 @@ private fun TimerChip(
     isSelected: Boolean,
     onClick: () -> Unit,
 ) {
-    val backgroundColor =
-        if (isSelected) {
-            MaterialTheme.colors.onSurface
-        } else {
-            MaterialTheme.colors.onSurface.copy(alpha = 0.05f)
-        }
-    val contentColor =
-        if (isSelected) {
-            MaterialTheme.colors.surface
-        } else {
-            MaterialTheme.colors.onSurface
-        }
+    val backgroundColor = if (isSelected) {
+        MaterialTheme.colors.onSurface
+    } else {
+        MaterialTheme.colors.onSurface.copy(alpha = 0.05f)
+    }
+    val contentColor = if (isSelected) {
+        MaterialTheme.colors.surface
+    } else {
+        MaterialTheme.colors.onSurface
+    }
     val border = if (isSelected) null else BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f))
 
     Surface(
@@ -104,32 +101,24 @@ private fun TimerChip(
     }
 }
 
-@ThemePreviews
+@Preview
 @Composable
 private fun TimerSectionPreview_NoneSelected() {
-    WhiteNoiseTheme {
-        Surface {
-            TimerSectionView(
-                selectedPreset = null,
-                customTimerMillis = 0L,
-                onSelectPreset = {},
-                onCustomTapped = {},
-            )
-        }
-    }
+    TimerSectionView(
+        selectedPreset = null,
+        customTimerMillis = 0L,
+        onSelectPreset = {},
+        onCustomTapped = {},
+    )
 }
 
-@ThemePreviews
+@Preview
 @Composable
 private fun TimerSectionPreview_PresetSelected() {
-    WhiteNoiseTheme {
-        Surface {
-            TimerSectionView(
-                selectedPreset = TimerPreset(1, 0),
-                customTimerMillis = 0L,
-                onSelectPreset = {},
-                onCustomTapped = {},
-            )
-        }
-    }
+    TimerSectionView(
+        selectedPreset = TimerPreset(1, 0),
+        customTimerMillis = 0L,
+        onSelectPreset = {},
+        onCustomTapped = {},
+    )
 }

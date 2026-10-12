@@ -6,7 +6,18 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetDefaults
+import androidx.compose.material.ModalBottomSheetLayout as MaterialModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.contentColorFor
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -38,23 +49,24 @@ fun PlayerScreen(
         sheetContent = {
             TimerPicker(
                 pickerState = state.value.timerPickerState,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(16.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(16.dp),
                 onChange = { viewModel.updateTimer(it) },
                 onSet = { viewModel.setTimer() },
                 onCancel = { viewModel.cancelTimer() },
             )
         },
         showSheet = state.value.showTimerPicker,
-        onSheetDismissed = { viewModel.cancelTimer() }
+        onSheetDismissed = { viewModel.cancelTimer() },
     ) {
         Scaffold(
             topBar = {
                 TopAppBar(
                     state.value,
                     { viewModel.togglePlay(it) },
-                    { onSettingsClicked() }
+                    { onSettingsClicked() },
                 )
             },
         ) {
@@ -91,7 +103,7 @@ fun ModalBottomSheetLayout(
     sheetBackgroundColor: Color = MaterialTheme.colors.surface,
     sheetContentColor: Color = contentColorFor(sheetBackgroundColor),
     scrimColor: Color = ModalBottomSheetDefaults.scrimColor,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
@@ -109,7 +121,7 @@ fun ModalBottomSheetLayout(
         }
     }
 
-    ModalBottomSheetLayout(
+    MaterialModalBottomSheetLayout(
         sheetContent = sheetContent,
         modifier = modifier,
         sheetState = modalBottomSheetState,
@@ -118,7 +130,7 @@ fun ModalBottomSheetLayout(
         sheetBackgroundColor = sheetBackgroundColor,
         sheetContentColor = sheetContentColor,
         scrimColor = scrimColor,
-        content = content
+        content = content,
     )
 }
 
@@ -144,6 +156,6 @@ private fun TopAppBar(
             }) {
                 Icon(Icons.Default.Settings, "")
             }
-        }
+        },
     )
 }

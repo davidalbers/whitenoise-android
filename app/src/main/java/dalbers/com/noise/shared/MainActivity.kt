@@ -10,7 +10,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -35,20 +34,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var service: AudioPlayerService? = null
-    private val playerConnection: ServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(
-            className: ComponentName,
-            binder: IBinder
-        ) {
-            val audioPlayerBinder = binder as AudioPlayerService.AudioPlayerBinder
-            service = audioPlayerBinder.service
-            playerViewModel.bindAudioController(audioPlayerBinder.service.audioController)
-        }
+    private val playerConnection: ServiceConnection =
+        object : ServiceConnection {
+            override fun onServiceConnected(
+                className: ComponentName,
+                binder: IBinder,
+            ) {
+                val audioPlayerBinder = binder as AudioPlayerService.AudioPlayerBinder
+                service = audioPlayerBinder.service
+                playerViewModel.bindAudioController(audioPlayerBinder.service.audioController)
+            }
 
-        override fun onServiceDisconnected(className: ComponentName) {
-            playerViewModel.clearAudioController()
+            override fun onServiceDisconnected(className: ComponentName) {
+                playerViewModel.clearAudioController()
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,10 +59,11 @@ class MainActivity : AppCompatActivity() {
         userPreferences.migrateLegacyPreferences()
 
         setContent {
-            val darkState = rememberPreferenceIntSettingState(
-                key = PREF_USE_DARK_MODE_KEY,
-                defaultValue = DarkModeSetting.AUTO.key,
-            )
+            val darkState =
+                rememberPreferenceIntSettingState(
+                    key = PREF_USE_DARK_MODE_KEY,
+                    defaultValue = DarkModeSetting.AUTO.key,
+                )
 
             val navController = rememberNavController()
             WhiteNoiseTheme(darkTheme = darkState.isDarkMode()) {
@@ -91,11 +92,11 @@ class MainActivity : AppCompatActivity() {
                                 startActivity(
                                     Intent(
                                         Intent.ACTION_VIEW,
-                                        Uri.parse("https://github.com/davidalbers/whitenoise-android")
-                                    )
+                                        Uri.parse("https://github.com/davidalbers/whitenoise-android"),
+                                    ),
                                 )
                             },
-                            onBackPressed = { navController.popBackStack() }
+                            onBackPressed = { navController.popBackStack() },
                         )
                     }
                 }
@@ -119,15 +120,7 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         service = null
-        //unbind the service, it will still be running
+        // unbind the service, it will still be running
         unbindService(playerConnection)
     }
 }
-
-
-
-
-
-
-
-

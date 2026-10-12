@@ -5,11 +5,12 @@ import androidx.annotation.StringRes
 import dalbers.com.noise.R
 import java.lang.IllegalStateException
 
-val defaultNoiseTypes = listOf(
-    NoiseType.WHITE,
-    NoiseType.PINK,
-    NoiseType.BROWN,
-)
+val defaultNoiseTypes =
+    listOf(
+        NoiseType.WHITE,
+        NoiseType.PINK,
+        NoiseType.BROWN,
+    )
 
 enum class NoiseType(
     @RawRes val soundFile: Int,
@@ -35,7 +36,8 @@ enum class NoiseType(
         prefValue = "last_color_was_brown",
         label = R.string.brown_label,
     ),
-    NONE(0, 0, "", 0);
+    NONE(0, 0, "", 0),
+    ;
 
     companion object {
         @JvmStatic

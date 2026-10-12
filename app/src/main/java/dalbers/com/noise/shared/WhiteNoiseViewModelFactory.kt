@@ -11,11 +11,11 @@ import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
 class WhiteNoiseViewModelFactory(
     owner: SavedStateRegistryOwner,
     private val userPreferences: UserPreferences,
-    defaultArgs: Bundle? = null
-    ) : AbstractSavedStateViewModelFactory(owner, defaultArgs) {
+    defaultArgs: Bundle? = null,
+) : AbstractSavedStateViewModelFactory(owner, defaultArgs) {
     override fun <T : ViewModel> create(
-        key: String, modelClass: Class<T>, handle: SavedStateHandle
-    ): T {
-        return PlayerScreenViewModel(userPreferences) as T
-    }
+        key: String,
+        modelClass: Class<T>,
+        handle: SavedStateHandle,
+    ): T = PlayerScreenViewModel(userPreferences) as T
 }

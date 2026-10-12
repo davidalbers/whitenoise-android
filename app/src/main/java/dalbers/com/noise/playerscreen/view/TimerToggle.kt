@@ -1,9 +1,16 @@
 package dalbers.com.noise.playerscreen.view
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,13 +22,13 @@ import dalbers.com.noise.R
 import dalbers.com.noise.shared.WhiteNoiseTypography
 
 sealed class TimerToggleState(
-    open val icon: ImageVector
+    open val icon: ImageVector,
 ) {
-    object Disabled: TimerToggleState(icon = Icons.Default.Add)
+    object Disabled : TimerToggleState(icon = Icons.Default.Add)
 
     data class Saved(
         val displayedTime: String,
-    ): TimerToggleState(icon = Icons.Default.Delete)
+    ) : TimerToggleState(icon = Icons.Default.Delete)
 }
 
 @Composable
@@ -30,7 +37,7 @@ fun TimerToggle(
     onToggle: () -> Unit,
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -46,9 +53,9 @@ fun TimerToggle(
             ) {
                 if (timeState is TimerToggleState.Saved) {
                     Text(
-                        text =  timeState.displayedTime,
+                        text = timeState.displayedTime,
                         style = WhiteNoiseTypography.h6,
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.padding(end = 8.dp),
                     )
                 }
                 Button(onClick = { onToggle() }) {
@@ -58,7 +65,6 @@ fun TimerToggle(
         }
     }
 }
-
 
 @Composable
 @Preview
@@ -77,4 +83,3 @@ private fun TimerSetterPreview_Saved() {
         onToggle = {},
     )
 }
-

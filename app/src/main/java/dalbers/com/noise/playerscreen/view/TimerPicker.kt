@@ -1,6 +1,10 @@
 package dalbers.com.noise.playerscreen.view
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
@@ -87,7 +91,7 @@ fun TimerPicker(
         Button(
             onClick = { onCancel() },
             modifier = Modifier.fillMaxWidth(0.5F),
-            colors = ButtonDefaults.outlinedButtonColors()
+            colors = ButtonDefaults.outlinedButtonColors(),
         ) {
             Text(text = stringResource(id = R.string.time_cancel))
         }
@@ -128,5 +132,5 @@ private fun TimeUnitPicker(
 @Preview
 @Composable
 private fun TimeUnitPickerPreview() {
-    TimeUnitPicker(0, 1,  {}, {})
+    TimeUnitPicker(0, 1, {}, {})
 }

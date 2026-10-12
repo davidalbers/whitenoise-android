@@ -28,7 +28,7 @@ fun NoiseStateToggle(
         )
         Switch(
             checked = checked,
-            onCheckedChange = { onCheckedChange(it) }
+            onCheckedChange = { onCheckedChange(it) },
         )
     }
 }

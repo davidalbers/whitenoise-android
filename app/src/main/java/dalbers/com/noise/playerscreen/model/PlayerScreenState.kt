@@ -15,15 +15,16 @@ data class PlayerScreenState(
     val playing: Boolean,
 ) {
     companion object {
-        val default = PlayerScreenState(
-            noiseType = NoiseType.WHITE,
-            fadeEnabled = false,
-            wavesEnabled = false,
-            timerToggleState = TimerToggleState.Disabled,
-            showTimerPicker = false,
-            timerPickerState = TimerPickerState.zero,
-            volume = 1f,
-            playing = false,
-        )
+        val default =
+            PlayerScreenState(
+                noiseType = NoiseType.WHITE,
+                fadeEnabled = false,
+                wavesEnabled = false,
+                timerToggleState = TimerToggleState.Disabled,
+                showTimerPicker = false,
+                timerPickerState = TimerPickerState.zero,
+                volume = 1f,
+                playing = false,
+            )
     }
 }

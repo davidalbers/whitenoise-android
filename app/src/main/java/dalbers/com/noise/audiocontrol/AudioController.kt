@@ -11,7 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Timer
+import java.util.TimerTask
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
 
@@ -21,6 +22,7 @@ import kotlin.math.min
  * and it's fast enough that I can't hear it.
  */
 const val tickPeriod: Long = 100
+
 /**
  * Use this instead of decreaseLength if no timer exists.
  */
@@ -40,14 +42,15 @@ data class SoundState(
     val volume: Float,
 ) {
     companion object {
-        val default = SoundState(
-            fadeEnabled = false,
-            wavesEnabled = false,
-            millisLeft = 0L,
-            noiseType = NoiseType.WHITE,
-            playing = false,
-            volume = 1f,
-        )
+        val default =
+            SoundState(
+                fadeEnabled = false,
+                wavesEnabled = false,
+                millisLeft = 0L,
+                noiseType = NoiseType.WHITE,
+                playing = false,
+                volume = 1f,
+            )
     }
 }
 
@@ -63,6 +66,7 @@ class AudioController(
     private var volume = 1f
     private var oscillatingDown = true
     private var countDownTimer: CountDownTimer? = null
+
     /**
      * If the player loses focus and it was playing, then set this true.
      * When and if we regain focus, you know to start playing again if this is true.
@@ -126,11 +130,15 @@ class AudioController(
 
     init {
         val volumeChangerTimer = Timer()
-        volumeChangerTimer.schedule(object: TimerTask() {
-            override fun run() {
-                handler.post{ tick() }
-            }
-        }, 0, tickPeriod)
+        volumeChangerTimer.schedule(
+            object : TimerTask() {
+                override fun run() {
+                    handler.post { tick() }
+                }
+            },
+            0,
+            tickPeriod,
+        )
         coroutineScope.launch {
             audioFocusManager.focusState.collect {
                 onAudioFocusChange(it)
@@ -171,8 +179,8 @@ class AudioController(
         countDownTimer?.start()
         _stateFlow.value = _stateFlow.value.copy(playing = true)
         if (!userPreferences.playOver()) {
-            //every time we start playing, we have to request audio focus and listen for other
-            //apps also listening for focus with the focusChangeListener
+            // every time we start playing, we have to request audio focus and listen for other
+            // apps also listening for focus with the focusChangeListener
             audioFocusManager.request()
         }
     }
@@ -186,20 +194,21 @@ class AudioController(
         decreaseLength = millis
         countDownTimer?.cancel()
         if (millis == 0L) return
-        countDownTimer = object : CountDownTimer(millis, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                _stateFlow.value = _stateFlow.value.copy(millisLeft = millisUntilFinished)
-            }
+        countDownTimer =
+            object : CountDownTimer(millis, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    _stateFlow.value = _stateFlow.value.copy(millisLeft = millisUntilFinished)
+                }
 
-            override fun onFinish() {
-                _stateFlow.value = _stateFlow.value.copy(millisLeft = 0)
-                pause()
+                override fun onFinish() {
+                    _stateFlow.value = _stateFlow.value.copy(millisLeft = 0)
+                    pause()
+                }
+            }.apply {
+                if (_stateFlow.value.playing) {
+                    start()
+                }
             }
-        }.apply {
-            if (_stateFlow.value.playing) {
-                start()
-            }
-        }
     }
 
     /**
@@ -271,10 +280,10 @@ class AudioController(
             play()
             startPlayingWhenFocusRegained = false
         } else if (!userPreferences.playOver() && focusState != AudioFocusState.FOCUS_GAINED && _stateFlow.value.playing) {
-            //we lost audio focus, stop playing
+            // we lost audio focus, stop playing
             pause()
             if (focusState == AudioFocusState.FOCUS_LOST_TRANSIENT) {
-                //in these cases, we can expect to get audio back soon
+                // in these cases, we can expect to get audio back soon
                 startPlayingWhenFocusRegained = true
             }
         }

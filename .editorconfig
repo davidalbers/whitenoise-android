@@ -1,0 +1,9 @@
+root = true
+
+[*.{kt,kts}]
+# Jetpack Compose convention: @Composable functions are PascalCase (they act like
+# widgets), which the standard function-naming rule would otherwise flag.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+# Allow the idiomatic Dagger/Hilt `class Foo @Inject constructor(` on one line. The annotation
+# rule would move @Inject onto its own line and push the whole class body in a level.
+ktlint_standard_annotation = disabled

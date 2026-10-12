@@ -4,6 +4,7 @@ import android.media.AudioManager
 import android.media.AudioManager.AUDIOFOCUS_LOSS
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 enum class AudioFocusState {
     FOCUS_GAINED,
@@ -13,15 +14,18 @@ enum class AudioFocusState {
 
 interface AudioFocusManager {
     val focusState: StateFlow<AudioFocusState>
+
     fun abandon()
+
     fun request()
 }
 
-class AudioFocusManagerImpl(
+class AudioFocusManagerImpl @Inject constructor(
     private val audioManager: AudioManager,
 ) : AudioFocusManager {
     private val _focusState = MutableStateFlow(AudioFocusState.FOCUS_LOST_UNKNOWN)
     override val focusState: StateFlow<AudioFocusState> = _focusState
+
     override fun abandon() {
         // TODO: move to undeprecated method https://github.com/davidalbers/whitenoise-android/issues/42
         audioManager.abandonAudioFocus(focusChangeListener)
@@ -29,17 +33,20 @@ class AudioFocusManagerImpl(
 
     override fun request() {
         audioManager.requestAudioFocus(
-            focusChangeListener, AudioManager.STREAM_MUSIC,
-            AudioManager.AUDIOFOCUS_GAIN
+            focusChangeListener,
+            AudioManager.STREAM_MUSIC,
+            AudioManager.AUDIOFOCUS_GAIN,
         )
     }
 
-    private var focusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
-        val audioFocusState = when {
-            focusChange > 0 -> AudioFocusState.FOCUS_GAINED
-            focusChange == AUDIOFOCUS_LOSS -> AudioFocusState.FOCUS_LOST_UNKNOWN
-            else -> AudioFocusState.FOCUS_LOST_TRANSIENT
+    private var focusChangeListener =
+        AudioManager.OnAudioFocusChangeListener { focusChange ->
+            val audioFocusState =
+                when {
+                    focusChange > 0 -> AudioFocusState.FOCUS_GAINED
+                    focusChange == AUDIOFOCUS_LOSS -> AudioFocusState.FOCUS_LOST_UNKNOWN
+                    else -> AudioFocusState.FOCUS_LOST_TRANSIENT
+                }
+            _focusState.value = audioFocusState
         }
-        _focusState.value = audioFocusState
-    }
 }

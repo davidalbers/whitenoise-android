@@ -10,59 +10,55 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.preference.PreferenceManager
 import com.alorma.compose.settings.storage.preferences.rememberPreferenceIntSettingState
+import dagger.hilt.android.AndroidEntryPoint
 import dalbers.com.noise.playerscreen.view.PlayerScreen
 import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
 import dalbers.com.noise.service.AudioPlayerService
 import dalbers.com.noise.settings.view.SettingsScreen
 import dalbers.com.noise.settings.view.isDarkMode
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    private lateinit var userPreferences: UserPreferences
+    @Inject
+    lateinit var userPreferences: UserPreferences
     private val versionProvider = VersionProvider(this)
 
-    private val playerViewModel by viewModels<PlayerScreenViewModel> {
-        WhiteNoiseViewModelFactory(
-            this,
-            userPreferences,
-            intent.extras,
-        )
-    }
+    private val playerViewModel by viewModels<PlayerScreenViewModel>()
 
     private var service: AudioPlayerService? = null
-    private val playerConnection: ServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(
-            className: ComponentName,
-            binder: IBinder
-        ) {
-            val audioPlayerBinder = binder as AudioPlayerService.AudioPlayerBinder
-            service = audioPlayerBinder.service
-            playerViewModel.bindAudioController(audioPlayerBinder.service.audioController)
-        }
+    private val playerConnection: ServiceConnection =
+        object : ServiceConnection {
+            override fun onServiceConnected(
+                className: ComponentName,
+                binder: IBinder,
+            ) {
+                val audioPlayerBinder = binder as AudioPlayerService.AudioPlayerBinder
+                service = audioPlayerBinder.service
+            }
 
-        override fun onServiceDisconnected(className: ComponentName) {
-            playerViewModel.clearAudioController()
+            override fun onServiceDisconnected(className: ComponentName) {
+                service = null
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val serviceIntent = Intent(this, AudioPlayerService::class.java)
         startService(serviceIntent)
         bindService(serviceIntent, playerConnection, BIND_AUTO_CREATE)
-        userPreferences = UserPreferencesImpl(PreferenceManager.getDefaultSharedPreferences(this))
         userPreferences.migrateLegacyPreferences()
 
         setContent {
-            val darkState = rememberPreferenceIntSettingState(
-                key = PREF_USE_DARK_MODE_KEY,
-                defaultValue = DarkModeSetting.AUTO.key,
-            )
+            val darkState =
+                rememberPreferenceIntSettingState(
+                    key = PREF_USE_DARK_MODE_KEY,
+                    defaultValue = DarkModeSetting.AUTO.key,
+                )
 
             val navController = rememberNavController()
             WhiteNoiseTheme(darkTheme = darkState.isDarkMode()) {
@@ -91,11 +87,11 @@ class MainActivity : AppCompatActivity() {
                                 startActivity(
                                     Intent(
                                         Intent.ACTION_VIEW,
-                                        Uri.parse("https://github.com/davidalbers/whitenoise-android")
-                                    )
+                                        Uri.parse("https://github.com/davidalbers/whitenoise-android"),
+                                    ),
                                 )
                             },
-                            onBackPressed = { navController.popBackStack() }
+                            onBackPressed = { navController.popBackStack() },
                         )
                     }
                 }
@@ -110,24 +106,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        service?.run {
-            dismissNotification()
-            playerViewModel.bindAudioController(audioController)
-        }
+        service?.dismissNotification()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         service = null
-        //unbind the service, it will still be running
+        // unbind the service, it will still be running
         unbindService(playerConnection)
     }
 }
-
-
-
-
-
-
-
-

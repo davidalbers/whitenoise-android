@@ -12,6 +12,7 @@ import dalbers.com.noise.service.NotificationAction
 import dalbers.com.noise.service.model.AudioPlayerScreenState
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class AudioPlayerButton(
     val action: NotificationAction,
@@ -19,27 +20,30 @@ data class AudioPlayerButton(
     @DrawableRes val iconResource: Int,
 ) {
     companion object {
-        val play = AudioPlayerButton(
-            action = NotificationAction.PLAY_ACTION,
-            textResource = R.string.audio_play,
-            iconResource = R.drawable.ic_action_playback_play_black,
-        )
-        val pause = AudioPlayerButton(
-            action = NotificationAction.PAUSE_ACTION,
-            textResource = R.string.audio_pause,
-            iconResource = R.drawable.ic_action_playback_pause_black,
-        )
-        val close = AudioPlayerButton(
-            action = NotificationAction.CLOSE_ACTION,
-            textResource = R.string.notification_close,
-            iconResource = R.drawable.ic_clear,
-        )
+        val play =
+            AudioPlayerButton(
+                action = NotificationAction.PLAY_ACTION,
+                textResource = R.string.audio_play,
+                iconResource = R.drawable.ic_action_playback_play_black,
+            )
+        val pause =
+            AudioPlayerButton(
+                action = NotificationAction.PAUSE_ACTION,
+                textResource = R.string.audio_pause,
+                iconResource = R.drawable.ic_action_playback_pause_black,
+            )
+        val close =
+            AudioPlayerButton(
+                action = NotificationAction.CLOSE_ACTION,
+                textResource = R.string.notification_close,
+                iconResource = R.drawable.ic_clear,
+            )
     }
 }
 
-class AudioPlayerViewModel(
+class AudioPlayerViewModel @Inject constructor(
     private val audioController: AudioController,
-): ViewModel() {
+) : ViewModel() {
     private var _stateLiveData = MutableLiveData<AudioPlayerScreenState>(AudioPlayerScreenState.Hidden)
     var stateLiveData: LiveData<AudioPlayerScreenState> = _stateLiveData
     private var playing = false
@@ -65,14 +69,13 @@ class AudioPlayerViewModel(
         }
     }
 
-    private fun SoundState.toAudioPlayerScreenState(): AudioPlayerScreenState {
-        return AudioPlayerScreenState.Shown(
+    private fun SoundState.toAudioPlayerScreenState(): AudioPlayerScreenState =
+        AudioPlayerScreenState.Shown(
             titleResource = noiseType.notificationTitle,
             subtitleResource = if (playing) R.string.notification_playing else R.string.notification_paused,
             firstButton = if (playing) AudioPlayerButton.pause else AudioPlayerButton.play,
             secondButton = AudioPlayerButton.close,
         )
-    }
 
     fun handleNotificationAction(notificationAction: NotificationAction) {
         when (notificationAction) {

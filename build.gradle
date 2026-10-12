@@ -1,27 +1,17 @@
 buildscript {
-    ext.kotlin_version = '2.0.20'
-    ext.composeVersion = "1.6.8"
-    ext.activityComposeVersion = "1.9.1"
-    ext.preferenceKtxVersion = "1.2.1"
-    ext.viewModelCompose = "2.8.4"
-    ext.navigationKtx = "2.7.7"
-    ext.composeSettings = "0.7.2"
-    ext.androidxMediaVersion = "1.7.0"
-    ext.lifecycleServiceVersion = "2.8.4"
-    ext.junitVersion = "4.13.2"
-    ext.coreKtxVersion = "1.13.1"
-    ext.appcompatVersion = "1.7.0"
-    ext.materialVersion = "1.12.0"
-
-    repositories {
-        mavenCentral()
-        google()
-    }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.0.20"
+        // Override the Kotlin Gradle Plugin version bundled by AGP's built-in Kotlin support.
+        classpath(libs.kotlin.gradle.plugin)
     }
+}
+
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.compose.compiler) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.hilt.android) apply false
+    alias(libs.plugins.roborazzi) apply false
+    alias(libs.plugins.ktlint) apply false
 }
 
 task clean(type: Delete) {

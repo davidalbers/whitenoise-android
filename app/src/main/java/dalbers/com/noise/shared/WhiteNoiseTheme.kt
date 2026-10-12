@@ -12,27 +12,29 @@ val WhiteNoiseTypography = Typography()
 
 @Composable
 fun WhiteNoiseTheme(
-  darkTheme: Boolean = isSystemInDarkTheme(),
-  content: @Composable () -> Unit,
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit,
 ) {
-  MaterialTheme(
-    colors = if (darkTheme) DarkColors else LightColors,
-    typography = WhiteNoiseTypography,
-    content = content,
-  )
+    MaterialTheme(
+        colors = if (darkTheme) DarkColors else LightColors,
+        typography = WhiteNoiseTypography,
+        content = content,
+    )
 }
 
-private val LightColors = lightColors(
-  primary =  Color(0xFF573c27),
-  primaryVariant =  Color(0xFFa98360),
-  secondary = Color(0xFFffadc6),
-  secondaryVariant = Color(0xFFe34989),
-  background = Color(0xFFF1ECE4),
-)
+private val LightColors =
+    lightColors(
+        primary = Color(0xFF573c27),
+        primaryVariant = Color(0xFFa98360),
+        secondary = Color(0xFFffadc6),
+        secondaryVariant = Color(0xFFe34989),
+        background = Color(0xFFF1ECE4),
+    )
 
-private val DarkColors = darkColors(
-  primary =  Color(0xFF856C62),
-  primaryVariant =  Color(0xFF856C62),
-  secondary = Color(0xFFAB788B),
-  secondaryVariant = Color(0xFFE8A2B5),
-)
+private val DarkColors =
+    darkColors(
+        primary = Color(0xFF856C62),
+        primaryVariant = Color(0xFF856C62),
+        secondary = Color(0xFFAB788B),
+        secondaryVariant = Color(0xFFE8A2B5),
+    )

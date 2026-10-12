@@ -6,13 +6,15 @@ import android.os.Looper
 import dalbers.com.noise.shared.NoiseType
 import dalbers.com.noise.shared.UserPreferences
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Timer
+import java.util.TimerTask
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.min
 
 /**
@@ -20,7 +22,8 @@ import kotlin.math.min
  * There doesn't seem to be a performance hit at this interval
  * and it's fast enough that I can't hear it.
  */
-const val tickPeriod: Long = 100
+const val TICK_PERIOD: Long = 100
+
 /**
  * Use this instead of decreaseLength if no timer exists.
  */
@@ -29,7 +32,7 @@ val DEFAULT_DECREASE_LENGTH = TimeUnit.HOURS.toMillis(1)
 /**
  * If using oscillate or decrease, the min volume will be the max multiplied by this value.
  */
-const val minVolumePercent = .2f
+const val MIN_VOLUME_PERCENT = .2f
 
 data class SoundState(
     val fadeEnabled: Boolean,
@@ -40,29 +43,32 @@ data class SoundState(
     val volume: Float,
 ) {
     companion object {
-        val default = SoundState(
-            fadeEnabled = false,
-            wavesEnabled = false,
-            millisLeft = 0L,
-            noiseType = NoiseType.WHITE,
-            playing = false,
-            volume = 1f,
-        )
+        val default =
+            SoundState(
+                fadeEnabled = false,
+                wavesEnabled = false,
+                millisLeft = 0L,
+                noiseType = NoiseType.WHITE,
+                playing = false,
+                volume = 1f,
+            )
     }
 }
 
-class AudioController(
+@Singleton
+class AudioController @Inject constructor(
     private val player: AudioPlayer,
     private val audioFocusManager: AudioFocusManager,
     private val looper: Looper,
     private val userPreferences: UserPreferences,
-    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    private val coroutineScope: CoroutineScope,
 ) {
     private var _stateFlow = MutableStateFlow(SoundState.default)
     var stateFlow: StateFlow<SoundState> = _stateFlow
     private var volume = 1f
     private var oscillatingDown = true
     private var countDownTimer: CountDownTimer? = null
+
     /**
      * If the player loses focus and it was playing, then set this true.
      * When and if we regain focus, you know to start playing again if this is true.
@@ -116,21 +122,25 @@ class AudioController(
     fun setVolume(volume: Float) {
         maxVolume = volume
         this.volume = volume
-        minVolume = volume * minVolumePercent
+        minVolume = volume * MIN_VOLUME_PERCENT
         oscillatingDown = true
         _stateFlow.value = _stateFlow.value.copy(volume = volume)
         player.setVolume(maxVolume)
     }
 
-    private var minVolume = minVolumePercent
+    private var minVolume = MIN_VOLUME_PERCENT
 
     init {
         val volumeChangerTimer = Timer()
-        volumeChangerTimer.schedule(object: TimerTask() {
-            override fun run() {
-                handler.post{ tick() }
-            }
-        }, 0, tickPeriod)
+        volumeChangerTimer.schedule(
+            object : TimerTask() {
+                override fun run() {
+                    handler.post { tick() }
+                }
+            },
+            0,
+            TICK_PERIOD,
+        )
         coroutineScope.launch {
             audioFocusManager.focusState.collect {
                 onAudioFocusChange(it)
@@ -171,8 +181,8 @@ class AudioController(
         countDownTimer?.start()
         _stateFlow.value = _stateFlow.value.copy(playing = true)
         if (!userPreferences.playOver()) {
-            //every time we start playing, we have to request audio focus and listen for other
-            //apps also listening for focus with the focusChangeListener
+            // every time we start playing, we have to request audio focus and listen for other
+            // apps also listening for focus with the focusChangeListener
             audioFocusManager.request()
         }
     }
@@ -186,20 +196,21 @@ class AudioController(
         decreaseLength = millis
         countDownTimer?.cancel()
         if (millis == 0L) return
-        countDownTimer = object : CountDownTimer(millis, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                _stateFlow.value = _stateFlow.value.copy(millisLeft = millisUntilFinished)
-            }
+        countDownTimer =
+            object : CountDownTimer(millis, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    _stateFlow.value = _stateFlow.value.copy(millisLeft = millisUntilFinished)
+                }
 
-            override fun onFinish() {
-                _stateFlow.value = _stateFlow.value.copy(millisLeft = 0)
-                pause()
+                override fun onFinish() {
+                    _stateFlow.value = _stateFlow.value.copy(millisLeft = 0)
+                    pause()
+                }
+            }.apply {
+                if (_stateFlow.value.playing) {
+                    start()
+                }
             }
-        }.apply {
-            if (_stateFlow.value.playing) {
-                start()
-            }
-        }
     }
 
     /**
@@ -231,7 +242,7 @@ class AudioController(
         if (maxVolume > minVolume) {
             val actualDecreaseLength = if (decreaseLength == -1L) DEFAULT_DECREASE_LENGTH else decreaseLength
             if (actualDecreaseLength == 0L) return
-            val delta = -1 * (_stateFlow.value.volume - minVolume) / (actualDecreaseLength / tickPeriod)
+            val delta = -1 * (_stateFlow.value.volume - minVolume) / (actualDecreaseLength / TICK_PERIOD)
             maxVolume += delta
         }
     }
@@ -242,11 +253,11 @@ class AudioController(
     }
 
     /**
-     * Oscillate volume from masterVolume to (masterVolume*minVolumePercent).
+     * Oscillate volume from masterVolume to (masterVolume*MIN_VOLUME_PERCENT).
      * Going from max to min to max takes 'oscillatePeriod' milliseconds.
      */
     private fun waveForTick() {
-        var delta = (maxVolume - minVolume) / (oscillatePeriod / 2 / tickPeriod)
+        var delta = (maxVolume - minVolume) / (oscillatePeriod / 2 / TICK_PERIOD)
         if (oscillatingDown) {
             delta *= -1
         }
@@ -271,10 +282,10 @@ class AudioController(
             play()
             startPlayingWhenFocusRegained = false
         } else if (!userPreferences.playOver() && focusState != AudioFocusState.FOCUS_GAINED && _stateFlow.value.playing) {
-            //we lost audio focus, stop playing
+            // we lost audio focus, stop playing
             pause()
             if (focusState == AudioFocusState.FOCUS_LOST_TRANSIENT) {
-                //in these cases, we can expect to get audio back soon
+                // in these cases, we can expect to get audio back soon
                 startPlayingWhenFocusRegained = true
             }
         }

@@ -6,7 +6,6 @@ import android.os.Looper
 import dalbers.com.noise.shared.NoiseType
 import dalbers.com.noise.shared.UserPreferences
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -14,6 +13,8 @@ import kotlinx.coroutines.launch
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.min
 
 /**
@@ -21,7 +22,7 @@ import kotlin.math.min
  * There doesn't seem to be a performance hit at this interval
  * and it's fast enough that I can't hear it.
  */
-const val tickPeriod: Long = 100
+const val TICK_PERIOD: Long = 100
 
 /**
  * Use this instead of decreaseLength if no timer exists.
@@ -31,7 +32,7 @@ val DEFAULT_DECREASE_LENGTH = TimeUnit.HOURS.toMillis(1)
 /**
  * If using oscillate or decrease, the min volume will be the max multiplied by this value.
  */
-const val minVolumePercent = .2f
+const val MIN_VOLUME_PERCENT = .2f
 
 data class SoundState(
     val fadeEnabled: Boolean,
@@ -54,12 +55,13 @@ data class SoundState(
     }
 }
 
-class AudioController(
+@Singleton
+class AudioController @Inject constructor(
     private val player: AudioPlayer,
     private val audioFocusManager: AudioFocusManager,
     private val looper: Looper,
     private val userPreferences: UserPreferences,
-    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main),
+    private val coroutineScope: CoroutineScope,
 ) {
     private var _stateFlow = MutableStateFlow(SoundState.default)
     var stateFlow: StateFlow<SoundState> = _stateFlow
@@ -120,13 +122,13 @@ class AudioController(
     fun setVolume(volume: Float) {
         maxVolume = volume
         this.volume = volume
-        minVolume = volume * minVolumePercent
+        minVolume = volume * MIN_VOLUME_PERCENT
         oscillatingDown = true
         _stateFlow.value = _stateFlow.value.copy(volume = volume)
         player.setVolume(maxVolume)
     }
 
-    private var minVolume = minVolumePercent
+    private var minVolume = MIN_VOLUME_PERCENT
 
     init {
         val volumeChangerTimer = Timer()
@@ -137,7 +139,7 @@ class AudioController(
                 }
             },
             0,
-            tickPeriod,
+            TICK_PERIOD,
         )
         coroutineScope.launch {
             audioFocusManager.focusState.collect {
@@ -240,7 +242,7 @@ class AudioController(
         if (maxVolume > minVolume) {
             val actualDecreaseLength = if (decreaseLength == -1L) DEFAULT_DECREASE_LENGTH else decreaseLength
             if (actualDecreaseLength == 0L) return
-            val delta = -1 * (_stateFlow.value.volume - minVolume) / (actualDecreaseLength / tickPeriod)
+            val delta = -1 * (_stateFlow.value.volume - minVolume) / (actualDecreaseLength / TICK_PERIOD)
             maxVolume += delta
         }
     }
@@ -251,11 +253,11 @@ class AudioController(
     }
 
     /**
-     * Oscillate volume from masterVolume to (masterVolume*minVolumePercent).
+     * Oscillate volume from masterVolume to (masterVolume*MIN_VOLUME_PERCENT).
      * Going from max to min to max takes 'oscillatePeriod' milliseconds.
      */
     private fun waveForTick() {
-        var delta = (maxVolume - minVolume) / (oscillatePeriod / 2 / tickPeriod)
+        var delta = (maxVolume - minVolume) / (oscillatePeriod / 2 / TICK_PERIOD)
         if (oscillatingDown) {
             delta *= -1
         }

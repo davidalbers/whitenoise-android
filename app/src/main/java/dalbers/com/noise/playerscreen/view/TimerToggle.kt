@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -16,9 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dalbers.com.noise.R
+import dalbers.com.noise.shared.ThemePreviews
+import dalbers.com.noise.shared.WhiteNoiseTheme
 import dalbers.com.noise.shared.WhiteNoiseTypography
 
 sealed class TimerToggleState(
@@ -66,20 +68,28 @@ fun TimerToggle(
     }
 }
 
+@ThemePreviews
 @Composable
-@Preview
-private fun TimerSetterPreview_Disabled() {
-    TimerToggle(
-        TimerToggleState.Disabled,
-        onToggle = {},
-    )
+private fun TimerSetterPreviewDisabled() {
+    WhiteNoiseTheme {
+        Surface {
+            TimerToggle(
+                TimerToggleState.Disabled,
+                onToggle = {},
+            )
+        }
+    }
 }
 
+@ThemePreviews
 @Composable
-@Preview
-private fun TimerSetterPreview_Saved() {
-    TimerToggle(
-        TimerToggleState.Saved("1:23:45"),
-        onToggle = {},
-    )
+private fun TimerSetterPreviewSaved() {
+    WhiteNoiseTheme {
+        Surface {
+            TimerToggle(
+                TimerToggleState.Saved("1:23:45"),
+                onToggle = {},
+            )
+        }
+    }
 }

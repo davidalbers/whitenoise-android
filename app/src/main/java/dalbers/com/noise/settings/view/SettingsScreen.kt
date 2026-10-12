@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -17,7 +18,6 @@ import androidx.compose.material.icons.filled.Waves
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import com.alorma.compose.settings.storage.base.SettingValueState
 import com.alorma.compose.settings.storage.base.rememberBooleanSettingState
 import com.alorma.compose.settings.storage.base.rememberIntSettingState
@@ -31,6 +31,8 @@ import dalbers.com.noise.R
 import dalbers.com.noise.shared.DarkModeSetting
 import dalbers.com.noise.shared.PREF_PLAY_OVER
 import dalbers.com.noise.shared.PREF_WAVE_INTERVAL_KEY
+import dalbers.com.noise.shared.ThemePreviews
+import dalbers.com.noise.shared.WhiteNoiseTheme
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -77,16 +79,20 @@ private fun TopAppBar(onBackPressed: () -> Unit) {
     )
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun SettingScreenPreview() {
-    AllSettings(
-        version = "1.2.3",
-        darkThemeState = rememberIntSettingState(),
-        playOverState = rememberBooleanSettingState(true),
-        waveState = rememberIntSettingState(),
-        openProjectPage = {},
-    )
+    WhiteNoiseTheme {
+        Surface {
+            AllSettings(
+                version = "1.2.3",
+                darkThemeState = rememberIntSettingState(),
+                playOverState = rememberBooleanSettingState(true),
+                waveState = rememberIntSettingState(),
+                openProjectPage = {},
+            )
+        }
+    }
 }
 
 @Composable

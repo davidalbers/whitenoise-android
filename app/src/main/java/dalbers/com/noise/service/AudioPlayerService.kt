@@ -6,7 +6,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.media.AudioManager
 import android.os.Binder
 import android.os.IBinder
 import android.os.PowerManager
@@ -14,30 +13,30 @@ import android.os.PowerManager.WakeLock
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
-import androidx.preference.PreferenceManager
+import dagger.hilt.android.AndroidEntryPoint
 import dalbers.com.noise.AudioPlayerButton
 import dalbers.com.noise.AudioPlayerViewModel
 import dalbers.com.noise.R
 import dalbers.com.noise.audiocontrol.AudioController
-import dalbers.com.noise.audiocontrol.AudioFocusManagerImpl
-import dalbers.com.noise.audiocontrol.AudioPlayerImpl
 import dalbers.com.noise.service.model.AudioPlayerScreenState
 import dalbers.com.noise.shared.MainActivity
-import dalbers.com.noise.shared.UserPreferencesImpl
+import javax.inject.Inject
 
 /**
  * A service to play audio on a loop.
  * Features oscillating and decreasing volume.
  * Uses LoopMediaPlayer for looping audio.
  */
+@AndroidEntryPoint
 class AudioPlayerService : LifecycleService() {
     private val binder: IBinder = AudioPlayerBinder()
 
-    // TODO: Use DI to inject this https://github.com/davidalbers/whitenoise-android/issues/41
-    //       This could a singleton and bind/unbind the audioplayer to it
+    @Inject
     lateinit var audioController: AudioController
+
+    @Inject
+    lateinit var viewModel: AudioPlayerViewModel
     private var wakeLock: WakeLock? = null
-    private lateinit var viewModel: AudioPlayerViewModel
 
     override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
@@ -47,14 +46,6 @@ class AudioPlayerService : LifecycleService() {
     override fun onCreate() {
         super.onCreate()
 
-        audioController =
-            AudioController(
-                AudioPlayerImpl(this),
-                AudioFocusManagerImpl(getSystemService(AUDIO_SERVICE) as AudioManager),
-                mainLooper,
-                UserPreferencesImpl(PreferenceManager.getDefaultSharedPreferences(baseContext)),
-            )
-        viewModel = AudioPlayerViewModel(audioController)
         viewModel.stateLiveData.observe(this) {
             if (it is AudioPlayerScreenState.Shown) {
                 showNotification(it)
@@ -122,7 +113,7 @@ class AudioPlayerService : LifecycleService() {
                 this.resources,
                 R.mipmap.ic_launcher,
             )
-        val mediaSession = MediaSessionCompat(applicationContext, mediaSessionTag)
+        val mediaSession = MediaSessionCompat(applicationContext, MEDIA_SESSION_TAG)
 
         val notification: Notification
         val openAppIntent = Intent(applicationContext, MainActivity::class.java)
@@ -140,7 +131,7 @@ class AudioPlayerService : LifecycleService() {
             )
         val builder =
             NotificationCompat
-                .Builder(this, notificationChannel)
+                .Builder(this, NOTIFICATION_CHANNEL)
                 .setSmallIcon(R.drawable.ic_statusbar2)
                 .setContentTitle(getString(screenState.titleResource))
                 .setContentText(getString(screenState.subtitleResource))
@@ -186,7 +177,7 @@ class AudioPlayerService : LifecycleService() {
         (getSystemService(NOTIFICATION_SERVICE) as NotificationManager?)?.apply {
             createNotificationChannel(
                 NotificationChannel(
-                    notificationChannel,
+                    NOTIFICATION_CHANNEL,
                     "Noise Playing",
                     NotificationManager.IMPORTANCE_LOW,
                 ),
@@ -212,8 +203,8 @@ class AudioPlayerService : LifecycleService() {
         private const val NOTIFICATION_ID = 1
         private const val DO_ACTION = "do"
         private const val WAKE_LOCK_TAG = "dalbers.noise.wakelock"
-        private const val notificationChannel = "com.dalbers.whitenoise.Notifications"
-        private const val mediaSessionTag = "dalbers.media.session"
+        private const val NOTIFICATION_CHANNEL = "com.dalbers.whitenoise.Notifications"
+        private const val MEDIA_SESSION_TAG = "dalbers.media.session"
     }
 }
 

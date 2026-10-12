@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dalbers.com.noise.audiocontrol.AudioController
 import dalbers.com.noise.audiocontrol.SoundState
 import dalbers.com.noise.playerscreen.model.PlayerScreenState
@@ -12,18 +13,17 @@ import dalbers.com.noise.playerscreen.view.TimerToggleState
 import dalbers.com.noise.shared.NoiseType
 import dalbers.com.noise.shared.UserPreferences
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class PlayerScreenViewModel(
+@HiltViewModel
+class PlayerScreenViewModel @Inject constructor(
     private val userPreferences: UserPreferences,
+    private val audioController: AudioController,
 ) : ViewModel() {
-    private var _playerScreenState = MutableLiveData<PlayerScreenState>()
+    private var _playerScreenState = MutableLiveData(PlayerScreenState.default)
     val playerScreenState: LiveData<PlayerScreenState> = _playerScreenState
 
-    // this is attached to a service so it can play in the background not sure the best way to manage it yet
-    private var audioController: AudioController? = null
-
-    fun bindAudioController(audioController: AudioController) {
-        this.audioController = audioController
+    init {
         loadPastPreferences()
 
         viewModelScope.launch {
@@ -51,7 +51,7 @@ class PlayerScreenViewModel(
             playing = soundState.playing,
             wavesEnabled = soundState.wavesEnabled,
             timerToggleState = timerState,
-            showTimerPicker = _playerScreenState.value?.showTimerPicker ?: false,
+            showTimerPicker = _playerScreenState.value?.showTimerPicker == true,
             timerPickerState = _playerScreenState.value?.timerPickerState ?: TimerPickerState.zero,
             volume = soundState.volume,
         )
@@ -65,13 +65,19 @@ class PlayerScreenViewModel(
                 wavesEnabled = userPreferences.lastUsedWavy,
                 fadeEnabled = userPreferences.lastUsedFade,
             )
-        audioController?.setNoiseType(userPreferences.lastUsedColor)
-        audioController?.setVolume(userPreferences.lastUsedVolume)
-        audioController?.setWaves(userPreferences.lastUsedWavy)
-        audioController?.setFade(userPreferences.lastUsedFade)
-        val audioControllerState = audioController?.stateFlow?.value
-        if (audioControllerState?.playing == false &&
-            audioControllerState.millisLeft == 0L &&
+        audioController.setNoiseType(userPreferences.lastUsedColor)
+        audioController.setVolume(userPreferences.lastUsedVolume)
+        audioController.setWaves(userPreferences.lastUsedWavy)
+        audioController.setFade(userPreferences.lastUsedFade)
+        val audioControllerState = audioController.stateFlow.value
+        if (audioControllerState.millisLeft > 0L) {
+            // A timer is already counting down (e.g. the app was reopened while audio played
+            // in the background). Show it rather than restarting it from the saved value.
+            _playerScreenState.value =
+                _playerScreenState.value?.copy(
+                    timerToggleState = TimerToggleState.Saved(audioControllerState.millisLeft.millisToTimerState()),
+                )
+        } else if (!audioControllerState.playing &&
             userPreferences.lastTimerTimeMillis != 0L &&
             userPreferences.timerEnabled
         ) {
@@ -79,32 +85,28 @@ class PlayerScreenViewModel(
                 _playerScreenState.value?.copy(
                     timerToggleState = TimerToggleState.Saved(userPreferences.lastTimerTimeMillis.millisToTimerState()),
                 )
-            audioController?.setTimer(userPreferences.lastTimerTimeMillis)
+            audioController.setTimer(userPreferences.lastTimerTimeMillis)
         }
-    }
-
-    fun clearAudioController() {
-        audioController = null
     }
 
     fun changeNoiseType(noiseType: NoiseType) {
         userPreferences.lastUsedColor = noiseType
-        audioController?.setNoiseType(noiseType)
+        audioController.setNoiseType(noiseType)
     }
 
     fun toggleFade(enabled: Boolean) {
         userPreferences.lastUsedFade = enabled
-        audioController?.setFade(enabled)
+        audioController.setFade(enabled)
     }
 
     fun toggleWaves(enabled: Boolean) {
         userPreferences.lastUsedWavy = enabled
-        audioController?.setWaves(enabled)
+        audioController.setWaves(enabled)
     }
 
     fun changeVolume(newVolume: Float) {
         userPreferences.lastUsedVolume = newVolume
-        audioController?.setVolume(newVolume)
+        audioController.setVolume(newVolume)
     }
 
     fun updateTimer(timerChange: Int) {
@@ -128,7 +130,7 @@ class PlayerScreenViewModel(
         userPreferences.lastTimerTimeMillis = timeState.toMillis()
         val newTimerToggleState =
             if (timeState != TimerPickerState.zero) {
-                audioController?.setTimer(timeState.toMillis())
+                audioController.setTimer(timeState.toMillis())
                 userPreferences.timerEnabled = true
                 TimerToggleState.Saved(timeState.toFormattedString())
             } else {
@@ -161,7 +163,7 @@ class PlayerScreenViewModel(
                     timerPickerState = userPreferences.lastTimerTimeMillis.millisToTimerPickerState(),
                 )
         } else {
-            audioController?.setTimer(0)
+            audioController.setTimer(0)
             userPreferences.timerEnabled = false
             _playerScreenState.value = _playerScreenState.value?.copy(timerToggleState = TimerToggleState.Disabled)
         }
@@ -169,9 +171,9 @@ class PlayerScreenViewModel(
 
     fun togglePlay(playing: Boolean) {
         if (playing) {
-            audioController?.play()
+            audioController.play()
         } else {
-            audioController?.pause()
+            audioController.pause()
         }
     }
 }

@@ -43,7 +43,7 @@ fun SettingsScreen(
     onOpenProjectPage: () -> Unit,
 ) {
     Scaffold(
-        topBar = { TopAppBar { onBackPressed() } },
+        topBar = { SettingsTopAppBar { onBackPressed() } },
     ) {
         AllSettings(
             version = version,
@@ -64,7 +64,7 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun TopAppBar(onBackPressed: () -> Unit) {
+private fun SettingsTopAppBar(onBackPressed: () -> Unit) {
     TopAppBar(
         title = {
             Text(stringResource(id = R.string.app_name))

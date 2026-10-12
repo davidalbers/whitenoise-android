@@ -63,7 +63,7 @@ fun PlayerScreen(
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
+                PlayerTopAppBar(
                     state.value,
                     { viewModel.togglePlay(it) },
                     { onSettingsClicked() },
@@ -135,7 +135,7 @@ fun ModalBottomSheetLayout(
 }
 
 @Composable
-private fun TopAppBar(
+private fun PlayerTopAppBar(
     state: PlayerScreenState,
     onPlayToggled: (Boolean) -> Unit,
     onSettingsClicked: () -> Unit,

@@ -48,6 +48,7 @@ import dalbers.com.noise.shared.ThemePreviews
 import dalbers.com.noise.shared.WhiteNoiseTheme
 import dalbers.com.noise.shared.rememberBooleanPreference
 import dalbers.com.noise.shared.rememberIntPreference
+import dalbers.com.noise.shared.whiteNoiseTopAppBarColors
 
 @Composable
 fun SettingsScreen(
@@ -81,6 +82,7 @@ fun SettingsScreen(
 @Composable
 private fun SettingsTopAppBar(onBackPressed: () -> Unit) {
     TopAppBar(
+        colors = whiteNoiseTopAppBarColors(),
         title = {
             Text(stringResource(id = R.string.app_name))
         },

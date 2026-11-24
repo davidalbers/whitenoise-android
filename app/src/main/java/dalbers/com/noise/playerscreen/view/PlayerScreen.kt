@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import dalbers.com.noise.R
 import dalbers.com.noise.playerscreen.model.PlayerScreenState
 import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
+import dalbers.com.noise.shared.whiteNoiseTopAppBarColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,6 +88,7 @@ private fun PlayerTopAppBar(
     onSettingsClicked: () -> Unit,
 ) {
     TopAppBar(
+        colors = whiteNoiseTopAppBarColors(),
         title = {
             Text(stringResource(id = R.string.app_name))
         },

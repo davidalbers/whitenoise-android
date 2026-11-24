@@ -1,24 +1,46 @@
 package dalbers.com.noise.shared
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 val WhiteNoiseTypography = Typography()
+
+private val LocalDarkTheme = staticCompositionLocalOf { false }
 
 @Composable
 fun WhiteNoiseTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    MaterialTheme(
-        colorScheme = if (darkTheme) DarkColors else LightColors,
-        typography = WhiteNoiseTypography,
-        content = content,
+    CompositionLocalProvider(LocalDarkTheme provides darkTheme) {
+        MaterialTheme(
+            colorScheme = if (darkTheme) DarkColors else LightColors,
+            typography = WhiteNoiseTypography,
+            content = content,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun whiteNoiseTopAppBarColors(): TopAppBarColors {
+    if (LocalDarkTheme.current) return TopAppBarDefaults.topAppBarColors()
+    val colors = MaterialTheme.colorScheme
+    return TopAppBarDefaults.topAppBarColors(
+        containerColor = colors.primary,
+        titleContentColor = colors.onPrimary,
+        navigationIconContentColor = colors.onPrimary,
+        actionIconContentColor = colors.onPrimary,
     )
 }
 

@@ -29,11 +29,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,23 +48,29 @@ import dalbers.com.noise.shared.ThemePreviews
 import dalbers.com.noise.shared.WhiteNoiseTheme
 import dalbers.com.noise.shared.rememberBooleanPreference
 import dalbers.com.noise.shared.rememberIntPreference
-import kotlinx.coroutines.selects.select
 
 @Composable
 fun SettingsScreen(
     version: String,
-    darkThemeState: MutableState<Int>,
+    darkModeSetting: Int,
+    onDarkModeSettingChange: (Int) -> Unit,
     onBackPressed: () -> Unit,
     onOpenProjectPage: () -> Unit,
 ) {
+    var playOver by rememberBooleanPreference(key = PREF_PLAY_OVER, defaultValue = false)
+    var waveInterval by rememberIntPreference(key = PREF_WAVE_INTERVAL_KEY, defaultValue = 0)
+
     Scaffold(
         topBar = { SettingsTopAppBar { onBackPressed() } },
     ) { innerPadding ->
         AllSettings(
             version = version,
-            darkThemeState = darkThemeState,
-            playOverState = rememberBooleanPreference(key = PREF_PLAY_OVER, defaultValue = false),
-            waveState = rememberIntPreference(key = PREF_WAVE_INTERVAL_KEY, defaultValue = 0),
+            darkModeSetting = darkModeSetting,
+            onDarkModeSettingChange = onDarkModeSettingChange,
+            playOver = playOver,
+            onPlayOverChange = { playOver = it },
+            waveInterval = waveInterval,
+            onWaveIntervalChange = { waveInterval = it },
             openProjectPage = onOpenProjectPage,
             modifier = Modifier.padding(innerPadding),
         )
@@ -98,9 +101,12 @@ private fun SettingScreenPreview() {
         Surface {
             AllSettings(
                 version = "1.2.3",
-                darkThemeState = remember { mutableIntStateOf(DarkModeSetting.AUTO.key) },
-                playOverState = remember { mutableStateOf(true) },
-                waveState = remember { mutableIntStateOf(0) },
+                darkModeSetting = DarkModeSetting.AUTO.key,
+                onDarkModeSettingChange = {},
+                playOver = true,
+                onPlayOverChange = {},
+                waveInterval = 0,
+                onWaveIntervalChange = {},
                 openProjectPage = {},
             )
         }
@@ -110,28 +116,34 @@ private fun SettingScreenPreview() {
 @Composable
 private fun AllSettings(
     version: String,
-    darkThemeState: MutableState<Int>,
-    playOverState: MutableState<Boolean>,
-    waveState: MutableState<Int>,
+    darkModeSetting: Int,
+    onDarkModeSettingChange: (Int) -> Unit,
+    playOver: Boolean,
+    onPlayOverChange: (Boolean) -> Unit,
+    waveInterval: Int,
+    onWaveIntervalChange: (Int) -> Unit,
     openProjectPage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
         SettingsList(
-            state = darkThemeState,
+            selectedIndex = darkModeSetting,
+            onSelectedIndexChange = onDarkModeSettingChange,
             title = stringResource(id = R.string.dark_theme_toggle),
             subtitle = stringResource(id = R.string.dark_theme_summary),
             items = stringArrayResource(id = R.array.theme_choices).toList(),
             icon = Icons.Default.DarkMode,
         )
         SettingsCheckbox(
-            state = playOverState,
+            checked = playOver,
+            onCheckedChange = onPlayOverChange,
             title = stringResource(id = R.string.play_over_toggle),
             subtitle = stringResource(id = R.string.play_over_summary),
             icon = Icons.Default.PlayArrow,
         )
         SettingsList(
-            state = waveState,
+            selectedIndex = waveInterval,
+            onSelectedIndexChange = onWaveIntervalChange,
             title = stringResource(id = R.string.wave_interval_choice_title),
             subtitle = stringResource(id = R.string.oscillate_interval_summary),
             items = stringArrayResource(id = R.array.wave_interval_choices).toList(),
@@ -165,7 +177,8 @@ private fun SettingsItem(
 
 @Composable
 private fun SettingsCheckbox(
-    state: MutableState<Boolean>,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
     title: String,
     subtitle: String,
     icon: ImageVector,
@@ -176,20 +189,21 @@ private fun SettingsCheckbox(
         icon = icon,
         modifier =
             Modifier.toggleable(
-                value = state.value,
+                value = checked,
                 role = Role.Checkbox,
-                onValueChange = { state.value = it },
+                onValueChange = onCheckedChange,
             ),
-        trailingContent = { Checkbox(checked = state.value, onCheckedChange = null) },
+        trailingContent = { Checkbox(checked = checked, onCheckedChange = null) },
     )
 }
 
 /**
- * A setting that opens a dialog to pick one of [items]. [state] holds the selected index.
+ * A setting that opens a dialog to pick one of [items] by index.
  */
 @Composable
 private fun SettingsList(
-    state: MutableState<Int>,
+    selectedIndex: Int,
+    onSelectedIndexChange: (Int) -> Unit,
     title: String,
     subtitle: String,
     items: List<String>,
@@ -206,17 +220,17 @@ private fun SettingsList(
 
     if (showDialog) {
         SettingsAlertDialog(
-            title,
-            items,
-            selectedIndex = state.value,
+            title = title,
+            items = items,
+            selectedIndex = selectedIndex,
             onDismiss = { showDialog = false },
-            onSelect = { state.value = it }
+            onSelect = onSelectedIndexChange,
         )
     }
 }
 
 @Composable
-fun SettingsAlertDialog(
+private fun SettingsAlertDialog(
     title: String,
     items: List<String>,
     selectedIndex: Int,
@@ -241,8 +255,7 @@ fun SettingsAlertDialog(
                                         onSelect(index)
                                         onDismiss()
                                     },
-                                )
-                                .padding(vertical = 12.dp),
+                                ).padding(vertical = 12.dp),
                     ) {
                         RadioButton(selected = selectedIndex == index, onClick = null)
                         Text(

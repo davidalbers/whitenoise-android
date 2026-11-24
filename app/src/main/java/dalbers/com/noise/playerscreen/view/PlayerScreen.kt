@@ -18,7 +18,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -26,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import dalbers.com.noise.R
 import dalbers.com.noise.playerscreen.model.PlayerScreenState
 import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +73,7 @@ fun PlayerScreen(
                         .padding(16.dp),
                 onChange = { viewModel.updateTimer(it) },
                 onSet = { viewModel.setTimer() },
-                onCancel = {  viewModel.cancelTimer() },
+                onCancel = { viewModel.cancelTimer() },
             )
         }
     }

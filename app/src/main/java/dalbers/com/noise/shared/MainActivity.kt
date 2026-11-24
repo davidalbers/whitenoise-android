@@ -81,7 +81,8 @@ class MainActivity : ComponentActivity() {
                     ) {
                         SettingsScreen(
                             version = versionProvider.getVersion(),
-                            darkThemeState = darkState,
+                            darkModeSetting = darkState.value,
+                            onDarkModeSettingChange = { darkState.value = it },
                             onOpenProjectPage = {
                                 startActivity(
                                     Intent(

@@ -4,12 +4,12 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.media.AudioManager
 import android.os.Looper
-import androidx.preference.PreferenceManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import dalbers.com.noise.shared.defaultSharedPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Singleton
@@ -21,7 +21,7 @@ object AppModule {
     @Singleton
     fun provideSharedPreferences(
         @ApplicationContext context: Context,
-    ): SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    ): SharedPreferences = context.defaultSharedPreferences()
 
     @Provides
     @Singleton

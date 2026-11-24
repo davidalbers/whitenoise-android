@@ -3,9 +3,9 @@ package dalbers.com.noise.playerscreen.view
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.RadioButton
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,7 +58,7 @@ private fun NoiseRadioButton(
     ) {
         Text(
             text = text,
-            style = WhiteNoiseTypography.h6,
+            style = WhiteNoiseTypography.titleLarge,
         )
         RadioButton(
             selected = selected,

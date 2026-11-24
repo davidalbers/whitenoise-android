@@ -6,14 +6,13 @@ import android.content.ServiceConnection
 import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.alorma.compose.settings.storage.preferences.rememberPreferenceIntSettingState
 import dagger.hilt.android.AndroidEntryPoint
 import dalbers.com.noise.playerscreen.view.PlayerScreen
 import dalbers.com.noise.playerscreen.viewmodel.PlayerScreenViewModel
@@ -23,7 +22,7 @@ import dalbers.com.noise.settings.view.isDarkMode
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
     @Inject
     lateinit var userPreferences: UserPreferences
     private val versionProvider = VersionProvider(this)
@@ -55,13 +54,13 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             val darkState =
-                rememberPreferenceIntSettingState(
+                rememberIntPreference(
                     key = PREF_USE_DARK_MODE_KEY,
                     defaultValue = DarkModeSetting.AUTO.key,
                 )
 
             val navController = rememberNavController()
-            WhiteNoiseTheme(darkTheme = darkState.isDarkMode()) {
+            WhiteNoiseTheme(darkTheme = isDarkMode(darkState.value)) {
                 NavHost(
                     navController = navController,
                     startDestination = NavigationDestination.PLAYER.key,

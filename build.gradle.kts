@@ -13,7 +13,3 @@ plugins {
     alias(libs.plugins.roborazzi) apply false
     alias(libs.plugins.ktlint) apply false
 }
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}

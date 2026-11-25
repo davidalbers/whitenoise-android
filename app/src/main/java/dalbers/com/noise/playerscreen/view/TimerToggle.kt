@@ -5,13 +5,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,7 +48,7 @@ fun TimerToggle(
         ) {
             Text(
                 text = stringResource(id = R.string.timer_label),
-                style = WhiteNoiseTypography.h6,
+                style = WhiteNoiseTypography.titleLarge,
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -56,7 +56,7 @@ fun TimerToggle(
                 if (timeState is TimerToggleState.Saved) {
                     Text(
                         text = timeState.displayedTime,
-                        style = WhiteNoiseTypography.h6,
+                        style = WhiteNoiseTypography.titleLarge,
                         modifier = Modifier.padding(end = 8.dp),
                     )
                 }

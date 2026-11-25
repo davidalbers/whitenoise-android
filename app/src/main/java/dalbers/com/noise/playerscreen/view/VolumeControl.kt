@@ -3,9 +3,9 @@ package dalbers.com.noise.playerscreen.view
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Slider
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +27,7 @@ fun VolumeControl(
         Text(
             text = stringResource(id = R.string.volume_label),
             modifier = Modifier.padding(end = 8.dp),
-            style = WhiteNoiseTypography.h6,
+            style = WhiteNoiseTypography.titleLarge,
         )
         Slider(
             value = value,

@@ -10,10 +10,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.edit
 
-/**
- * The same file `androidx.preference.PreferenceManager.getDefaultSharedPreferences` uses, so settings
- * saved by earlier versions of the app carry over.
- */
 fun Context.defaultSharedPreferences(): SharedPreferences = getSharedPreferences("${packageName}_preferences", Context.MODE_PRIVATE)
 
 @Composable
@@ -53,10 +49,6 @@ private fun <T> rememberPreference(
     return state
 }
 
-/**
- * Compose state backed by a [SharedPreferences] value. Writes go to disk and changes made elsewhere
- * (e.g. another screen holding the same key) are reflected here.
- */
 private class PreferenceState<T>(
     private val preferences: SharedPreferences,
     private val key: String,
@@ -65,7 +57,6 @@ private class PreferenceState<T>(
 ) : MutableState<T> {
     private val backing = mutableStateOf(preferences.read())
 
-    // SharedPreferences only holds a weak reference to listeners, so keep a strong one here.
     private val listener =
         SharedPreferences.OnSharedPreferenceChangeListener { prefs, changedKey ->
             if (changedKey == key) backing.value = prefs.read()
